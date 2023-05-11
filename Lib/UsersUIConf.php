@@ -82,4 +82,11 @@ class UsersUIConf extends ConfigClass
 
         return $res;
     }
+
+    public function onAfterAssetsPrepared(\Phalcon\Assets\Manager $assetsManager):void
+    {
+ //       $assetsManager->collection('footerJS')->addJs("js/cache/{$this->moduleUniqueId}/module-usersui-index.js", true);
+        $assetsManager->collection('headerCSS')->addCss("css/cache/{$this->moduleUniqueId}/module-usersui.css", true);
+    }
+
 }
