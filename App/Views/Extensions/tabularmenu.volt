@@ -1,0 +1,1 @@
+<a class="item" data-tab="usersUI">{{ t._('mo_ModuleModuleUsersUI') }}</a>

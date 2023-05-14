@@ -89,4 +89,80 @@ class UsersUIConf extends ConfigClass
         $assetsManager->collection('headerCSS')->addCss("css/cache/{$this->moduleUniqueId}/module-usersui.css", true);
     }
 
+    /**
+     * Prepares include block within volt template
+     *
+     * @param string $controller
+     * @param string $blockName
+     * @param View $view
+     * @return string
+     */
+    public function onVoltBlockCompile(string $controller, string $blockName, View $view):string
+    {
+        $result = [];
+        if ($controller==='Extensions'){
+            switch ($blockName){
+                case "GeneralMainFields":
+                    $result = '/storage/usbdisk1/mikopbx/custom_modules/ModuleUsersUI/App/Views/NewMenuItem/index';
+                    break;
+                case "GeneralAdvancedFields":
+                    $result = '/storage/usbdisk1/mikopbx/custom_modules/ModuleUsersUI/App/Views/NewMenuItem2/index';
+                    break;
+                case "AdditionalTab":
+                    $result = '/storage/usbdisk1/mikopbx/custom_modules/ModuleUsersUI/App/Views/Extensions/additionaltab';
+                    break;
+                case "TabularMenu":
+                    $result = '/storage/usbdisk1/mikopbx/custom_modules/ModuleUsersUI/App/Views/Extensions/tabularmenu';
+                    break;
+                default:
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Calls from BaseForm before form initialized
+     *
+     * @param $form
+     * @param $entity
+     * @param $options
+     * @return void
+     */
+    public function onBeforeFormInitialize(Form $form, $entity, $options):void
+    {
+        if (is_a($form, ExtensionEditForm::class)) {
+            $arrDTMFType = [
+                'auto' => $this->translation->_('auto'),
+                'inband' => $this->translation->_('inband'),
+                'info' => $this->translation->_('info'),
+                'rfc4733' => $this->translation->_('rfc4733'),
+                'auto_info' => $this->translation->_('auto_info'),
+            ];
+
+            $dtmfmode = new Select(
+                'module_dtmfmode', $arrDTMFType, [
+                    'using' => [
+                        'id',
+                        'name',
+                    ],
+                    'useEmpty' => false,
+                    'value' => 'auto',
+                    'class' => 'ui selection dropdown',
+                ]
+            );
+            $form->add($dtmfmode);
+        }
+    }
+
+
+    /**
+     * Calls from BaseController on afterExecuteRoute function
+     *
+     * @param Controller $controller
+     * @return void
+     */
+    public function onAfterExecuteRoute(Controller $controller):void
+    {
+    }
 }
