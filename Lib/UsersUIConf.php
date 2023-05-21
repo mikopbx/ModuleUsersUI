@@ -99,7 +99,7 @@ class UsersUIConf extends ConfigClass
      */
     public function onVoltBlockCompile(string $controller, string $blockName, View $view):string
     {
-        $result = [];
+        $result = '';
         if ($controller==='Extensions'){
             switch ($blockName){
                 case "GeneralMainFields":
