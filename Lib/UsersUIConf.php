@@ -121,16 +121,16 @@ class UsersUIConf extends ConfigClass
         if ($controller==='Extensions'){
             switch ($blockName){
                 case "GeneralMainFields":
-                    $result = '/storage/usbdisk1/mikopbx/custom_modules/ModuleUsersUI/App/Views/NewMenuItem/index';
+                    $result = "{$this->moduleDir}/App/Views/NewMenuItem/index";
                     break;
                 case "GeneralAdvancedFields":
-                    $result = '/storage/usbdisk1/mikopbx/custom_modules/ModuleUsersUI/App/Views/NewMenuItem2/index';
+                    $result = "{$this->moduleDir}/App/Views/NewMenuItem2/index";
                     break;
                 case "AdditionalTab":
-                    $result = '/storage/usbdisk1/mikopbx/custom_modules/ModuleUsersUI/App/Views/Extensions/additionaltab';
+                    $result = "{$this->moduleDir}/App/Views/Extensions/additionaltab";
                     break;
                 case "TabularMenu":
-                    $result = '/storage/usbdisk1/mikopbx/custom_modules/ModuleUsersUI/App/Views/Extensions/tabularmenu';
+                    $result = "{$this->moduleDir}/App/Views/Extensions/tabularmenu";
                     break;
                 default:
             }
