@@ -1,82 +1,92 @@
-
-<div class="ui grid">
-    <div class="ui row">
-        <div class="ui five wide column">
-            {{ link_to("#", '<i class="add user icon"></i>  '~t._('module_template_AddNewRecord'), "class": "ui blue button", "id":"add-new-row", "id-table":"PhoneBook-table") }}
-        </div>
-    </div>
+{{ link_to("module-users-u-i/modify", '<i class="add circle icon"></i> '~t._('module_usersui_AddNewAccessGroup'), "class": "ui blue button", "id":"add-new-button") }}
+<div class="ui top attached tabular menu" id="main-users-ui-tab-menu">
+    <a class="item active disability" data-tab="groups">{{ t._('module_usersui_Groups') }}</a>
+    <a class="item disability" data-tab="users">{{ t._('module_usersui_Users') }}</a>
 </div>
-<br>
-<table id="PhoneBook-table" class="ui small very compact single line table"></table>
 
-<select id="queues-list" style="display: none;">
-    {% for record in queues %}
+<div class="ui bottom attached tab segment active" data-tab="groups">
+    {% for record in groups %}
+        {% if loop.first %}
+            <table class="ui selectable compact table" id="access-groups-table">
+            <thead>
+            <tr>
+                <th>{{ t._('module_usersui_ColumnGroupName') }}</th>
+                <th class="center aligned">{{ t._('module_usersui_ColumnGroupMembersCount') }}</th>
+                <th>{{ t._('module_usersui_ColumnGroupDescription') }}</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+        {% endif %}
+        <tr class="group-row" id="{{ record.id }}">
+            <td>{{ record.name }}</td>
+            <td class="center aligned">{{ record.UsersCredentials |length }}</td>
+            <td class="">
+                {% if not (record.description is empty) and record.description|length>80 %}
+                    <div class="ui basic icon button" data-content="{{ record.description }}" data-variation="wide">
+                        <i class="file text icon"></i>
+                    </div>
+                {% else %}
+                    {{ record.description }}
+                {% endif %}
+            </td>
+            {{ partial("partials/tablesbuttons",
+                [
+                    'id': record.id,
+                    'edit' : 'module-users-u-i/modify/',
+                    'delete': 'module-users-u-i/delete/'
+                ])
+            }}
+        </tr>
+
+        {% if loop.last %}
+
+            </tbody>
+            </table>
+        {% endif %}
+    {% endfor %}
+</div>
+<div class="ui bottom attached tab segment" data-tab="users">
+    {% for member in members %}
+        {% if loop.first %}
+            <table class="ui selectable compact table" id="users-table" data-page-length='12'>
+            <thead>
+            <tr>
+                <th>{{ t._('ex_Name') }}</th>
+                <th class="center aligned">{{ t._('ex_Extension') }}</th>
+                <th class="center aligned">{{ t._('ex_Mobile') }}</th>
+                <th class="center aligned">{{ t._('ex_Email') }}</th>
+                <th class="center aligned">{{ t._('module_usersui_ColumnGroupName') }}</th>
+            </tr>
+            </thead>
+            <tbody>
+        {% endif %}
+
+        <tr class="member-row" id="{{ member['userid'] }}">
+            <td>
+                <img src="{{ member['avatar'] }}" class="ui avatar image"
+                     data-value="{{ member['userid'] }} /"> {{ member['username'] }}
+            </td>
+            <td class="center aligned">{{ member['number'] }}</td>
+            <td class="center aligned">{{ member['mobile'] }}</td>
+            <td class="center aligned">{{ member['email'] }}</td>
+            <td class="left aligned">
+                <div class="ui dropdown select-group" data-value="{{ member['group'] }}">
+                    <div class="text">{{ member['group'] }}</div>
+                    <i class="dropdown icon"></i>
+                </div>
+            </td>
+        </tr>
+        {% if loop.last %}
+            </tbody>
+            </table>
+        {% endif %}
+    {% endfor %}
+</div>
+
+
+<select id="users-groups-list" style="display: none;">
+    {% for record in groups %}
         <option value="{{ record.id }}">{{ record.name }}</option>
     {% endfor %}
 </select>
-
-<select id="users-list" style="display: none;">
-    {% for record in users %}
-        <option value="{{ record.number }}">{{ record.callerid }}</option>
-    {% endfor %}
-</select>
-
-<div id="template-select" style="display: none;">
-    <div class="ui dropdown select-group" data-value="PARAM">
-        <div class="text">PARAM</div>
-        <i class="dropdown icon"></i>
-    </div>
-</div>
-
-<form class="ui large grey segment form" id="module-usersui-form">
-    <div class="ui ribbon label">
-        <i class="phone icon"></i> 123456
-    </div>
-    <div class="ui grey top right attached label" id="status">{{ t._("module_usersuiDisconnected") }}</div>
-    {{ form.render('id') }}
-
-    <div class="ten wide field disability">
-        <label >{{ t._('module_usersuiTextFieldLabel') }}</label>
-        {{ form.render('text_field') }}
-    </div>
-
-    <div class="ten wide field disability">
-        <label >{{ t._('module_usersuiTextAreaFieldLabel') }}</label>
-        {{ form.render('text_area_field') }}
-    </div>
-
-    <div class="ten wide field disability">
-        <label >{{ t._('module_usersuiPasswordFieldLabel') }}</label>
-        {{ form.render('password_field') }}
-    </div>
-
-    <div class="four wide field disability">
-        <label>{{ t._('module_usersuiIntegerFieldLabel') }}</label>
-        {{ form.render('integer_field') }}
-    </div>
-
-    <div class="field disability">
-        <div class="ui segment">
-            <div class="ui checkbox">
-                <label>{{ t._('module_usersuiCheckBoxFieldLabel') }}</label>
-                {{ form.render('checkbox_field') }}
-            </div>
-        </div>
-    </div>
-
-    <div class="field disability">
-        <div class="ui segment">
-            <div class="ui toggle checkbox">
-                <label>{{ t._('module_usersuiToggleFieldLabel') }}</label>
-                {{ form.render('toggle_field') }}
-            </div>
-        </div>
-    </div>
-
-    <div class="ten wide field disability">
-        <label >{{ t._('module_usersuiDropDownFieldLabel') }}</label>
-        {{ form.render('dropdown_field') }}
-    </div>
-
-    {{ partial("partials/submitbutton",['indexurl':'pbx-extension-modules/index/']) }}
-</form>

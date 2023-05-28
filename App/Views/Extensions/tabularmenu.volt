@@ -1,1 +1,1 @@
-<a class="item" data-tab="usersUI">{{ t._('mo_ModuleModuleUsersUI') }}</a>
+<a class="item" data-tab="usersUI">{{ t._('module_usersui_ExtensionTabName') }}</a>
