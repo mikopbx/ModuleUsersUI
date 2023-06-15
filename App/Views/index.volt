@@ -1,4 +1,4 @@
-{{ link_to("module-users-u-i/modify", '<i class="add circle icon"></i> '~t._('module_usersui_AddNewAccessGroup'), "class": "ui blue button", "id":"add-new-button") }}
+{{ link_to("module-users-u-i/access-groups/modify", '<i class="add circle icon"></i> '~t._('module_usersui_AddNewAccessGroup'), "class": "ui blue button", "id":"add-new-button") }}
 <div class="ui top attached tabular menu" id="main-users-ui-tab-menu">
     <a class="item active disability" data-tab="groups">{{ t._('module_usersui_Groups') }}</a>
     <a class="item disability" data-tab="users">{{ t._('module_usersui_Users') }}</a>
@@ -33,8 +33,8 @@
             {{ partial("partials/tablesbuttons",
                 [
                     'id': record.id,
-                    'edit' : 'module-users-u-i/modify/',
-                    'delete': 'module-users-u-i/delete/'
+                    'edit' : 'module-users-u-i/access-groups/modify/',
+                    'delete': 'module-users-u-i/access-groups/delete/'
                 ])
             }}
         </tr>

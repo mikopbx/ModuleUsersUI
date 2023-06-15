@@ -110,8 +110,8 @@ class UsersUIConf extends ConfigClass
 
             // Set parameters for the database query
             $parameters = [
-                'conditions' => 'user_id = :user_id',
-                'bind'=>[
+                'conditions' => 'user_id = :user_id:',
+                'binds'=>[
                     'user_id'=>$currentUserId,
                 ]
             ];
@@ -193,8 +193,8 @@ class UsersUIConf extends ConfigClass
 
         // Set parameters for the database query
         $parameters = [
-            'conditions' => 'user_id = :user_id',
-            'bind' => [
+            'conditions' => 'user_id = :user_id:',
+            'binds' => [
                 'user_id' => $currentUserId,
             ]
         ];
@@ -248,4 +248,48 @@ class UsersUIConf extends ConfigClass
 //        ]);
 //
 //    }
+
+    /**
+     * @param array $request
+     * @return PBXApiResult
+     *
+     * @Get("/check")
+     */
+    public function moduleRestAPICallback(array $request): PBXApiResult
+    {
+        $res            = new PBXApiResult();
+        $res->processor = __METHOD__;
+        $action         = strtoupper($request['action']);
+        switch ($action) {
+            case 'CHECK':
+                return $res;
+            default:
+                $res->success    = false;
+                $res->messages[] = 'API action not found in moduleRestAPICallback ModuleUsersUI';
+        }
+
+        return $res;
+    }
+
+    /**
+     * Returns array of additional routes for PBXCoreREST interface from module
+     * [ControllerClass, ActionMethod, RequestTemplate, HttpMethod, RootUrl, NoAuth ]
+     * @see https://docs.mikopbx.com/mikopbx-development/module-developement/module-class#getpbxcorerestadditionalroutes
+     *
+     * @RoutePrefix("/pbxcore/api/backup")
+     * @Get("/something1")
+     * @Get("/something2")
+     * @Post("/something3")
+     *
+     * @return array
+     * @example
+     *  [[GetController::class, 'callAction', '/pbxcore/api/backup/{actionName}', 'get', '/', false],
+     *  [PostController::class, 'callAction', '/pbxcore/api/backup/{actionName}', 'post', '/', false]]
+     *
+     */
+    public function getPBXCoreRESTAdditionalRoutes(): array
+    {
+        return [];
+    }
+
 }

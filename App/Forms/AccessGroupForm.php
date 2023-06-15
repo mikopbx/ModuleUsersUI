@@ -49,7 +49,7 @@ class AccessGroupForm extends BaseForm
                 'AccessGroupsRights'=>AccessGroupsRights::class,
             ],
            'conditions'=>'AccessGroupsRights.group_id = :group_id:',
-            'bind'=>[
+            'binds'=>[
                 'group_id'=>$entity->id,
             ],
             'group'     => 'AccessGroups.id',

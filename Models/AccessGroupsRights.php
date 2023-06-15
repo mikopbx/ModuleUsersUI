@@ -25,6 +25,9 @@ use Phalcon\Mvc\Model\Relation;
 
 class AccessGroupsRights extends ModulesModelsBase
 {
+    public const ADMIN_CABINET = 'AdminCabinet';
+    public const PBX_CORE_REST = 'PBXCoreREST';
+
 
     /**
      * @Primary
@@ -39,6 +42,13 @@ class AccessGroupsRights extends ModulesModelsBase
      * @Column(type="integer", nullable=false)
      */
     public $group_id;
+
+    /**
+     * Module id [AdminCabinet, REST API, ModuleID]
+     *
+     * @Column(type="string", nullable=false)
+     */
+    public $module_id;
 
     /**
      * Controller name

@@ -42,7 +42,6 @@ return [
     'module_usersuiConnected'             => 'Модуль подключен',
     'module_usersuiDisconnected'          => 'Модуль отключен',
     'module_usersuiUpdateStatus'          => 'Обновление статуса',
-    'module_NewMenuItemUntranslated'      => 'Новый пункт меню',
 
 
     'module_usersUiMainMenuItem'    => 'Права пользователей',

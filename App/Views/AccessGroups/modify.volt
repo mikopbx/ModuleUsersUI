@@ -1,4 +1,4 @@
-{{ form('module-users-u-i/save', 'role': 'form', 'class': 'ui large form','id':'module-users-ui-form') }}
+{{ form('module-users-u-i/access-groups/save', 'role': 'form', 'class': 'ui large form','id':'module-users-ui-form') }}
         <input type="hidden" name="dirrty" id="dirrty"/>
         {{ form.render('id') }}
         <div class="ten wide field">
@@ -14,5 +14,5 @@
             {{ form.render('description') }}
         </div>
 
-{{ partial("partials/submitbutton",['indexurl':'module-users-u-i/index/']) }}
+{{ partial("partials/submitbutton",['indexurl':'module-users-u-i/index']) }}
 {{ endform()}}
