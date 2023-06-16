@@ -18,18 +18,19 @@
  */
 namespace Modules\ModuleUsersUI\App\Controllers;
 use MikoPBX\AdminCabinet\Controllers\BaseController;
-use MikoPBX\Common\Models\CallQueues;
 use MikoPBX\Common\Models\Extensions;
+use MikoPBX\Common\Models\Users;
 use MikoPBX\Modules\PbxExtensionUtils;
-use Modules\ModuleUsersUI\App\Forms\ModuleUsersUIForm;
-use Modules\ModuleUsersUI\Models\ModuleUsersUI;
-use MikoPBX\Common\Models\Providers;
-use Modules\ModuleUsersUI\Models\PhoneBook;
+use Modules\ModuleUsersUI\Models\AccessGroups;
+use Modules\ModuleUsersUI\Models\UsersCredentials;
+use function MikoPBX\Common\Config\appPath;
 
 class ModuleUsersUIController extends BaseController
 {
     private $moduleUniqueID = 'ModuleUsersUI';
     private $moduleDir;
+
+    public bool $showModuleStatusToggle = false;
 
     /**
      * Basic initial class
@@ -42,272 +43,149 @@ class ModuleUsersUIController extends BaseController
         parent::initialize();
     }
 
-    public function getTablesDescriptionAction(): void
-    {
-        $this->view->data = $this->getTablesDescription();
-    }
-
-    public function getNewRecordsAction(): void
-    {
-        $currentPage                 = $this->request->getPost('draw');
-        $table                       = $this->request->get('table');
-        $this->view->draw            = $currentPage;
-        $this->view->recordsTotal    = 0;
-        $this->view->recordsFiltered = 0;
-        $this->view->data            = [];
-
-        $descriptions = $this->getTablesDescription();
-        if(!isset($descriptions[$table])){
-            return;
-        }
-        $className = $this->getClassName($table);
-        if(!empty($className)){
-            $filter = [];
-            if(isset($descriptions[$table]['cols']['priority'])){
-                $filter = ['order' => 'priority'];
-            }
-            $allRecords = $className::find($filter)->toArray();
-            $records    = [];
-            $emptyRow   = [
-                'rowIcon'  =>  $descriptions[$table]['cols']['rowIcon']['icon']??'',
-                'DT_RowId' => 'TEMPLATE'
-            ];
-            foreach ($descriptions[$table]['cols'] as $key => $metadata) {
-                if('rowIcon' !== $key){
-                    $emptyRow[$key] = '';
-                }
-            }
-            $records[] = $emptyRow;
-            foreach ($allRecords as $rowData){
-                $tmpData = [];
-                $tmpData['DT_RowId'] =  $rowData['id'];
-                foreach ($descriptions[$table]['cols'] as $key => $metadata){
-                    if('rowIcon' === $key){
-                        $tmpData[$key] = $metadata['icon']??'';
-                    }elseif('delButton' === $key){
-                        $tmpData[$key] = '';
-                    }elseif(isset($rowData[$key])){
-                        $tmpData[$key] =  $rowData[$key];
-                    }
-                }
-                $records[] = $tmpData;
-            }
-            $this->view->data      = $records;
-        }
-    }
-
     /**
-     * Index page controller
+     * The index action for displaying the users groups page.
+     *
+     * @return void
      */
     public function indexAction(): void
     {
         $footerCollection = $this->assets->collection('footerJS');
-        $footerCollection->addJs('js/pbx/main/form.js', true);
         $footerCollection->addJs('js/vendor/datatable/dataTables.semanticui.js', true);
-        $footerCollection->addJs("js/cache/{$this->moduleUniqueID}/module-usersui-index.js", true);
-        $footerCollection->addJs('js/vendor/jquery.tablednd.min.js', true);
+        $footerCollection->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-index.js", true);
 
         $headerCollectionCSS = $this->assets->collection('headerCSS');
-        $headerCollectionCSS->addCss("css/cache/{$this->moduleUniqueID}/module-usersui.css", true);
-        $headerCollectionCSS->addCss('css/vendor/datatable/dataTables.semanticui.min.css', true);
+        $headerCollectionCSS
+            ->addCss('css/vendor/datatable/dataTables.semanticui.min.css', true)
+            ->addCss("css/cache/{$this->moduleUniqueID}/module-users-ui.css", true);
 
-        $settings = ModuleUsersUI::findFirst();
-        if ($settings === null) {
-            $settings = new ModuleUsersUI();
-        }
-
-        // For example we add providers list on the form
-        $providers = Providers::find();
-        $providersList = [];
-        foreach ($providers as $provider){
-            $providersList[ $provider->uniqid ] = $provider->getRepresent();
-        }
-        $options['providers']=$providersList;
-
-        $this->view->form = new ModuleUsersUIForm($settings, $options);
+        $this->view->groups = AccessGroups::find();
         $this->view->pick("{$this->moduleDir}/App/Views/index");
 
-        // Список выбора очередей.
-        $this->view->queues = CallQueues::find(['columns' => ['id', 'name']]);
-        $this->view->users  = Extensions::find(["type = 'SIP'", 'columns' => ['number', 'callerid']]);
-    }
+        // Get the list of users for display in the filter
+        $parameters = [
+            'models'     => [
+                'Extensions' => Extensions::class,
+            ],
+            'conditions' => 'Extensions.is_general_user_number = 1',
+            'columns'    => [
+                'id'       => 'Extensions.id',
+                'username' => 'Users.username',
+                'number'   => 'Extensions.number',
+                'email'    => 'Users.email',
+                'userid'   => 'Users.id',
+                'type'     => 'Extensions.type',
+                'avatar'   => 'Users.avatar',
 
-    /**
-     * Save settings AJAX action
-     */
-    public function saveAction() :void
-    {
-        $data       = $this->request->getPost();
-        $record = ModuleUsersUI::findFirst();
-        if ($record === null) {
-            $record = new ModuleUsersUI();
-        }
-        $this->db->begin();
-        foreach ($record as $key => $value) {
-            switch ($key) {
-                case 'id':
-                    break;
-                case 'checkbox_field':
-                case 'toggle_field':
-                    if (array_key_exists($key, $data)) {
-                        $record->$key = ($data[$key] === 'on') ? '1' : '0';
-                    } else {
-                        $record->$key = '0';
+            ],
+            'order'      => 'number',
+            'joins'      => [
+                'Users' => [
+                    0 => Users::class,
+                    1 => 'Users.id = Extensions.userid',
+                    2 => 'Users',
+                    3 => 'INNER',
+                ],
+            ],
+        ];
+        $query      = $this->di->get('modelsManager')->createBuilder($parameters)->getQuery();
+        $extensions = $query->execute();
+
+        // Get the mapping of employees and access groups since join across different databases is not possible
+        $parameters      = [
+            'models'     => [
+                'UsersCredentials' => UsersCredentials::class,
+            ],
+            'columns' => [
+                'user_id' => 'UsersCredentials.user_id',
+                'group'   => 'AccessGroups.name',
+                'group_id'   => 'AccessGroups.id',
+
+            ],
+            'joins'   => [
+                'AccessGroups' => [
+                    0 => AccessGroups::class,
+                    1 => 'AccessGroups.id = UsersCredentials.user_access_group_id',
+                    2 => 'AccessGroups',
+                    3 => 'INNER',
+                ],
+            ],
+        ];
+        $query      = $this->di->get('modelsManager')->createBuilder($parameters)->getQuery();
+        $groupMembers = $query->execute()->toArray();
+
+        $groupMembersIds = array_column($groupMembers, 'user_id');
+        $extensionTable  = [];
+        foreach ($extensions as $extension) {
+            switch ($extension->type) {
+                case 'SIP':
+                    $extensionTable[$extension->userid]['userid']   = $extension->userid;
+                    $extensionTable[$extension->userid]['number']   = $extension->number;
+                    $extensionTable[$extension->userid]['id']       = $extension->id;
+                    $extensionTable[$extension->userid]['username'] = $extension->username;
+                    $extensionTable[$extension->userid]['group']    = null;
+                    $extensionTable[$extension->userid]['email']    = $extension->email;
+                    $key                                            = array_search(
+                        $extension->userid,
+                        $groupMembersIds,
+                        true
+                    );
+                    if ($key !== false) {
+                        $extensionTable[$extension->userid]['group'] = $groupMembers[$key]['group'];
                     }
+
+                    if ( ! array_key_exists('mobile', $extensionTable[$extension->userid])) {
+                        $extensionTable[$extension->userid]['mobile'] = '';
+                    }
+
+                    $extensionTable[$extension->userid]['avatar'] = "{$this->url->get()}assets/img/unknownPerson.jpg";
+                    if ($extension->avatar) {
+                        $filename = md5($extension->avatar);
+                        $imgCacheDir = appPath('sites/admin-cabinet/assets/img/cache');
+                        $imgFile  = "{$imgCacheDir}/{$filename}.jpg";
+                        if (file_exists($imgFile)) {
+                            $extensionTable[$extension->userid]['avatar'] = "{$this->url->get()}assets/img/cache/{$filename}.jpg";
+                        }
+                    }
+                    break;
+                case 'EXTERNAL':
+                    $extensionTable[$extension->userid]['mobile'] = $extension->number;
                     break;
                 default:
-                    if (array_key_exists($key, $data)) {
-                        $record->$key = $data[$key];
-                    } else {
-                        $record->$key = '';
-                    }
             }
         }
-
-        if ($record->save() === FALSE) {
-            $errors = $record->getMessages();
-            $this->flash->error(implode('<br>', $errors));
-            $this->view->success = false;
-            $this->db->rollback();
-            return;
-        }
-
-        $this->flash->success($this->translation->_('ms_SuccessfulSaved'));
-        $this->view->success = true;
-        $this->db->commit();
+        $this->view->members = $extensionTable;
     }
 
     /**
-     * Delete phonebook record
+     * Change the group of a user.
      */
-    public function deleteAction(): void
+    public function changeUserGroupAction(): void
     {
-        $table     = $this->request->get('table');
-        $className = $this->getClassName($table);
-        if(empty($className)) {
-            $this->view->success = false;
-            return;
-        }
-        $id     = $this->request->get('id');
-        $record = $className::findFirstById($id);
-        if ($record !== null && ! $record->delete()) {
-            $this->flash->error(implode('<br>', $record->getMessages()));
-            $this->view->success = false;
-            return;
-        }
-        $this->view->success = true;
-    }
-
-    /**
-     * Возвращает метаданные таблицы.
-     * @return array
-     */
-    private function getTablesDescription():array
-    {
-        $description['PhoneBook'] = [
-            'cols' => [
-                'rowIcon'    => ['header' => '',                        'class' => 'collapsing', 'icon' => 'user'],
-                'priority'   => ['header' => '',                        'class' => 'collapsing'],
-                'call_id'    => ['header' => 'Представление абонента',  'class' => 'ten wide'],
-                'number_rep' => ['header' => 'Номер телефона',          'class' => 'four wide'],
-                'queueId'    => ['header' => 'Номер числом',            'class' => 'collapsing', 'select' => 'queues-list'],
-                'delButton'  => ['header' => '',                        'class' => 'collapsing']
-            ],
-            'ajaxUrl' => '/getNewRecords',
-            'icon' => 'user',
-            'needDelButton' => true
-        ];
-        return $description;
-    }
-
-    /**
-     * Обновление данных в таблице.
-     */
-    public function saveTableDataAction():void
-    {
-        $data       = $this->request->getPost();
-        $tableName  = $data['pbx-table-id']??'';
-
-        $className = $this->getClassName($tableName);
-        if(empty($className)){
-            return;
-        }
-        $rowId      = $data['pbx-row-id']??'';
-        if(empty($rowId)){
-            $this->view->success = false;
-            return;
-        }
-        $this->db->begin();
-        /** @var PhoneBook $rowData */
-        $rowData = $className::findFirst('id="'.$rowId.'"');
-        if(!$rowData){
-            $rowData = new $className();
-        }
-        foreach ($rowData as $key => $value) {
-            if($key === 'id'){
-                continue;
-            }
-            if (array_key_exists($key, $data)) {
-                $rowData->writeAttribute($key, $data[$key]);
-            }
-        }
-        // save action
-        if ($rowData->save() === FALSE) {
-            $errors = $rowData->getMessages();
-            $this->flash->error(implode('<br>', $errors));
-            $this->view->success = false;
-            $this->db->rollback();
-            return;
-        }
-        $this->view->data = ['pbx-row-id'=>$rowId, 'newId'=>$rowData->id, 'pbx-table-id' => $data['pbx-table-id']];
-        $this->view->success = true;
-        $this->db->commit();
-
-    }
-
-    /**
-     * Получение имени класса по имени таблицы
-     * @param $tableName
-     * @return string
-     */
-    private function getClassName($tableName):string
-    {
-        if(empty($tableName)){
-            return '';
-        }
-        $className = "Modules\ModuleUsersUI\Models\\$tableName";
-        if(!class_exists($className)){
-            $className = '';
-        }
-        return $className;
-    }
-
-    /**
-     * Changes rules priority
-     *
-     */
-    public function changePriorityAction(): void
-    {
-        $this->view->disable();
-        $result = true;
-
         if ( ! $this->request->isPost()) {
             return;
         }
-        $priorityTable = $this->request->getPost();
-        $tableName     = $this->request->get('table');
-        $className = $this->getClassName($tableName);
-        if(empty($className)){
-            echo "table not found -- ы$tableName --";
-            return;
+        $data        = $this->request->getPost();
+        $parameters  = [
+            'conditions' => 'user_id=:userID:',
+            'bind'       => [
+                'userID' => $data['user_id'],
+            ],
+        ];
+        $groupMember = UsersCredentials::findFirst($parameters);
+        if ($groupMember === null) {
+            $groupMember          = new UsersCredentials();
+            $groupMember->user_id = $data['user_id'];
         }
-        $rules = $className::find();
-        foreach ($rules as $rule){
-            if (array_key_exists ( $rule->id, $priorityTable)){
-                $rule->priority = $priorityTable[$rule->id];
-                $result         .= $rule->update();
-            }
+        $groupMember->user_access_group_id = $data['group_id'];
+        if ($groupMember->save() === false) {
+            $errors = $groupMember->getMessages();
+            $this->flash->error(implode('<br>', $errors));
+            $this->view->success = false;
+        } else {
+            $this->flash->success($this->translation->_('ms_SuccessfulSaved'));
+            $this->view->success = true;
         }
-        echo json_encode($result);
     }
+
 }

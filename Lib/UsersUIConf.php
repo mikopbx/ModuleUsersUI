@@ -19,48 +19,113 @@
 
 namespace Modules\ModuleUsersUI\Lib;
 
-use MikoPBX\Common\Models\PbxSettings;
-use MikoPBX\Core\Workers\Cron\WorkerSafeScriptsCore;
+use MikoPBX\AdminCabinet\Controllers\ExtensionsController;
+use MikoPBX\AdminCabinet\Forms\ExtensionEditForm;
 use MikoPBX\Modules\Config\ConfigClass;
 use MikoPBX\PBXCoreREST\Lib\PBXApiResult;
+use Modules\ModuleUsersUI\Models\AccessGroups;
+use Modules\ModuleUsersUI\Models\AccessGroupsRights;
+use Modules\ModuleUsersUI\Models\UsersCredentials;
+use Phalcon\Acl\Adapter\Memory as AclList;
+use Phalcon\Acl\Component;
+use Phalcon\Acl\Role as AclRole;
+use Phalcon\Forms\Element\Password;
+use Phalcon\Forms\Element\Select;
+use Phalcon\Forms\Element\Text;
+use Phalcon\Forms\Form;
+use Phalcon\Mvc\Controller;
+use Phalcon\Mvc\Router;
+use Phalcon\Mvc\View;
+use function Sentry\trace;
 
 class UsersUIConf extends ConfigClass
 {
 
     /**
-     * Receive information about mikopbx main database changes
+     * Prepares list of additional ACL roles and rules
      *
-     * @param $data
+     * @param  AclList $aclList
+     * @return void
      */
-    public function modelsEventChangeData($data): void
+    public function onAfterACLPrepared(AclList $aclList): void
     {
-        // f.e. if somebody changes PBXLanguage, we will restart all workers
-        if (
-            $data['model'] === PbxSettings::class
-            && $data['recordId'] === 'PBXLanguage'
-        ) {
-            $templateMain = new UsersUIMain();
-            $templateMain->startAllServices(true);
+        $parameters = [
+            'columns'=>[
+                'role'=>'CONCAT("UsersUIRoleID", AccessGroups.id)',
+                'name'=>'AccessGroups.name',
+                'controller'=>'AccessGroupsRights.controller',
+                'actions'=>'AccessGroupsRights.actions',
+            ],
+            'models'=>[
+                'AccessGroupsRights'=>AccessGroupsRights::class,
+            ],
+            'joins'      => [
+                'AccessGroups' => [
+                    0 => AccessGroups::class,
+                    1 => 'AccessGroups.id = UsersCredentials.user_access_group_id',
+                    2 => 'AccessGroups',
+                    3 => 'INNER',
+                ],
+            ],
+            'group'     => 'AccessGroups.id, AccessGroupsRights.controller',
+            'order'      => 'AccessGroups.id, AccessGroupsRights.controller'
+        ];
+
+        $aclFromModule = $this->di->get('modelsManager')->createBuilder($parameters)->getQuery()->execute();
+
+        $previousRole = null;
+        foreach ($aclFromModule as $acl) {
+            if ($previousRole!==$acl->role){
+                $previousRole = $acl->role;
+                $aclList->addRole(new AclRole($acl->role, $acl->name));
+            }
+
+            $actionsArray = json_decode($acl->actions, true);
+            $aclList->addComponent(new Component($acl->controller), $actionsArray);
+            $aclList->allow($acl->role, $acl->controller, $actionsArray);
         }
     }
 
     /**
-     * Returns module workers to start it at WorkerSafeScriptCore
+     * Authenticates user over external module
      *
-     * @return array
+     * @param string $login
+     * @param string $password
+     * @return array session data
      */
-    public function getModuleWorkers(): array
+    public function authenticateUser(string $login, string $password): array
     {
-        return [
-            [
-                'type'   => WorkerSafeScriptsCore::CHECK_BY_BEANSTALK,
-                'worker' => WorkerUsersUIMain::class,
+        $parameters = [
+            'columns'=>[
+                'homePage'=>'AccessGroups.home_page',
+                'role'=>'CONCAT("UsersUIRoleID",AccessGroups.id)'
             ],
-            [
-                'type'   => WorkerSafeScriptsCore::CHECK_BY_AMI,
-                'worker' => WorkerUsersUIAMI::class,
+            'models'=>[
+                'UsersCredentials'=>UsersCredentials::class,
+            ],
+            'conditions' => 'user_login=:login: AND user_password=:password: and enabled=1',
+            'binds' => [
+                'login' => $login,
+                'password' => $password
+            ],
+            'joins'      => [
+                'AccessGroups' => [
+                    0 => AccessGroups::class,
+                    1 => 'AccessGroups.id = UsersCredentials.user_access_group_id',
+                    2 => 'AccessGroups',
+                    3 => 'INNER',
+                ],
             ],
         ];
+
+        $userData = $this->di->get('modelsManager')->createBuilder($parameters)->getQuery()->getSingleResult();
+        if ($userData) {
+            return [
+                'role' => $userData->role,
+                'homePage'=> $userData->homePage??'call-detail-records/index'
+            ];
+        }
+       return [];
     }
 
     /**
