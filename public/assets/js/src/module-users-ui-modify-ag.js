@@ -16,15 +16,30 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* global globalRootUrl,globalTranslate, Form, Extensions */
+/* global globalRootUrl, globalTranslate, Form, Extensions */
 
 
 const moduleUsersUIModifyAG = {
     $formObj: $('#module-users-ui-form'),
     $selectUsersDropDown: $('.select-extension-field'),
-    $dirrtyField: $('#dirrty'),
     $statusToggle: $('#module-status-toggle'),
+    $homePageDropdown: $('.home-page-dropdown'),
+    $accessSettingsTabMenu: $('#access-settings-tab-menu .item'),
+    $mainTabMenu: $('#module-users-group-modify-menu .item'),
     defaultExtension: '',
+
+    /**
+     * jQuery object for the uncheck button.
+     * @type {jQuery}
+     */
+    $unCheckButton: $('.uncheck.button'),
+
+    /**
+     * jQuery object for the uncheck button.
+     * @type {jQuery}
+     */
+    $checkButton: $('.check.button'),
+
     validateRules: {
         name: {
             identifier: 'name',
@@ -36,37 +51,47 @@ const moduleUsersUIModifyAG = {
             ],
         },
     },
+
     initialize() {
         moduleUsersUIModifyAG.checkStatusToggle();
         window.addEventListener('ModuleStatusChanged', moduleUsersUIModifyAG.checkStatusToggle);
         moduleUsersUIModifyAG.initializeForm();
+
         $('.avatar').each(() => {
             if ($(this).attr('src') === '') {
                 $(this).attr('src', `${globalRootUrl}assets/img/unknownPerson.jpg`);
             }
         });
-        $('#main-users-ui-tab-menu .item').tab()
+
+        moduleUsersUIModifyAG.$mainTabMenu.tab();
+        moduleUsersUIModifyAG.$accessSettingsTabMenu.tab();
 
         moduleUsersUIModifyAG.initializeUsersDropDown();
+
+        moduleUsersUIModifyAG.initializeRightsCheckboxes();
+
+        moduleUsersUIModifyAG.$homePageDropdown.dropdown();
 
         $('body').on('click', 'div.delete-user-row', (e) => {
             e.preventDefault();
             moduleUsersUIModifyAG.deleteMemberFromTable(e.target);
         });
 
-        $('#isolate').parent().checkbox({
-            onChange: moduleUsersUIModifyAG.changeIsolate
+
+        // Handle check button click
+        moduleUsersUIModifyAG.$checkButton.on('click', (e) => {
+            e.preventDefault();
+            $(e.target).parent('.ui.tab').find('.ui.checkbox').checkbox('check');
         });
-        moduleUsersUIModifyAG.changeIsolate();
+
+        // Handle uncheck button click
+        moduleUsersUIModifyAG.$unCheckButton.on('click', (e) => {
+            e.preventDefault();
+            $(e.target).parent('.ui.tab').find('.ui.checkbox').checkbox('uncheck');
+        });
+
     },
 
-    changeIsolate(){
-        if($('#isolate').parent().checkbox('is checked')){
-            $("#isolatePickUp").parent().hide();
-        }else{
-            $("#isolatePickUp").parent().show();
-        }
-    },
     /**
      * Delete Group member from list
      * @param target - link to pushed button
@@ -76,9 +101,9 @@ const moduleUsersUIModifyAG = {
         $(`#${id}`)
             .removeClass('selected-member')
             .hide();
-        moduleUsersUIModifyAG.$dirrtyField.val(Math.random());
-        moduleUsersUIModifyAG.$dirrtyField.trigger('change');
+       Form.dataChanged();
     },
+
     /**
      * Настройка выпадающего списка пользователей
      */
@@ -87,6 +112,62 @@ const moduleUsersUIModifyAG = {
         dropdownParams.action = moduleUsersUIModifyAG.cbAfterUsersSelect;
         dropdownParams.templates = { menu: moduleUsersUIModifyAG.customDropdownMenu };
         moduleUsersUIModifyAG.$selectUsersDropDown.dropdown(dropdownParams);
+    },
+
+    initializeRightsCheckboxes() {
+        $('#access-group-rights .list .master.checkbox')
+            .checkbox({
+                // check all children
+                onChecked: function() {
+                    let
+                        $childCheckbox  = $(this).closest('.checkbox').siblings('.list').find('.checkbox')
+                    ;
+                    $childCheckbox.checkbox('check');
+                },
+                // uncheck all children
+                onUnchecked: function() {
+                    let
+                        $childCheckbox  = $(this).closest('.checkbox').siblings('.list').find('.checkbox')
+                    ;
+                    $childCheckbox.checkbox('uncheck');
+                }
+            })
+        ;
+        $('#access-group-rights .list .child.checkbox')
+            .checkbox({
+                // Fire on load to set parent value
+                fireOnInit : true,
+                // Change parent state on each child checkbox change
+                onChange   : function() {
+                    let
+                        $listGroup      = $(this).closest('.list'),
+                        $parentCheckbox = $listGroup.closest('.item').children('.checkbox'),
+                        $checkbox       = $listGroup.find('.checkbox'),
+                        allChecked      = true,
+                        allUnchecked    = true
+                    ;
+                    // check to see if all other siblings are checked or unchecked
+                    $checkbox.each(function() {
+                        if( $(this).checkbox('is checked') ) {
+                            allUnchecked = false;
+                        }
+                        else {
+                            allChecked = false;
+                        }
+                    });
+                    // set parent checkbox state, but dont trigger its onChange callback
+                    if(allChecked) {
+                        $parentCheckbox.checkbox('set checked');
+                    }
+                    else if(allUnchecked) {
+                        $parentCheckbox.checkbox('set unchecked');
+                    }
+                    else {
+                        $parentCheckbox.checkbox('set indeterminate');
+                    }
+                }
+            })
+        ;
     },
     /**
      * Change custom menu visualisation
@@ -125,8 +206,7 @@ const moduleUsersUIModifyAG = {
             .addClass('selected-member')
             .show();
         $($element).addClass('disabled');
-        moduleUsersUIModifyAG.$dirrtyField.val(Math.random());
-        moduleUsersUIModifyAG.$dirrtyField.trigger('change');
+        Form.dataChanged();
     },
     /**
      * Изменение статуса кнопок при изменении статуса модуля
@@ -134,11 +214,9 @@ const moduleUsersUIModifyAG = {
     checkStatusToggle() {
         if (moduleUsersUIModifyAG.$statusToggle.checkbox('is checked')) {
             $('[data-tab = "general"] .disability').removeClass('disabled');
-            $('[data-tab="rules"] .checkbox').removeClass('disabled');
             $('[data-tab = "users"] .disability').removeClass('disabled');
         } else {
             $('[data-tab = "general"] .disability').addClass('disabled');
-            $('[data-tab="rules"] .checkbox').addClass('disabled');
             $('[data-tab = "users"] .disability').addClass('disabled');
         }
     },
@@ -153,6 +231,35 @@ const moduleUsersUIModifyAG = {
         });
 
         result.data.members = JSON.stringify(arrMembers);
+
+        const arrGroupRights = [];
+        $('input.access-group-checkbox').each((index, obj) => {
+            if ($(obj).parent('.checkbox').checkbox('is checked')) {
+                const module = $(obj).attr('data-module');
+                const controller = $(obj).attr('data-controller');
+                const action = $(obj).attr('data-action');
+
+                // Find the module in arrGroupRights or create a new entry
+                let moduleIndex = arrGroupRights.findIndex(item => item.module === module);
+                if (moduleIndex === -1) {
+                    arrGroupRights.push({ module, controllers: [] });
+                    moduleIndex = arrGroupRights.length - 1;
+                }
+
+                // Find the controller in the module or create a new entry
+                const moduleControllers = arrGroupRights[moduleIndex].controllers;
+                let controllerIndex = moduleControllers.findIndex(item => item.controller === controller);
+                if (controllerIndex === -1) {
+                    moduleControllers.push({ controller, actions: [] });
+                    controllerIndex = moduleControllers.length - 1;
+                }
+
+                // Push the action into the controller's actions array
+                moduleControllers[controllerIndex].actions.push(action);
+            }
+        });
+
+        result.data.access_group_rights = JSON.stringify(arrGroupRights);
         return result;
     },
     cbAfterSendForm() {
@@ -160,7 +267,7 @@ const moduleUsersUIModifyAG = {
     },
     initializeForm() {
         Form.$formObj = moduleUsersUIModifyAG.$formObj;
-        Form.url = `${globalRootUrl}module-users-groups/save`;
+        Form.url = `${globalRootUrl}module-users-u-i/access-groups/save`;
         Form.validateRules = moduleUsersUIModifyAG.validateRules;
         Form.cbBeforeSendForm = moduleUsersUIModifyAG.cbBeforeSendForm;
         Form.cbAfterSendForm = moduleUsersUIModifyAG.cbAfterSendForm;

@@ -176,7 +176,7 @@ class UsersUIConf extends ConfigClass
             // Set parameters for the database query
             $parameters = [
                 'conditions' => 'user_id = :user_id:',
-                'binds'=>[
+                'bind'=>[
                     'user_id'=>$currentUserId,
                 ]
             ];
@@ -198,12 +198,12 @@ class UsersUIConf extends ConfigClass
             $form->add( $login);
 
             // Create a new Password form element for user password and set its value
-            $password = new Password('module_users_ui_password', ['value'=>$userPassword]);
+            $password = new Text('module_users_ui_password', ['value'=>$userPassword,'class'=>'confidential-field']);
             $form->add( $password);
 
             // Retrieve all access groups from the database
             $accessGroups = AccessGroups::find();
-            $accessGroupsForSelect = [];
+            $accessGroupsForSelect['No access'] = $this->translation->_('module_usersui_NoAccess');
 
             // Prepare the access groups data for a Select form element
             foreach ($accessGroups as $accessGroup) {
@@ -217,7 +217,7 @@ class UsersUIConf extends ConfigClass
                         'id',
                         'name',
                     ],
-                    'useEmpty' => true,
+                    'useEmpty' => false,
                     'value' => $accessGroupId,
                     'emptyValue' => 'No access',
                     'placeholder' => 'Select access group',
@@ -336,25 +336,5 @@ class UsersUIConf extends ConfigClass
         return $res;
     }
 
-    /**
-     * Returns array of additional routes for PBXCoreREST interface from module
-     * [ControllerClass, ActionMethod, RequestTemplate, HttpMethod, RootUrl, NoAuth ]
-     * @see https://docs.mikopbx.com/mikopbx-development/module-developement/module-class#getpbxcorerestadditionalroutes
-     *
-     * @RoutePrefix("/pbxcore/api/backup")
-     * @Get("/something1")
-     * @Get("/something2")
-     * @Post("/something3")
-     *
-     * @return array
-     * @example
-     *  [[GetController::class, 'callAction', '/pbxcore/api/backup/{actionName}', 'get', '/', false],
-     *  [PostController::class, 'callAction', '/pbxcore/api/backup/{actionName}', 'post', '/', false]]
-     *
-     */
-    public function getPBXCoreRESTAdditionalRoutes(): array
-    {
-        return [];
-    }
 
 }

@@ -42,4 +42,7 @@ return [
     'module_usersuiConnected'             => 'Module connected',
     'module_usersuiDisconnected'          => 'Module disconnected',
     'module_usersuiUpdateStatus'          => 'Update module status',
+    'module_usersui_CheckBox_indexAction' => 'Индексная страница',
+    'module_usersui_CheckBox_saveAction' => 'Сохранение',
+    'module_usersui_CheckBox_modifyAction' => 'Страница редактирования',
 ];

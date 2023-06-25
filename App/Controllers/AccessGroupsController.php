@@ -18,12 +18,13 @@
  */
 namespace Modules\ModuleUsersUI\App\Controllers;
 use MikoPBX\AdminCabinet\Controllers\BaseController;
+use MikoPBX\AdminCabinet\Providers\AssetProvider;
 use MikoPBX\Common\Models\Extensions;
+use MikoPBX\Common\Models\Sip;
 use MikoPBX\Common\Models\Users;
 use MikoPBX\Modules\PbxExtensionUtils;
 use Modules\ModuleUsersUI\App\Forms\AccessGroupForm;
 use Modules\ModuleUsersUI\Models\AccessGroups;
-use Modules\ModuleUsersUI\Models\AccessGroupsRights;
 use Modules\ModuleUsersUI\Models\UsersCredentials;
 use function MikoPBX\Common\Config\appPath;
 
@@ -54,6 +55,9 @@ class AccessGroupsController extends BaseController
      */
     public function modifyAction(string $id = null): void
     {
+        $headerCssCollection = $this->assets->collection(AssetProvider::HEADER_CSS);
+        $headerCssCollection->addCss('css/vendor/semantic/list.min.css', true);
+
         $footerCollection = $this->assets->collection('footerJS');
         $footerCollection->addJs('js/pbx/main/form.js', true);
         $footerCollection->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-modify-ag.js", true);
@@ -97,6 +101,7 @@ class AccessGroupsController extends BaseController
                 'models' => [
                     'UsersCredentials' => UsersCredentials::class,
                 ],
+                'conditions' => 'UsersCredentials.enabled=1',
                 'columns' => [
                     'user_id' => 'UsersCredentials.user_id',
                     'group' => 'AccessGroups.name',
@@ -151,13 +156,13 @@ class AccessGroupsController extends BaseController
             }
             $this->view->members = $extensionTable;
 
-
-            $this->view->form = new AccessGroupForm($record);
-            $this->view->represent = $record->getRepresent();
-            $this->view->id = $id;
-            $this->view->pick("{$this->moduleDir}/App/Views/AccessGroups/modify");
         }
-
+        $groupRightsController = new AccessGroupsRightsController();
+        $groupRights = $groupRightsController->getGroupRights($record->id);
+        $this->view->form = new AccessGroupForm($record,['groupRights'=>$groupRights]);
+        $this->view->represent = $record->getRepresent();
+        $this->view->id = $id;
+        $this->view->groupRights = $groupRights;
     }
 
     /**
@@ -176,7 +181,7 @@ class AccessGroupsController extends BaseController
 
         $accessGroupEntity = null;
         if (array_key_exists('id', $data)) {
-            $accessGroupEntity = AccessGroups::findFirstByUniqid($data['id']);
+            $accessGroupEntity = AccessGroups::findFirstById($data['id']);
         }
         if ($accessGroupEntity===null) {
             $accessGroupEntity=new AccessGroups();
@@ -195,7 +200,8 @@ class AccessGroupsController extends BaseController
         }
 
         // Save access group rights
-        if ($this->saveAccessGroupRights($accessGroupEntity, $data['access_group_rights'])===false){
+        $accessGroupController = new AccessGroupsRightsController();
+        if ($accessGroupController->saveAccessGroupRights($accessGroupEntity, $data['access_group_rights'])===false){
             $this->db->rollback();
             return;
         }
@@ -212,7 +218,7 @@ class AccessGroupsController extends BaseController
 
         // If it was creating a new card, reload the page with the specified ID
         if (empty($data['id'])) {
-            $this->view->reload = "module-users-u-i/module-users-u-i/access-groups/modify/{$data['id']}";
+            $this->view->reload = "module-users-u-i/access-groups/modify/{$accessGroupEntity->id}";
         }
 
     }
@@ -236,7 +242,7 @@ class AccessGroupsController extends BaseController
         }
 
         $parameters = [
-            'conditions' => 'group_id=:groupId:',
+            'conditions' => 'user_access_group_id=:groupId:',
             'bind'       => [
                 'groupId' => $data['id'],
             ],
@@ -265,6 +271,8 @@ class AccessGroupsController extends BaseController
             ],
             'columns'    => [
                 'id' => 'Users.id',
+                'extension' => 'Sip.extension',
+                'password'=> 'Sip.secret'
             ],
             'conditions' => 'Extensions.number IN ({ext:array})',
             'bind'       => [
@@ -275,6 +283,12 @@ class AccessGroupsController extends BaseController
                     0 => Extensions::class,
                     1 => 'Extensions.userid = Users.id',
                     2 => 'Extensions',
+                    3 => 'INNER',
+                ],
+                'Sip' => [
+                    0 => Sip::class,
+                    1 => 'Sip.extension = Extensions.number',
+                    2 => 'Sip',
                     3 => 'INNER',
                 ],
             ],
@@ -293,6 +307,8 @@ class AccessGroupsController extends BaseController
             if ($groupMember === null) {
                 $groupMember          = new UsersCredentials();
                 $groupMember->user_id = $member->id;
+                $groupMember->user_login = $member->extension;
+                $groupMember->user_password = $member->password;
             }
             $groupMember->user_access_group_id = $data['id'];
             $groupMember->enabled = '1';
@@ -326,44 +342,4 @@ class AccessGroupsController extends BaseController
         $this->forward('module-users-u-i/index');
     }
 
-    /**
-     * Saves access group rights for a given access group entity.
-     *
-     * @param AccessGroups $accessGroupEntity The access group entity.
-     * @param string $access_group_rights The JSON string containing access group rights.
-     * @return bool Returns true on success, false on failure.
-     */
-    private function saveAccessGroupRights(AccessGroups $accessGroupEntity, string $access_group_rights): bool
-    {
-        // Delete existing access group rights for the given access group entity
-        $accessGroupRights = AccessGroupsRights::find("group_id={$accessGroupEntity->id}");
-        foreach ($accessGroupRights as $accessGroupRight) {
-            if ($accessGroupRight->delete()===false){
-                $errors = $accessGroupRight->getMessages();
-                $this->flash->error(implode('<br>', $errors));
-
-                return false;
-            }
-        }
-        // Parse access group rights from the posted JSON string
-        $accessGroupRightsFromPost = json_decode($access_group_rights, true);
-
-        foreach ($accessGroupRightsFromPost as $accessGroupRightFromPost) {
-            // Create a new access group right object
-            $accessGroupRight = new AccessGroupsRights();
-            $accessGroupRight->group_id = $accessGroupEntity->id;
-            $accessGroupRight->controller = $accessGroupRightFromPost['controller'];
-            $accessGroupRight->actions = json_encode($accessGroupRightFromPost['actions']);
-
-            // Save the access group right object
-            if ($accessGroupRight->save()===false){
-                // If there are validation errors, display them and return false
-                $errors = $accessGroupRight->getMessages();
-                $this->flash->error(implode('<br>', $errors));
-                return false;
-            }
-        }
-
-        return true;
-    }
 }
