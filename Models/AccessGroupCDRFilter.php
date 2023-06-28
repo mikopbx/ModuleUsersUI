@@ -23,13 +23,12 @@ use MikoPBX\Common\Models\Users;
 use MikoPBX\Modules\Models\ModulesModelsBase;
 use Phalcon\Mvc\Model\Relation;
 
-/**
- * Class ModuleUsers
- * Stores additional information for Users table with login, password, and ACL group
+/*
+ * If AccessGroups->useCDRFilter is set to '1' the group can see and listen only users from the list
+ * If AccessGroups->useCDRFilter is set to '0' the group can see and listen all users
  */
-class UsersCredentials extends ModulesModelsBase
+class AccessGroupCDRFilter extends ModulesModelsBase
 {
-
     /**
      * @Primary
      * @Identity
@@ -38,52 +37,38 @@ class UsersCredentials extends ModulesModelsBase
     public $id;
 
     /**
-     * Link to the users table
+     * Link to the AccessGroups table
+     *
+     * @Column(type="integer", nullable=false)
+     */
+    public ?string $group_id;
+
+    /**
+     * Additional condition for the CDR request filter
      *
      * @Column(type="integer", nullable=false)
      */
     public ?string $user_id;
 
-    /**
-     * Link to the AccessGroups table
-     *
-     * @Column(type="integer", nullable=false, default='0')
-     */
-    public ?string $user_access_group_id;
-
-    /**
-     * User use ldap auth
-     *
-     *  @Column(type="string", length=1, default='0')
-     */
-    public ?string  $use_ldap_auth;
-
-    /**
-     * User login
-     *
-     * @Column(type="string", nullable=false)
-     */
-    public ?string $user_login;
-
-    /**
-     * User password
-     *
-     * @Column(type="string", nullable=true)
-     */
-    public ?string $user_password;
-
-    /**
-     * Allows to enter the web interface
-     *
-     * @Column(type="string", nullable=false, default='0')
-     */
-    public ?string $enabled;
-
 
     public function initialize(): void
     {
-        $this->setSource('m_ModuleUsersUI_UsersCredentials');
+        $this->setSource('m_ModuleUsersUI_AccessGroupCDRFilter');
         parent::initialize();
+
+        $this->belongsTo(
+            'group_id',
+            AccessGroups::class,
+            'id',
+            [
+                'alias' => 'AccessGroups',
+                'foreignKey' => [
+                    'allowNulls' => false,
+                    'action' => Relation::NO_ACTION,
+                ],
+            ]
+        );
+
         $this->belongsTo(
             'user_id',
             Users::class,
@@ -97,18 +82,6 @@ class UsersCredentials extends ModulesModelsBase
             ]
         );
 
-        $this->belongsTo(
-            'user_access_group_id',
-            AccessGroups::class,
-            'id',
-            [
-                'alias' => 'AccessGroups',
-                'foreignKey' => [
-                    'allowNulls' => false,
-                    'action' => Relation::NO_ACTION,
-                ],
-            ]
-        );
     }
 
     /**
@@ -128,18 +101,17 @@ class UsersCredentials extends ModulesModelsBase
         if (is_a($calledModelObject, Users::class)) {
             $calledModelObject->belongsTo(
                 'id',
-                UsersCredentials::class,
+                AccessGroupCDRFilter::class,
                 'user_id',
                 [
-                    'alias'      => 'ModuleUsersUIUsersCredentials',
+                    'alias'      => 'ModuleUsersUIAccessGroupCDRFilter',
                     'foreignKey' => [
                         'allowNulls' => 0,
-                        'message'    => 'Models\ModuleUsersUIUsersCredentials',
+                        'message'    => 'Models\ModuleUsersUIAccessGroupCDRFilter',
                         'action'     => Relation::ACTION_CASCADE
                     ],
                 ]
             );
         }
     }
-
 }

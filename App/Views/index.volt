@@ -2,6 +2,7 @@
 <div class="ui top attached tabular menu" id="main-users-ui-tab-menu">
     <a class="item active disability" data-tab="groups">{{ t._('module_usersui_Groups') }}</a>
     <a class="item disability" data-tab="users">{{ t._('module_usersui_Users') }}</a>
+    <a class="item disability" data-tab="ldap">{{ t._('module_usersui_LdapConfigTab') }}</a>
 </div>
 
 <div class="ui bottom attached tab segment active" data-tab="groups">
@@ -35,8 +36,7 @@
                     'id': record.id,
                     'edit' : 'module-users-u-i/access-groups/modify/',
                     'delete': 'module-users-u-i/access-groups/delete/'
-                ])
-            }}
+                ]) }}
         </tr>
 
         {% if loop.last %}
@@ -82,6 +82,70 @@
             </table>
         {% endif %}
     {% endfor %}
+</div>
+
+<div class="ui bottom attached tab segment" data-tab="ldap">
+    {{ form('module-users-u-i/ldap-config/save', 'role': 'form', 'class': 'ui large form','id':'module-users-ui-ldap-form') }}
+    <div class="field">
+        <label for="serverName">{{ t._('module_usersui_LdapServerName') }}</label>
+        {{ ldapForm.render('serverName') }}
+    </div>
+    <div class="field">
+        <label for="serverPort">{{ t._('module_usersui_LdapServerPort') }}</label>
+        {{ ldapForm.render('serverPort') }}
+    </div>
+    <div class="two fields">
+        <div class="field">
+            <label for="administrativeLogin">{{ t._('module_usersui_LdapAdminLogin') }}</label>
+            <div class="field max-width-300">
+                {{ ldapForm.render('administrativeLogin') }}
+            </div>
+        </div>
+        <div class="field">
+            <label for="administrativePassword">{{ t._('module_usersui_LdapAdminPassword') }}</label>
+            <div class="field max-width-300">
+                {{ ldapForm.render('administrativePassword') }}
+            </div>
+        </div>
+    </div>
+    <div class="field">
+        <label for="baseDN">{{ t._('module_usersui_LdapBaseDN') }}</label>
+        {{ ldapForm.render('baseDN') }}
+    </div>
+    <div class="field">
+        <label for="userFilter">{{ t._('module_usersui_LdapUserFilter') }}</label>
+        {{ ldapForm.render('userFilter') }}
+    </div>
+    <div class="field">
+        <label for="userIdAttribute">{{ t._('module_usersui_LdapUserIdAttribute') }}</label>
+        <div class="field max-width-300">
+            {{ ldapForm.render('userIdAttribute') }}
+        </div>
+    </div>
+    <div class="field">
+        <label for="organizationalUnit">{{ t._('module_usersui_LdapOrganizationalUnit') }}</label>
+        {{ ldapForm.render('organizationalUnit') }}
+    </div>
+
+<div class="ui basic segment">
+    <div class="inline fields">
+
+        <div class="field">
+            <label for="testLogin">{{ t._('module_usersui_LdapCheckLogin') }}</label>
+            <input name="testLogin" id="testLogin" type="text" />
+        </div>
+
+        <div class="field">
+            <label for="testPassword">{{ t._('module_usersui_LdapCheckPassword') }}</label>
+            <input name="testPassword" id="testPassword" type="password" />
+        </div>
+
+        <div class="field">
+            <div class="ui labeled button check-ldap-credentials"><i class="ui icon check"></i>{{ t._('module_usersui_LdapCheckButton') }}</div>
+        </div>
+    </div>
+</div>
+    {{ endform() }}
 </div>
 
 

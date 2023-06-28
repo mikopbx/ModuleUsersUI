@@ -20,7 +20,6 @@
 namespace Modules\ModuleUsersUI\App\Forms;
 
 use MikoPBX\AdminCabinet\Forms\BaseForm;
-use Modules\ModuleUsersUI\App\Controllers\AccessGroupsRightsController;
 use Modules\ModuleUsersUI\Models\AccessGroupsRights;
 use Phalcon\Forms\Element\Check;
 use Phalcon\Forms\Element\Text;
@@ -31,19 +30,27 @@ use Phalcon\Forms\Element\Select;
 class AccessGroupForm extends BaseForm
 {
 
+    /**
+     * Initializes the form.
+     *
+     * @param mixed|null $entity   The entity object.
+     * @param array|null $options  Additional options.
+     *
+     * @return void
+     */
     public function initialize($entity = null, $options = null): void
     {
 
-        // id
+        // Add hidden input for id
         $this->add(new Hidden('id'));
 
-        // Name
+        // Add input field for Name
         $this->add(new Text('name'));
 
-        // Description
+        // Add textarea for Description
         $this->addTextArea('description', $entity->description ?? '', 80);
 
-        // HomePage
+        // Prepare homepages for select dropdown
         $parameters = [
             'columns' => [
                 'controller' => 'AccessGroupsRights.controller',
@@ -104,7 +111,7 @@ class AccessGroupForm extends BaseForm
                     $this->add($checkBox);
 
                     foreach ($actions as $action => $allowed) {
-                        // Child CheckBox
+                        // Add child checkbox for action
                         $checkBoxId = 'check-box-' . md5($module . $controller . $action);
                         $parameters = [
                             'class' => 'access-group-checkbox hidden',
@@ -124,29 +131,73 @@ class AccessGroupForm extends BaseForm
             }
         }
 
+        // Use CDR filter
+        $parameters = [];
+        if ($entity->useCDRFilter) {
+            $parameters['checked'] = 'checked';
+        }
+        $checkBox = new Check('useCDRFilter', $parameters);
+        $this->add($checkBox);
+
     }
 
+    /**
+     * Retrieves the translated controller name.
+     *
+     * @param string $controllerName The controller name.
+     *
+     * @return string The translated controller name.
+     */
     private function getControllerTranslation(string $controllerName): string
     {
+        // Remove "Controller" from the controller name
         $controllerName = str_replace("Controller", "", $controllerName);
+
+        // Create the translation template
         $translationTemplate = "mm_{$controllerName}";
+
+        // Retrieve the translated controller name
         $controllerTranslation = $this->translation->_($translationTemplate);
+
+        // If the translation is not found, return the original controller name
         if ($controllerTranslation === $translationTemplate) {
             return $controllerName;
         }
+
         return $controllerTranslation;
     }
 
+    /**
+     * Retrieves the translated action name.
+     *
+     * @param string $module         The module name.
+     * @param string $controllerName The controller name.
+     * @param string $actionName     The action name.
+     *
+     * @return string The translated action name.
+     */
     private function getActionTranslation(string $module, string $controllerName, string $actionName): string
     {
+        // Remove "Module" from the module name
         $module = str_replace("Module", "", $module);
-        $controllerName = str_replace(["Controller","/"], ["","_"], $controllerName);
-        $actionName = str_replace(["Action","/"],  ["",""], $actionName);
+
+        // Remove "Controller" and "/" from the controller name
+        $controllerName = str_replace(["Controller", "/"], ["", "_"], $controllerName);
+
+        // Remove "Action" and "/" from the action name
+        $actionName = str_replace(["Action", "/"], ["", ""], $actionName);
+
+        // Create the translation template
         $translationTemplate = "module_usersui_CheckBox_{$module}_{$controllerName}_{$actionName}";
+
+        // Retrieve the translated action name
         $actionTranslation = $this->translation->_($translationTemplate);
+
+        // If the translation is not found, return the action name with a comment indicating the missing translation
         if ($actionTranslation === $translationTemplate) {
-            return $actionName ."<!--{$translationTemplate}-->";
+            return $actionName . "<!--{$translationTemplate}-->";
         }
+
         return $actionTranslation;
     }
 }

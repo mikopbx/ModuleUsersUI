@@ -20,23 +20,24 @@
 namespace Modules\ModuleUsersUI\Lib;
 
 use MikoPBX\AdminCabinet\Controllers\ExtensionsController;
+use MikoPBX\AdminCabinet\Controllers\SessionController;
 use MikoPBX\AdminCabinet\Forms\ExtensionEditForm;
+use MikoPBX\Common\Providers\SessionProvider;
 use MikoPBX\Modules\Config\ConfigClass;
 use MikoPBX\PBXCoreREST\Lib\PBXApiResult;
 use Modules\ModuleUsersUI\Models\AccessGroups;
 use Modules\ModuleUsersUI\Models\AccessGroupsRights;
+use Modules\ModuleUsersUI\Models\LdapConfig;
 use Modules\ModuleUsersUI\Models\UsersCredentials;
 use Phalcon\Acl\Adapter\Memory as AclList;
 use Phalcon\Acl\Component;
 use Phalcon\Acl\Role as AclRole;
-use Phalcon\Forms\Element\Password;
 use Phalcon\Forms\Element\Select;
 use Phalcon\Forms\Element\Text;
 use Phalcon\Forms\Form;
 use Phalcon\Mvc\Controller;
-use Phalcon\Mvc\Router;
 use Phalcon\Mvc\View;
-use function Sentry\trace;
+use Phalcon\Security;
 
 class UsersUIConf extends ConfigClass
 {
@@ -44,22 +45,22 @@ class UsersUIConf extends ConfigClass
     /**
      * Prepares list of additional ACL roles and rules
      *
-     * @param  AclList $aclList
+     * @param AclList $aclList
      * @return void
      */
     public function onAfterACLPrepared(AclList $aclList): void
     {
         $parameters = [
-            'columns'=>[
-                'role'=>'CONCAT("UsersUIRoleID", AccessGroups.id)',
-                'name'=>'AccessGroups.name',
-                'controller'=>'AccessGroupsRights.controller',
-                'actions'=>'AccessGroupsRights.actions',
+            'columns' => [
+                'role' => 'CONCAT("UsersUIRoleID", AccessGroups.id)',
+                'name' => 'AccessGroups.name',
+                'controller' => 'AccessGroupsRights.controller',
+                'actions' => 'AccessGroupsRights.actions',
             ],
-            'models'=>[
-                'AccessGroupsRights'=>AccessGroupsRights::class,
+            'models' => [
+                'AccessGroupsRights' => AccessGroupsRights::class,
             ],
-            'joins'      => [
+            'joins' => [
                 'AccessGroups' => [
                     0 => AccessGroups::class,
                     1 => 'AccessGroups.id = UsersCredentials.user_access_group_id',
@@ -67,15 +68,15 @@ class UsersUIConf extends ConfigClass
                     3 => 'INNER',
                 ],
             ],
-            'group'     => 'AccessGroups.id, AccessGroupsRights.controller',
-            'order'      => 'AccessGroups.id, AccessGroupsRights.controller'
+            'group' => 'AccessGroups.id, AccessGroupsRights.controller',
+            'order' => 'AccessGroups.id, AccessGroupsRights.controller'
         ];
 
         $aclFromModule = $this->di->get('modelsManager')->createBuilder($parameters)->getQuery()->execute();
 
         $previousRole = null;
         foreach ($aclFromModule as $acl) {
-            if ($previousRole!==$acl->role){
+            if ($previousRole !== $acl->role) {
                 $previousRole = $acl->role;
                 $aclList->addRole(new AclRole($acl->role, $acl->name));
             }
@@ -87,28 +88,30 @@ class UsersUIConf extends ConfigClass
     }
 
     /**
-     * Authenticates user over external module
+     * Authenticate the user with the provided login and password.
      *
-     * @param string $login
-     * @param string $password
-     * @return array session data
+     * @param string $login The user login.
+     * @param string $password The user password.
+     * @return array The authentication result with role and homePage.
      */
     public function authenticateUser(string $login, string $password): array
     {
         $parameters = [
-            'columns'=>[
-                'homePage'=>'AccessGroups.home_page',
-                'role'=>'CONCAT("UsersUIRoleID",AccessGroups.id)'
+            'columns' => [
+                'homePage' => 'AccessGroups.homePage',
+                'sessionAccessGroup' => 'CONCAT("UsersUIRoleID",AccessGroups.id)',
+                'enabled' => 'UsersCredentials.enabled',
+                'useLdapAuth' => 'UsersCredentials.use_ldap_auth',
+                'user_password' => 'UsersCredentials.user_password',
             ],
-            'models'=>[
-                'UsersCredentials'=>UsersCredentials::class,
+            'models' => [
+                'UsersCredentials' => UsersCredentials::class,
             ],
-            'conditions' => 'user_login=:login: AND user_password=:password: and enabled=1',
+            'conditions' => 'user_login=:login:',
             'binds' => [
                 'login' => $login,
-                'password' => $password
             ],
-            'joins'      => [
+            'joins' => [
                 'AccessGroups' => [
                     0 => AccessGroups::class,
                     1 => 'AccessGroups.id = UsersCredentials.user_access_group_id',
@@ -120,12 +123,38 @@ class UsersUIConf extends ConfigClass
 
         $userData = $this->di->get('modelsManager')->createBuilder($parameters)->getQuery()->getSingleResult();
         if ($userData) {
-            return [
-                'role' => $userData->role,
-                'homePage'=> $userData->homePage??'call-detail-records/index'
+            if ($userData->enabled == '0') {
+                return [];
+            }
+
+            $successAuthData = [
+                SessionController::ROLE => $userData->role,
+                SessionController::HOME_PAGE => $userData->homePage ?? 'call-detail-records/index'
             ];
+
+            // Authenticate via password
+            if ($userData->useLdapAuth == '0' and $userData->user_password == $password) {
+                // Проверьте пароль
+                $security = new Security();
+                if ($security->checkHash($password, $userData->user_password)) {
+                    return $successAuthData;
+                }
+            }
+
+            // Authenticate via LDAP
+            if ($userData->useLdapAuth == '1') {
+                $ldapCredentials = LdapConfig::findFirst();
+                if ($ldapCredentials) {
+                    $ldapAuth = new UsersUILdapAuth($ldapCredentials->toArray());
+                    if ($ldapAuth->checkAuthViaLdap($login, $password)) {
+                        return $successAuthData;
+                    }
+                }
+
+            }
         }
-       return [];
+
+        return [];
     }
 
     /**
@@ -138,11 +167,11 @@ class UsersUIConf extends ConfigClass
      *
      * @return string The compiled result.
      */
-    public function onVoltBlockCompile(string $controller, string $blockName, View $view):string
+    public function onVoltBlockCompile(string $controller, string $blockName, View $view): string
     {
         $result = '';
         // Check the controller and block name to determine the action
-        switch ("$controller:$blockName"){
+        switch ("$controller:$blockName") {
             case 'Extensions:TabularMenu':
                 // Add additional tab to the Extension edit page
                 $result = "{$this->moduleDir}/App/Views/Extensions/tabularmenu";
@@ -166,18 +195,18 @@ class UsersUIConf extends ConfigClass
      *
      * @return void
      */
-    public function onBeforeFormInitialize(Form $form, $entity, $options):void
+    public function onBeforeFormInitialize(Form $form, $entity, $options): void
     {
         if (is_a($form, ExtensionEditForm::class)) {
 
             // Prepare saved data from module database
-            $currentUserId= $entity->userid;
+            $currentUserId = $entity->userid;
 
             // Set parameters for the database query
             $parameters = [
                 'conditions' => 'user_id = :user_id:',
-                'bind'=>[
-                    'user_id'=>$currentUserId,
+                'bind' => [
+                    'user_id' => $currentUserId,
                 ]
             ];
 
@@ -185,21 +214,21 @@ class UsersUIConf extends ConfigClass
             $credentials = UsersCredentials::findFirst($parameters);
 
             // Get the access group ID from the credentials, or set it to null if not found
-            $accessGroupId = $credentials->user_access_group_id??null;
+            $accessGroupId = $credentials->user_access_group_id ?? null;
 
             // Get the user login from the credentials, or set it to an empty string if not found
-            $userLogin = $credentials->user_login??'';
+            $userLogin = $credentials->user_login ?? '';
 
             // Get the user password from the credentials, or set it to an empty string if not found
-            $userPassword = $credentials->user_password??'';
+            $userPassword = $credentials->user_password ?? '';
 
             // Create a new Text form element for user login and set its value
-            $login = new Text('module_users_ui_login', ['value'=>$userLogin]);
-            $form->add( $login);
+            $login = new Text('module_users_ui_login', ['value' => $userLogin]);
+            $form->add($login);
 
             // Create a new Password form element for user password and set its value
-            $password = new Text('module_users_ui_password', ['value'=>$userPassword,'class'=>'confidential-field']);
-            $form->add( $password);
+            $password = new Text('module_users_ui_password', ['value' => $userPassword, 'class' => 'confidential-field']);
+            $form->add($password);
 
             // Retrieve all access groups from the database
             $accessGroups = AccessGroups::find();
@@ -255,6 +284,8 @@ class UsersUIConf extends ConfigClass
         $accessGroup = $controller->request->getPost('module_users_ui_access_group');
         $userLogin = $controller->request->getPost('module_users_ui_login');
         $userPassword = $controller->request->getPost('module_users_ui_password');
+        $userUseLdapAuth = $controller->request->getPost('module_users_ui_use_ldap_auth');
+
 
         // Set parameters for the database query
         $parameters = [
@@ -280,7 +311,15 @@ class UsersUIConf extends ConfigClass
 
         // Update the user password if it is not empty
         if (!empty($userPassword)) {
-            $credentials->user_password = $userPassword;
+            $security = new Security();
+            $credentials->user_password = $security->hash($userPassword);
+        }
+
+        // Update the user use LDAP authentication if it is not empty
+        if (!empty($userUseLdapAuth)) {
+            $credentials->use_ldap_auth = '1';
+        } else {
+            $credentials->use_ldap_auth = '0';
         }
 
         // Update the access group and enabled status based on the selected value
@@ -296,45 +335,24 @@ class UsersUIConf extends ConfigClass
     }
 
 
-//    /**
-//     * Modifies system routes
-//     *
-//     * @param Router $router
-//     * @return void
-//     */
-//    public function onAfterRoutesPrepared(Router $router):void
-//    {
-//        $router->add('/module-users-u-i/:controller/:action/:params', [
-//            'module'     => 'admin-cabinet',
-//            'controller' => 1,
-//            'action'     => 2,
-//            'params'     => 3,
-//            'namespace'  => 'Modules\ModuleUsersUI\App\Controllers'
-//        ]);
-//
-//    }
-
     /**
-     * @param array $request
-     * @return PBXApiResult
+     * Adds an extra filters before execute request to CDR table.
+     * @see https://docs.mikopbx.com/mikopbx-development/module-developement/module-class#applyaclfilterstocdrquery
      *
-     * @Get("/check")
+     * @param array $parameters The array of parameters prepared for execute query.
+     *
+     * @return void
      */
-    public function moduleRestAPICallback(array $request): PBXApiResult
+    public function applyACLFiltersToCDRQuery(array &$parameters): void
     {
-        $res            = new PBXApiResult();
-        $res->processor = __METHOD__;
-        $action         = strtoupper($request['action']);
-        switch ($action) {
-            case 'CHECK':
-                return $res;
-            default:
-                $res->success    = false;
-                $res->messages[] = 'API action not found in moduleRestAPICallback ModuleUsersUI';
+        $session = $this->getDI()->get(SessionProvider::SERVICE_NAME);
+        if (is_array($session) and isset($session[SessionController::ROLE])){
+            $role = $session[SessionController::ROLE];
+            $accessGroupId = str_replace("UsersUIRoleID", "", $role);
+            if (!empty($accessGroupId) and $role!==$accessGroupId){
+                UsersUICDRFilter::applyCDRFilterRules($accessGroupId, $parameters);
+            }
         }
-
-        return $res;
     }
-
 
 }

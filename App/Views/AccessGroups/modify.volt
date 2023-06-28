@@ -5,10 +5,12 @@
         <a class="item active" data-tab="general">{{ t._('module_usersui_GeneralSettings') }}</a>
         <a class="item disabled" data-tab="users">{{ t._('module_usersui_UsersFilter') }}</a>
         <a class="item disabled" data-tab="group-rights">{{ t._('module_usersui_GroupRights') }}</a>
+        <a class="item disabled" data-tab="cdr-filter">{{ t._('module_usersui_GroupCDRFilter') }}</a>
     {% else %}
         <a class="item" data-tab="general">{{ t._('module_usersui_GeneralSettings') }}</a>
         <a class="item" data-tab="users">{{ t._('module_usersui_UsersFilter') }}</a>
         <a class="item active" data-tab="group-rights">{{ t._('module_usersui_GroupRights') }}</a>
+        <a class="item" data-tab="cdr-filter">{{ t._('module_usersui_GroupCDRFilter') }}</a>
     {% endif %}
 </div>
 
@@ -22,6 +24,10 @@
 
 <div class="ui bottom attached tab segment" data-tab="users">
     {{ partial("Modules/ModuleUsersUI/AccessGroups/tabUsers") }}
+</div>
+
+<div class="ui bottom attached tab segment" data-tab="cdr-filter">
+    {{ partial("Modules/ModuleUsersUI/AccessGroups/tabCDRFilter") }}
 </div>
 
 {{ partial("partials/submitbutton",['indexurl':'module-users-u-i/index']) }}

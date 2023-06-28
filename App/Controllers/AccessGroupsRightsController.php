@@ -19,7 +19,6 @@
 
 namespace Modules\ModuleUsersUI\App\Controllers;
 
-use MikoPBX\AdminCabinet\Controllers\BaseController;
 use MikoPBX\AdminCabinet\Controllers\ConsoleController;
 use MikoPBX\AdminCabinet\Controllers\ErrorsController;
 use MikoPBX\AdminCabinet\Controllers\ExtensionsController;
@@ -33,7 +32,6 @@ use MikoPBX\AdminCabinet\Controllers\WikiLinksController;
 use MikoPBX\Common\Models\PbxExtensionModules;
 use MikoPBX\Common\Providers\PBXConfModulesProvider;
 use MikoPBX\Modules\Config\RestAPIConfigInterface;
-use MikoPBX\Modules\PbxExtensionUtils;
 use Modules\ModuleUsersUI\Models\AccessGroups;
 use Modules\ModuleUsersUI\Models\AccessGroupsRights;
 use Phalcon\Annotations\Reader;
@@ -42,24 +40,8 @@ use Phalcon\Text;
 use ReflectionClass;
 use function MikoPBX\Common\Config\appPath;
 
-class AccessGroupsRightsController extends BaseController
+class AccessGroupsRightsController extends ModuleUsersUIBaseController
 {
-    private $moduleUniqueID = 'ModuleUsersUI';
-    private $moduleDir;
-
-    public bool $showModuleStatusToggle = false;
-
-    /**
-     * Basic initial class
-     */
-    public function initialize(): void
-    {
-        $this->moduleDir = PbxExtensionUtils::getModuleDir($this->moduleUniqueID);
-        $this->view->logoImagePath = "{$this->url->get()}assets/img/cache/{$this->moduleUniqueID}/logo.svg";
-        $this->view->submitMode = null;
-        parent::initialize();
-    }
-
     /**
      * Retrieves the group rights based on the provided access group ID.
      * The rights include UI controller actions, REST controller actions, and module controller actions.
@@ -421,9 +403,12 @@ class AccessGroupsRightsController extends BaseController
     }
 
     /**
-     * @param array $combined
-     * @param array $allowedRights
-     * @return array
+     * Fills the combined actions with allowed rights and marks them as true.
+     *
+     * @param array $combined       The combined actions array.
+     * @param array $allowedRights  The allowed rights array.
+     *
+     * @return array The updated combined actions array.
      */
     public function fillAllowed(array $combined, array $allowedRights): array
     {

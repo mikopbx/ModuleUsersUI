@@ -18,12 +18,9 @@
  */
 
 
-
 namespace Modules\ModuleUsersUI\Models;
 
-use MikoPBX\Common\Models\Providers;
 use MikoPBX\Modules\Models\ModulesModelsBase;
-use Phalcon\Mvc\Model\Relation;
 
 class ModuleUsersUI extends ModulesModelsBase
 {

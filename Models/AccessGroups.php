@@ -37,33 +37,62 @@ class AccessGroups extends ModulesModelsBase
      *
      * @Column(type="string", nullable=true)
      */
-    public $name;
+    public ?string $name;
 
     /**
      * Group description
      *
      * @Column(type="string", nullable=true)
      */
-    public $description;
+    public ?string $description;
 
     /**
      * Home page after user logs in
      *
      * @Column(type="string", nullable=true, default='session/end')
      */
-    public $home_page;
+    public ?string $homePage;
+
+    /**
+     * User use CDR filter
+     *
+     * If AccessGroups->useCDRFilter is set to '1' the group can see and listen only users from the AccessGroupCDRFilter list
+     * If AccessGroups->useCDRFilter is set to '0' the group can see and listen all users
+     *
+     * @Column(type="string", length=1, default='0')
+     */
+    public ?string  $useCDRFilter;
 
 
+    /**
+     * Initialize the AccessGroups model.
+     *
+     * @return void
+     */
     public function initialize(): void
     {
-        $this->setSource('m_ModuleUsersUI_UsersGroups');
+        $this->setSource('m_ModuleUsersUI_AccessGroups');
         parent::initialize();
         $this->hasMany(
             'id',
             AccessGroupsRights::class,
             'group_id',
             [
-                'alias'      => 'UsersGroupsRights',
+                'alias'      => 'AccessGroupsRights',
+                'foreignKey' => [
+                    'allowNulls' => true,
+                    'action'     => Relation::ACTION_CASCADE,
+                    // When a group is deleted, delete the associated user-group mappings
+                ],
+            ]
+        );
+
+        $this->hasMany(
+            'id',
+            AccessGroupCDRFilter::class,
+            'group_id',
+            [
+                'alias'      => 'AccessGroupCDRFilter',
                 'foreignKey' => [
                     'allowNulls' => true,
                     'action'     => Relation::ACTION_CASCADE,

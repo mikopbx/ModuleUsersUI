@@ -3,9 +3,9 @@
     {{ form.render('select-extension-field') }}
 </div>
 
-{% for member in members %}
+{% for member in cdrFilterMembers %}
     {% if loop.first %}
-        <table class="ui very compact table" id="extensions-table" data-page-length='12'>
+        <table class="ui very compact table" id="cdr-extensions-table" data-page-length='12'>
         <thead>
         <tr>
             <th>{{ t._('ex_Name') }}</th>
@@ -19,9 +19,9 @@
     {% endif %}
 
     {% if member['hidden'] %}
-<tr class="member-row" style="display: none;" id="ext-{{ member['number'] }}">
+        <tr class="member-row" style="display: none;" id="ext-{{ member['number'] }}">
     {% else %}
-<tr class="member-row selected-member" id="ext-{{ member['number'] }}">
+        <tr class="member-row selected-member" id="ext-{{ member['number'] }}">
     {% endif %}
 
 

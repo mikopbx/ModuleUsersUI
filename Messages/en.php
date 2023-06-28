@@ -45,4 +45,12 @@ return [
     'module_usersui_CheckBox_indexAction' => 'Индексная страница',
     'module_usersui_CheckBox_saveAction' => 'Сохранение',
     'module_usersui_CheckBox_modifyAction' => 'Страница редактирования',
+
+    'module_usersui_ldap_user_not_found'=>'User not found',
+    'module_usersui_ldap_successfully_authenticated'=>'User has been successfully authenticated.',
+    'module_usersui_ldap_password_expired' => 'Your password has expired',
+    'module_usersui_ldap_account_disabled' => 'Your account is disabled',
+    'module_usersui_ldap_account_expired' => 'Your account has expired.',
+    'module_usersui_ldap_account_locked' => 'Your account is locked.',
+    'module_usersui_ldap_password_incorrect' => 'Username or password is incorrect.',
 ];

@@ -21,7 +21,8 @@
 
 const moduleUsersUIModifyAG = {
     $formObj: $('#module-users-ui-form'),
-    $selectUsersDropDown: $('.select-extension-field'),
+    $selectUsersDropDown: $('[data-tab="users"] .select-extension-field'),
+    $selectUsersForCDRFilterDropDown: $('[data-tab="cdr-filter"] .select-extension-field'),
     $statusToggle: $('#module-status-toggle'),
     $homePageDropdown: $('.home-page-dropdown'),
     $accessSettingsTabMenu: $('#access-settings-tab-menu .item'),
@@ -68,6 +69,8 @@ const moduleUsersUIModifyAG = {
 
         moduleUsersUIModifyAG.initializeUsersDropDown();
 
+        moduleUsersUIModifyAG.initializeUsersForCDRFilterDropDown();
+
         moduleUsersUIModifyAG.initializeRightsCheckboxes();
 
         moduleUsersUIModifyAG.$homePageDropdown.dropdown();
@@ -105,13 +108,23 @@ const moduleUsersUIModifyAG = {
     },
 
     /**
-     * Настройка выпадающего списка пользователей
+     * Настройка выпадающего списка пользователей для назначения текущей группы доступа
      */
     initializeUsersDropDown() {
         const dropdownParams = Extensions.getDropdownSettingsOnlyInternalWithoutEmpty();
         dropdownParams.action = moduleUsersUIModifyAG.cbAfterUsersSelect;
         dropdownParams.templates = { menu: moduleUsersUIModifyAG.customDropdownMenu };
         moduleUsersUIModifyAG.$selectUsersDropDown.dropdown(dropdownParams);
+    },
+
+    /**
+     * Настройка выпадающего списка пользователей для установки CDR фильтра
+     */
+    initializeUsersForCDRFilterDropDown() {
+        const dropdownParams = Extensions.getDropdownSettingsOnlyInternalWithoutEmpty();
+        dropdownParams.action = moduleUsersUIModifyAG.cbAfterUsersForCDRFilterSelect;
+        dropdownParams.templates = { menu: moduleUsersUIModifyAG.customDropdownMenu };
+        moduleUsersUIModifyAG.$selectUsersForCDRFilterDropDown.dropdown(dropdownParams);
     },
 
     initializeRightsCheckboxes() {
@@ -208,6 +221,19 @@ const moduleUsersUIModifyAG = {
         $($element).addClass('disabled');
         Form.dataChanged();
     },
+
+    /**
+     * Колбек после выбора пользователя в CDR фильтр
+     * @param value
+     */
+    cbAfterUsersForCDRFilterSelect(text, value, $element) {
+        $(`#cdr-filter-${value}`)
+            .closest('tr')
+            .addClass('selected-cdr-user')
+            .show();
+        $($element).addClass('disabled');
+        Form.dataChanged();
+    },
     /**
      * Изменение статуса кнопок при изменении статуса модуля
      */
@@ -215,14 +241,20 @@ const moduleUsersUIModifyAG = {
         if (moduleUsersUIModifyAG.$statusToggle.checkbox('is checked')) {
             $('[data-tab = "general"] .disability').removeClass('disabled');
             $('[data-tab = "users"] .disability').removeClass('disabled');
+            $('[data-tab = "group-rights"] .disability').removeClass('disabled');
+            $('[data-tab = "cdr-filter"] .disability').removeClass('disabled');
         } else {
             $('[data-tab = "general"] .disability').addClass('disabled');
             $('[data-tab = "users"] .disability').addClass('disabled');
+            $('[data-tab = "group-rights"] .disability').addClass('disabled');
+            $('[data-tab = "cdr-filter"] .disability').addClass('disabled');
         }
     },
     cbBeforeSendForm(settings) {
         const result = settings;
         result.data = moduleUsersUIModifyAG.$formObj.form('get values');
+
+        // Group members
         const arrMembers = [];
         $('tr.selected-member').each((index, obj) => {
             if ($(obj).attr('id')) {
@@ -232,6 +264,7 @@ const moduleUsersUIModifyAG = {
 
         result.data.members = JSON.stringify(arrMembers);
 
+        // Group Rights
         const arrGroupRights = [];
         $('input.access-group-checkbox').each((index, obj) => {
             if ($(obj).parent('.checkbox').checkbox('is checked')) {
@@ -260,6 +293,17 @@ const moduleUsersUIModifyAG = {
         });
 
         result.data.access_group_rights = JSON.stringify(arrGroupRights);
+
+        // CDR Filter
+
+        const arrCDRFilter = [];
+        $('tr.selected-cdr-user').each((index, obj) => {
+            if ($(obj).attr('id')) {
+                arrCDRFilter.push($(obj).attr('id'));
+            }
+        });
+        result.data.cdrFilter = JSON.stringify(arrCDRFilter);
+
         return result;
     },
     cbAfterSendForm() {

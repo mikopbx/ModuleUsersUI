@@ -20,14 +20,9 @@
 namespace Modules\ModuleUsersUI\Models;
 
 use MikoPBX\Modules\Models\ModulesModelsBase;
-use Phalcon\Mvc\Model\Relation;
 
-class AccessGroupsRights extends ModulesModelsBase
+class LdapConfig extends ModulesModelsBase
 {
-    public const ADMIN_CABINET = 'AdminCabinet';
-    public const PBX_CORE_REST = 'PBXCoreREST';
-
-
     /**
      * @Primary
      * @Identity
@@ -36,50 +31,66 @@ class AccessGroupsRights extends ModulesModelsBase
     public $id;
 
     /**
-     * Link to the AccessGroups table
-     *
-     * @Column(type="integer", nullable=false)
-     */
-    public ?string $group_id;
-
-    /**
-     * Module id [AdminCabinet, REST API, ModuleID]
+     * Ldap server host name or IP
      *
      * @Column(type="string", nullable=false)
      */
-    public ?string $module_id;
+    public ?string $serverName;
 
     /**
-     * Controller name
+     * Ldap server port
      *
      * @Column(type="string", nullable=false)
      */
-    public ?string $controller;
+    public ?string $serverPort;
 
     /**
-     * Actions array encoded as a string
+     * Login of user with read rights on the domain
      *
      * @Column(type="string", nullable=false)
      */
-    public ?string $actions;
+    public ?string $administrativeLogin;
+
+    /**
+     * Password of user with read rights on the domain
+     *
+     * @Column(type="string", nullable=false)
+     */
+    public ?string $administrativePassword;
+
+    /**
+     * Tree root (base DN)
+     *
+     * @Column(type="string", nullable=false)
+     */
+    public ?string $baseDN;
+
+    /**
+     * User filter  i.e. s (&(objectClass=user)(objectCategory=PERSON))
+     *
+     * @Column(type="string", nullable=false)
+     */
+    public ?string $userFilter;
+
+    /**
+     * User id attribute i.e. samaccountname
+     *
+     * @Column(type="string", nullable=false)
+     */
+    public ?string $userIdAttribute;
+
+    /**
+     * Organizational unit filter  i.e. s OU=Accounting,DC=miko,DC=ru
+     *
+     * @Column(type="string", nullable=false)
+     */
+    public ?string $organizationalUnit;
 
 
     public function initialize(): void
     {
-        $this->setSource('m_ModuleUsersUI_AccessGroupsRights');
+        $this->setSource('m_ModuleUsersUI_LDAP_Config');
         parent::initialize();
-
-        $this->belongsTo(
-            'group_id',
-            AccessGroups::class,
-            'id',
-            [
-                'alias' => 'AccessGroups',
-                'foreignKey' => [
-                    'allowNulls' => false,
-                    'action' => Relation::NO_ACTION,
-                ],
-            ]
-        );
     }
+
 }

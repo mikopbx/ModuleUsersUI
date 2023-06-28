@@ -36,12 +36,19 @@ return [
     'module_usersui_GeneralSettings' => 'Основные настройки группы',
     'module_usersui_UsersFilter' => 'Пользователи группы доступа',
     'module_usersui_GroupRights' => 'Настройка прав',
+    'module_usersui_GroupCDRFilter'=>'Ограничения для истории разговоров',
 
     'module_usersui_ValidateNameIsEmpty'  => 'Проверьте название группы, оно не заполнено',
     'module_usersuiConnected'             => 'Модуль подключен',
     'module_usersuiDisconnected'          => 'Модуль отключен',
     'module_usersuiUpdateStatus'          => 'Обновление статуса',
 
+    'module_usersui_ValidateServerNameIsEmpty'=>'Не заполнен адрес контроллера домена',
+    'module_usersui_ValidateServerPortIsEmpty'=>'Не заполнен порт контроллера домена',
+    'module_usersui_ValidateAdministrativeLoginIsEmpty'=>'Не заполнен логин для пользователя домена',
+    'module_usersui_ValidateAdministrativePasswordIsEmpty'=>'Не заполнен пароль для пользователя домена',
+    'module_usersui_ValidateBaseDNIsEmpty'=>'Не заполнен корень домена',
+    'module_usersui_ValidateUserIdAttributeIsEmpty'=>'Не заполнен атрибут с именем пользователя в домене',
 
     'module_usersUiMainMenuItem'    => 'Права пользователей',
     'module_usersUiAccessGroups'    => 'Группы доступа',
@@ -57,6 +64,7 @@ return [
     'module_usersui_ExtensionTabName'=>'Права для входа в MikoPBX',
     'module_usersui_Login'=>'Логин для авторизации',
     'module_usersui_Password'=> 'Пароль',
+    'module_usersui_LdapCheckbox'=>'Использовать доменную авторизацию',
     'module_usersui_AccessGroup'=>'Группа доступа',
     'module_usersui_NoAccess'=>'Нет доступа',
     'module_usersui_HomePage' =>'Страница, куда попадет пользователь после входа',
@@ -103,4 +111,30 @@ return [
 
     'module_usersui_AppTypeREST' => 'Доступ к REST API',
     'module_usersui_AppTypeAPP' => 'Доступ к разделам интерфейса',
+
+    'module_usersui_ldap_user_not_found'=>'Пользователь не найден',
+    'module_usersui_ldap_successfully_authenticated'=>'Пользователь авторизован',
+    'module_usersui_ldap_password_expired' => 'Пароль просрочен',
+    'module_usersui_ldap_account_disabled' => 'Ваш аккаунт отключен',
+    'module_usersui_ldap_account_expired' => 'Ваш аккаунт просрочен',
+    'module_usersui_ldap_account_locked' => 'Ваш аккаунт заблокирован',
+    'module_usersui_ldap_password_incorrect' => 'Имя пользователя или логин указаны неверно',
+
+    'module_usersui_LdapConfigTab' => 'Настройка доменной авторизации',
+
+    'module_usersui_LdapServerName'=>'Имя или IP адрес контроллера домена',
+    'module_usersui_LdapServerPort'=>'Порт контроллера домена',
+    'module_usersui_LdapAdminLogin'=>'Имя пользователя с правами на чтение в домене',
+    'module_usersui_LdapAdminPassword'=>'Пароль',
+    'module_usersui_LdapBaseDN'=>'Корень домена',
+    'module_usersui_LdapPassword'=>'Пароль',
+    'module_usersui_LdapUserAttribute'=>'Имя пользователя',
+    'module_usersui_LdapUserFilter'=>'Дополнительный фильтр пользователей',
+    'module_usersui_LdapUserIdAttribute'=>'Атрибут в котором хранится имя пользователя',
+    'module_usersui_LdapOrganizationalUnit'=>'Подразделение',
+    'module_usersui_LdapCheckLogin'=>'Произвольный логин для проверки',
+    'module_usersui_LdapCheckPassword'=>'Пароль для проверкой',
+    'module_usersui_LdapCheckButton'=>'Выполнить авторизацию',
+
+
 ];
