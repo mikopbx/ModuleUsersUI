@@ -2,6 +2,7 @@
     "name": "mikopbx/moduleusersui",
     "description": "ModuleUsersUI",
     "require": {
+        "php": "7.4.*",
         "directorytree/ldaprecord": "v2.20.4.0"
     },
     "autoload": {
