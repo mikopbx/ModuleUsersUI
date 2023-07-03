@@ -24,8 +24,9 @@ use MikoPBX\Modules\Models\ModulesModelsBase;
 use Phalcon\Mvc\Model\Relation;
 
 /*
- * If AccessGroups->useCDRFilter is set to '1' the group can see and listen only users from the list
- * If AccessGroups->useCDRFilter is set to '0' the group can see and listen all users
+ * If AccessGroups->cdrFilterMode is set to '0' the group can see and listen all users
+ * If AccessGroups->cdrFilterMode is set to '1' the group can see and listen only users from the list
+ * If AccessGroups->cdrFilterMode is set to '2' the group can see and listen all users except users from the list
  */
 class AccessGroupCDRFilter extends ModulesModelsBase
 {

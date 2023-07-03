@@ -127,21 +127,21 @@
         {{ ldapForm.render('organizationalUnit') }}
     </div>
 
-<div class="ui basic segment">
-    <div class="inline fields">
+<div class="ui segment">
+    <div class="ui header">{{ t._('module_usersui_LdapCheckHeader') }}</div>
+    <div class="fields">
 
-        <div class="field">
+        <div class="inline field">
             <label for="testLogin">{{ t._('module_usersui_LdapCheckLogin') }}</label>
             <input name="testLogin" id="testLogin" type="text" />
         </div>
 
         <div class="field">
-            <label for="testPassword">{{ t._('module_usersui_LdapCheckPassword') }}</label>
-            <input name="testPassword" id="testPassword" type="password" />
+            <input name="testPassword" id="testPassword" type="password" autocomplete="off" />
         </div>
 
         <div class="field">
-            <div class="ui labeled button check-ldap-credentials"><i class="ui icon check"></i>{{ t._('module_usersui_LdapCheckButton') }}</div>
+            <div class="ui labeled icon positive button check-ldap-credentials"><i class="ui icon check"></i>{{ t._('module_usersui_LdapCheckButton') }}</div>
         </div>
     </div>
 </div>

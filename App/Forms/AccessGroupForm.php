@@ -22,6 +22,7 @@ namespace Modules\ModuleUsersUI\App\Forms;
 use MikoPBX\AdminCabinet\Forms\BaseForm;
 use Modules\ModuleUsersUI\Models\AccessGroupsRights;
 use Phalcon\Forms\Element\Check;
+use Phalcon\Forms\Element\Radio;
 use Phalcon\Forms\Element\Text;
 use Phalcon\Forms\Element\Hidden;
 use Phalcon\Forms\Element\Select;
@@ -40,6 +41,10 @@ class AccessGroupForm extends BaseForm
      */
     public function initialize($entity = null, $options = null): void
     {
+        $disabledClass = '';
+        if ($entity->id===null){
+            $disabledClass = "disabled";
+        }
 
         // Add hidden input for id
         $this->add(new Hidden('id'));
@@ -53,15 +58,16 @@ class AccessGroupForm extends BaseForm
         // Prepare homepages for select dropdown
         $parameters = [
             'columns' => [
-                'controller' => 'AccessGroupsRights.controller',
-                'actions' => 'AccessGroupsRights.actions',
+                'controller',
+                'actions',
             ],
             'models' => [
                 'AccessGroupsRights' => AccessGroupsRights::class,
             ],
-            'conditions' => 'AccessGroupsRights.group_id = :group_id:',
-            'binds' => [
+            'conditions' => 'group_id = :group_id: and module_id = :module_id:',
+            'bind' => [
                 'group_id' => $entity->id,
+                'module_id' => AccessGroupsRights::ADMIN_CABINET,
             ],
             'order' => 'controller'
         ];
@@ -70,10 +76,11 @@ class AccessGroupForm extends BaseForm
         foreach ($records as $record) {
             $possibleActions = json_decode($record->actions, true);
             foreach ($possibleActions as $action) {
-                $homePage = $record->controller . '/' . $action;
+                $controllerName = \Phalcon\Text::uncamelize(str_replace("Controller", "", $record->controller),'-');
+                $actionName  = \Phalcon\Text::uncamelize(str_replace("Action", "", $action),'-');
+                $homePage = $controllerName . '/' . $actionName;
                 $homepagesForSelect[$homePage] = $homePage;
             }
-
         }
         if (empty($homepagesForSelect)) {
             $homepagesForSelect['session/end'] = 'session/end';
@@ -84,8 +91,9 @@ class AccessGroupForm extends BaseForm
                 'name',
             ],
             'useEmpty' => false,
-            'class' => 'ui selection dropdown home-page-dropdown',
+            'class' => "ui selection dropdown home-page-dropdown $disabledClass",
         ]);
+
         $this->add($homePages);
 
         // Select User to assign the user group field
@@ -96,7 +104,7 @@ class AccessGroupForm extends BaseForm
                     'name',
                 ],
                 'useEmpty' => true,
-                'class' => 'ui selection dropdown search select-extension-field',
+                'class' => "ui selection dropdown search select-extension-field $disabledClass",
             ]
         );
         $this->add($extension);
@@ -131,16 +139,18 @@ class AccessGroupForm extends BaseForm
             }
         }
 
-        // Use CDR filter
-        $parameters = [];
-        if ($entity->useCDRFilter) {
-            $parameters['checked'] = 'checked';
-        }
-        $checkBox = new Check('useCDRFilter', $parameters);
-        $this->add($checkBox);
+        // CDR filter mode select
+        $parameters = [
+            '0'=>['name'=>'cdrFilterMode', 'value'=>'0'],
+            '1'=>['name'=>'cdrFilterMode', 'value'=>'1'],
+            '2'=>['name'=>'cdrFilterMode', 'value'=>'2'],
+        ];
+        $parameters[$entity->cdrFilterMode]['checked'] = 'checked';
+        $this->add(new Radio('cdr_filter_mode_off', $parameters['0']));
+        $this->add(new Radio('cdr_filter_mode_by_list', $parameters['1']));
+        $this->add(new Radio('cdr_filter_mode_except_list', $parameters['2']));
 
     }
-
     /**
      * Retrieves the translated controller name.
      *

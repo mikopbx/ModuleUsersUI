@@ -132,9 +132,13 @@ return [
     'module_usersui_LdapUserFilter'=>'Дополнительный фильтр пользователей',
     'module_usersui_LdapUserIdAttribute'=>'Атрибут в котором хранится имя пользователя',
     'module_usersui_LdapOrganizationalUnit'=>'Подразделение',
-    'module_usersui_LdapCheckLogin'=>'Произвольный логин для проверки',
-    'module_usersui_LdapCheckPassword'=>'Пароль для проверкой',
-    'module_usersui_LdapCheckButton'=>'Выполнить авторизацию',
+    'module_usersui_LdapCheckLogin'=>'Введите любой доменный логин и пароль для проверки',
+    'module_usersui_LdapCheckHeader'=>'Проверка параметров доменной авторизации',
+    'module_usersui_LdapCheckButton'=>'Авторизоваться',
 
+    'module_usersui_CDRFilterModeLabel' => 'Выберите режим фильтрации CDR записей',
+    'module_usersui_CDRFilterModeOff'   => 'Не фильтровать',
+    'module_usersui_CDRFilterModeInList'=> 'Показывать только разговоры выбранных сотрудников',
+    'module_usersui_CDRFilterModeNotInList'=> 'Показывать все, кроме записей выбранных сотрудников',
 
 ];

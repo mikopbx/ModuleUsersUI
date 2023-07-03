@@ -21,7 +21,7 @@
 const ModuleUsersUIIndex = {
 	$statusToggle: $('#module-status-toggle'),
 	$usersTable: $('#users-table'),
-	$disabilityFields: $('#module-users-ui-form  .disability'),
+	$disabilityFields: $('#module-users-ui-form .disability'),
 	$selectGroup: $('.select-group'),
 	initialize() {
 		$('#main-users-ui-tab-menu .item').tab();

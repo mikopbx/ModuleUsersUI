@@ -19,11 +19,10 @@
     {% endif %}
 
     {% if member['hidden'] %}
-<tr class="member-row" style="display: none;" id="ext-{{ member['number'] }}">
+        <tr class="member-row" style="display: none;" id="ext-{{ member['number'] }}" data-value="{{ member['userid'] }}">
     {% else %}
-<tr class="member-row selected-member" id="ext-{{ member['number'] }}">
+        <tr class="member-row selected-member" id="ext-{{ member['number'] }}" data-value="{{ member['userid'] }}">
     {% endif %}
-
 
     <td class="disability">
         <img src="{{ member['avatar'] }}" class="ui avatar image"

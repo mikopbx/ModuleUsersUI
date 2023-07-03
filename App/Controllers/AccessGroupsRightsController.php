@@ -360,14 +360,14 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
     /**
      * Saves access group rights for a given access group entity.
      *
-     * @param AccessGroups $accessGroupEntity The access group entity.
-     * @param string $access_group_rights The JSON string containing access group rights.
+     * @param string $accessGroupId The access group ID.
+     * @param array $accessGroupRightsFromPost The user set of access group rights.
      * @return bool Returns true on success, false on failure.
      */
-    public function saveAccessGroupRights(AccessGroups $accessGroupEntity, string $access_group_rights): bool
+    public function saveAccessGroupRights(string $accessGroupId, array $accessGroupRightsFromPost): bool
     {
         // Delete existing access group rights for the given access group entity
-        $accessGroupRights = AccessGroupsRights::find("group_id={$accessGroupEntity->id}");
+        $accessGroupRights = AccessGroupsRights::find("group_id={$accessGroupId}");
         foreach ($accessGroupRights as $accessGroupRight) {
             if ($accessGroupRight->delete() === false) {
                 $errors = $accessGroupRight->getMessages();
@@ -376,14 +376,12 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
                 return false;
             }
         }
-        // Parse access group rights from the posted JSON string
-        $accessGroupRightsFromPost = json_decode($access_group_rights, true);
 
         foreach ($accessGroupRightsFromPost as $modules) {
             foreach ($modules['controllers'] as $controller) {
                 // Create a new access group right object
                 $accessGroupRight = new AccessGroupsRights();
-                $accessGroupRight->group_id = $accessGroupEntity->id;
+                $accessGroupRight->group_id = $accessGroupId;
                 $accessGroupRight->module_id = $modules['module'];
                 $accessGroupRight->controller = $controller['controller'];
                 $accessGroupRight->actions = json_encode($controller['actions']);

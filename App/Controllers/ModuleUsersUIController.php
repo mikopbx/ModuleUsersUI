@@ -34,6 +34,7 @@ class ModuleUsersUIController extends ModuleUsersUIBaseController
         $footerCollection = $this->assets->collection('footerJS');
         $footerCollection->addJs('js/vendor/datatable/dataTables.semanticui.js', true);
         $footerCollection->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-index.js", true);
+        $footerCollection->addJs('js/pbx/main/form.js', true);
         $footerCollection->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-ldap.js", true);
 
         $headerCollectionCSS = $this->assets->collection('headerCSS');

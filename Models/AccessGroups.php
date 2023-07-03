@@ -54,14 +54,15 @@ class AccessGroups extends ModulesModelsBase
     public ?string $homePage;
 
     /**
-     * User use CDR filter
+     * CDR filter mode
      *
-     * If AccessGroups->useCDRFilter is set to '1' the group can see and listen only users from the AccessGroupCDRFilter list
-     * If AccessGroups->useCDRFilter is set to '0' the group can see and listen all users
+     * If is set to '0' the group can see and listen all users, the CDR filter is disabled
+     * If is set to '1' the group can see and listen only users from the AccessGroupCDRFilter list
+     * If is set to '2' the group can see and listen all users except users from the AccessGroupCDRFilter list
      *
      * @Column(type="string", length=1, default='0')
      */
-    public ?string  $useCDRFilter;
+    public ?string  $cdrFilterMode;
 
 
     /**

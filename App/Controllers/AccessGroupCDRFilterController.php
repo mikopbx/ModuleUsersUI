@@ -90,9 +90,9 @@ class AccessGroupCDRFilterController extends ModuleUsersUIBaseController
                     $extensionTable[$extension->userid]['email'] = $extension->email;
 
                     if (in_array($extension->userid, $allowedUsers, true)) {
-                        $extensionTable[$extension->userid]['allowed'] = true;
+                        $extensionTable[$extension->userid]['selected'] = true;
                     } else {
-                        $extensionTable[$extension->userid]['allowed'] = false;
+                        $extensionTable[$extension->userid]['selected'] = false;
                     }
 
                     if (!array_key_exists('mobile', $extensionTable[$extension->userid])) {

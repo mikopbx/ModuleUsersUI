@@ -22,6 +22,7 @@ namespace Modules\ModuleUsersUI\Lib;
 use MikoPBX\Common\Models\Extensions;
 use MikoPBX\Common\Models\Users;
 use Modules\ModuleUsersUI\Models\AccessGroupCDRFilter;
+use Modules\ModuleUsersUI\Models\AccessGroups;
 use Phalcon\Di;
 
 class UsersUICDRFilter extends \Phalcon\Di\Injectable
@@ -30,16 +31,37 @@ class UsersUICDRFilter extends \Phalcon\Di\Injectable
     /**
      * Applies CDR filter rules based on the given access group ID.
      *
-     * @param string $accessGroupId           The access group ID.
-     * @param array  $cdrRequestParameters    The CDR request parameters (passed by reference).
+     * @param string $accessGroupId The access group ID.
+     * @param array $cdrRequestParameters The CDR request parameters (passed by reference).
      *
      * @return void
      */
-    public static function applyCDRFilterRules(string $accessGroupId, array &$cdrRequestParameters):void
+    public static function applyCDRFilterRules(string $accessGroupId, array &$cdrRequestParameters): void
     {
         $di = Di::getDefault();
 
         $modelsManager = $di->get('modelsManager');
+
+        // Get CDR filter mode
+        $parameters = [
+            'models' => [
+                'AccessGroups' => AccessGroups::class,
+            ],
+            'conditions' => 'id=:accessGroupId:',
+            'bind' => [
+                'accessGroupId' => $accessGroupId,
+            ],
+            'columns' => [
+                'cdrFilterMode',
+            ],
+        ];
+
+        $cdrFilterMode = $modelsManager->createBuilder($parameters)->getQuery()->execute()->getFirst()->cdrFilterMode;
+
+        // Disabled filter
+        if ($cdrFilterMode === '0') {
+            return;
+        }
 
         // Get filtered users based on the access group ID
         $parameters = [
@@ -50,7 +72,7 @@ class UsersUICDRFilter extends \Phalcon\Di\Injectable
                 'user_id'
             ],
             'conditions' => 'group_id=:group_id:',
-            'binds' => [
+            'bind' => [
                 'group_id' => $accessGroupId,
             ],
         ];
@@ -65,7 +87,7 @@ class UsersUICDRFilter extends \Phalcon\Di\Injectable
                 'number' => 'Extensions.extension',
             ],
             'conditions' => 'Users.id IN ({ids:array})',
-            'binds' => [
+            'bind' => [
                 'ids' => array_column($filteredUsers, 'user_id'),
             ],
             'joins' => [
@@ -79,10 +101,17 @@ class UsersUICDRFilter extends \Phalcon\Di\Injectable
         ];
 
         $filteredExtensions = $modelsManager->createBuilder($parameters)->getQuery()->execute()->toArray();
-       if (count(array_column($filteredExtensions, 'number') )>0){
-           // Update CDR request parameters with filtered extensions
-           $cdrRequestParameters['bind']['filteredExtensions'] = array_column($filteredExtensions, 'number');
-           $cdrRequestParameters['conditions']='(src_num = IN ({filteredExtensions:array}) OR dst_num = IN ({filteredExtensions:array})) AND (' .$cdrRequestParameters['conditions'].')';
-       }
+        if (count(array_column($filteredExtensions, 'number')) > 0) {
+            // Update CDR request parameters with filtered extensions
+            $cdrRequestParameters['bind']['filteredExtensions'] = array_column($filteredExtensions, 'number');
+            if ($cdrFilterMode === '1') {
+                // Only show CDRs for the filtered extensions from the AccessGroupCDRFilter list
+                $cdrRequestParameters['conditions'] = '(src_num IN ({filteredExtensions:array}) OR dst_num IN ({filteredExtensions:array})) AND (' . $cdrRequestParameters['conditions'] . ')';
+            } elseif ($cdrFilterMode === '2') {
+                // Only show CDRs for the filtered extensions NOT in the AccessGroupCDRFilter list
+                $cdrRequestParameters['conditions'] = 'src_num NOT IN ({filteredExtensions:array}) AND dst_num NOT IN ({filteredExtensions:array}) AND (' . $cdrRequestParameters['conditions'] . ')';
+            }
+
+        }
     }
 }

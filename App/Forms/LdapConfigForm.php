@@ -29,28 +29,28 @@ class LdapConfigForm extends BaseForm
     public function initialize($entity = null, $options = null): void
     {
         // ServerHost
-        $this->add(new Text('serverName'));
+        $this->add(new Text('serverName', ['placeholder' =>'dc1.domain.com']));
 
         // ServerPort
-        $this->add(new Text('serverPort'));
+        $this->add(new Text('serverPort',['placeholder' =>'389']));
 
         // AdministrativeLogin
         $this->add(new Text('administrativeLogin'));
 
         // AdministrativePassword
-        $this->add(new Password('administrativePassword'));
+        $this->add(new Password('administrativePassword', ['autocomplete'=>'off']));
 
         // BaseDN
-        $this->add(new Text('baseDN'));
+        $this->add(new Text('baseDN', ['placeholder' =>'dc=domain,dc=com']));
 
         // UserFilter
         $this->addTextArea('userFilter', $entity->userFilter??'');
 
         // UserIdAttribute
-        $this->add(new Text('userIdAttribute'));
+        $this->add(new Text('userIdAttribute', ['placeholder' =>'samaccountname']));
 
         // OrganizationUnit
-        $this->add(new Text('organizationalUnit'));
+        $this->add(new Text('organizationalUnit', ['placeholder' =>'ou=users']));
 
     }
 }

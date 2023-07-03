@@ -65,9 +65,10 @@ const moduleUsersUIModifyAG = {
         });
 
         moduleUsersUIModifyAG.$mainTabMenu.tab();
+
         moduleUsersUIModifyAG.$accessSettingsTabMenu.tab();
 
-        moduleUsersUIModifyAG.initializeUsersDropDown();
+        moduleUsersUIModifyAG.initializeMembersDropDown();
 
         moduleUsersUIModifyAG.initializeUsersForCDRFilterDropDown();
 
@@ -79,7 +80,6 @@ const moduleUsersUIModifyAG = {
             e.preventDefault();
             moduleUsersUIModifyAG.deleteMemberFromTable(e.target);
         });
-
 
         // Handle check button click
         moduleUsersUIModifyAG.$checkButton.on('click', (e) => {
@@ -96,6 +96,56 @@ const moduleUsersUIModifyAG = {
     },
 
     /**
+     * Настройка выпадающего списка пользователей для назначения текущей группы доступа
+     */
+    initializeMembersDropDown() {
+        const dropdownParams = Extensions.getDropdownSettingsOnlyInternalWithoutEmpty();
+        dropdownParams.action = moduleUsersUIModifyAG.cbAfterUsersSelect;
+        dropdownParams.templates = { menu: moduleUsersUIModifyAG.customMembersDropdownMenu };
+        moduleUsersUIModifyAG.$selectUsersDropDown.dropdown(dropdownParams);
+    },
+
+    /**
+     * Change custom menu visualisation
+     * @param response
+     * @param fields
+     * @returns {string}
+     */
+    customMembersDropdownMenu(response, fields) {
+        const values = response[fields.values] || {};
+        let html = '';
+        let oldType = '';
+        $.each(values, (index, option) => {
+            if (option.type !== oldType) {
+                oldType = option.type;
+                html += '<div class="divider"></div>';
+                html += '	<div class="header">';
+                html += '	<i class="tags icon"></i>';
+                html += option.typeLocalized;
+                html += '</div>';
+            }
+            const maybeText = (option[fields.text]) ? `data-text="${option[fields.text]}"` : '';
+            const maybeDisabled = ($(`#ext-${option[fields.value]}`).hasClass('selected-member')) ? 'disabled ' : '';
+            html += `<div class="${maybeDisabled}item" data-value="${option[fields.value]}"${maybeText}>`;
+            html += option[fields.name];
+            html += '</div>';
+        });
+        return html;
+    },
+    /**
+     * Колбек после выбора пользователя в группу
+     * @param value
+     */
+    cbAfterUsersSelect(text, value, $element) {
+        $(`#ext-${value}`)
+            .closest('tr')
+            .addClass('selected-member')
+            .show();
+        $($element).addClass('disabled');
+        Form.dataChanged();
+    },
+
+    /**
      * Delete Group member from list
      * @param target - link to pushed button
      */
@@ -104,28 +154,9 @@ const moduleUsersUIModifyAG = {
         $(`#${id}`)
             .removeClass('selected-member')
             .hide();
-       Form.dataChanged();
+        Form.dataChanged();
     },
 
-    /**
-     * Настройка выпадающего списка пользователей для назначения текущей группы доступа
-     */
-    initializeUsersDropDown() {
-        const dropdownParams = Extensions.getDropdownSettingsOnlyInternalWithoutEmpty();
-        dropdownParams.action = moduleUsersUIModifyAG.cbAfterUsersSelect;
-        dropdownParams.templates = { menu: moduleUsersUIModifyAG.customDropdownMenu };
-        moduleUsersUIModifyAG.$selectUsersDropDown.dropdown(dropdownParams);
-    },
-
-    /**
-     * Настройка выпадающего списка пользователей для установки CDR фильтра
-     */
-    initializeUsersForCDRFilterDropDown() {
-        const dropdownParams = Extensions.getDropdownSettingsOnlyInternalWithoutEmpty();
-        dropdownParams.action = moduleUsersUIModifyAG.cbAfterUsersForCDRFilterSelect;
-        dropdownParams.templates = { menu: moduleUsersUIModifyAG.customDropdownMenu };
-        moduleUsersUIModifyAG.$selectUsersForCDRFilterDropDown.dropdown(dropdownParams);
-    },
 
     initializeRightsCheckboxes() {
         $('#access-group-rights .list .master.checkbox')
@@ -182,58 +213,7 @@ const moduleUsersUIModifyAG = {
             })
         ;
     },
-    /**
-     * Change custom menu visualisation
-     * @param response
-     * @param fields
-     * @returns {string}
-     */
-    customDropdownMenu(response, fields) {
-        const values = response[fields.values] || {};
-        let html = '';
-        let oldType = '';
-        $.each(values, (index, option) => {
-            if (option.type !== oldType) {
-                oldType = option.type;
-                html += '<div class="divider"></div>';
-                html += '	<div class="header">';
-                html += '	<i class="tags icon"></i>';
-                html += option.typeLocalized;
-                html += '</div>';
-            }
-            const maybeText = (option[fields.text]) ? `data-text="${option[fields.text]}"` : '';
-            const maybeDisabled = ($(`#ext-${option[fields.value]}`).hasClass('selected-member')) ? 'disabled ' : '';
-            html += `<div class="${maybeDisabled}item" data-value="${option[fields.value]}"${maybeText}>`;
-            html += option[fields.name];
-            html += '</div>';
-        });
-        return html;
-    },
-    /**
-     * Колбек после выбора пользователя в группу
-     * @param value
-     */
-    cbAfterUsersSelect(text, value, $element) {
-        $(`#ext-${value}`)
-            .closest('tr')
-            .addClass('selected-member')
-            .show();
-        $($element).addClass('disabled');
-        Form.dataChanged();
-    },
 
-    /**
-     * Колбек после выбора пользователя в CDR фильтр
-     * @param value
-     */
-    cbAfterUsersForCDRFilterSelect(text, value, $element) {
-        $(`#cdr-filter-${value}`)
-            .closest('tr')
-            .addClass('selected-cdr-user')
-            .show();
-        $($element).addClass('disabled');
-        Form.dataChanged();
-    },
     /**
      * Изменение статуса кнопок при изменении статуса модуля
      */
@@ -250,6 +230,7 @@ const moduleUsersUIModifyAG = {
             $('[data-tab = "cdr-filter"] .disability').addClass('disabled');
         }
     },
+
     cbBeforeSendForm(settings) {
         const result = settings;
         result.data = moduleUsersUIModifyAG.$formObj.form('get values');
@@ -257,8 +238,8 @@ const moduleUsersUIModifyAG = {
         // Group members
         const arrMembers = [];
         $('tr.selected-member').each((index, obj) => {
-            if ($(obj).attr('id')) {
-                arrMembers.push($(obj).attr('id'));
+            if ($(obj).attr('data-value')) {
+                arrMembers.push($(obj).attr('data-value'));
             }
         });
 
@@ -295,11 +276,10 @@ const moduleUsersUIModifyAG = {
         result.data.access_group_rights = JSON.stringify(arrGroupRights);
 
         // CDR Filter
-
         const arrCDRFilter = [];
-        $('tr.selected-cdr-user').each((index, obj) => {
-            if ($(obj).attr('id')) {
-                arrCDRFilter.push($(obj).attr('id'));
+        $('div.cdr-filter-toggles').each((index, obj) => {
+            if ($(obj).checkbox('is checked')) {
+                arrCDRFilter.push($(obj).attr('name'));
             }
         });
         result.data.cdrFilter = JSON.stringify(arrCDRFilter);

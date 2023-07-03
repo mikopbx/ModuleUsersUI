@@ -91,7 +91,6 @@ class ModuleUsersUIBaseController extends BaseController
                 'user_id' => 'UsersCredentials.user_id',
                 'group' => 'AccessGroups.name',
                 'group_id' => 'AccessGroups.id',
-
             ],
             'joins' => [
                 'AccessGroups' => [
