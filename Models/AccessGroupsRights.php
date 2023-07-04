@@ -37,28 +37,28 @@ class AccessGroupsRights extends ModulesModelsBase
      *
      * @Column(type="integer", nullable=false)
      */
-    public ?string $group_id;
+    public $group_id;
 
     /**
      * Module id [AdminCabinet, REST API, ModuleID]
      *
      * @Column(type="string", nullable=false)
      */
-    public ?string $module_id;
+    public $module_id;
 
     /**
      * Controller name
      *
      * @Column(type="string", nullable=false)
      */
-    public ?string $controller;
+    public $controller;
 
     /**
      * Actions array encoded as a string
      *
      * @Column(type="string", nullable=false)
      */
-    public ?string $actions;
+    public $actions;
 
 
     public function initialize(): void

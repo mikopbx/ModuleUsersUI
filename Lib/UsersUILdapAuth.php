@@ -94,10 +94,12 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
             });
 
             // Query LDAP for the user
-            $user = $connection->query()
-                ->in($this->organizationalUnit)
-                ->where($this->userIdAttribute, '=', $username)
-                ->first();
+            $query = $connection->query()
+                ->where($this->userIdAttribute, '=', $username);
+            if ($this->organizationalUnit!==''){
+                $query->in($this->organizationalUnit);
+            }
+            $user = $query->first();
 
             if ($user) {
                 // Continue with authentication if user is found and attempt authentication

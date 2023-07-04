@@ -42,14 +42,14 @@ class AccessGroupCDRFilter extends ModulesModelsBase
      *
      * @Column(type="integer", nullable=false)
      */
-    public ?string $group_id;
+    public $group_id;
 
     /**
      * Additional condition for the CDR request filter
      *
      * @Column(type="integer", nullable=false)
      */
-    public ?string $user_id;
+    public $user_id;
 
 
     public function initialize(): void

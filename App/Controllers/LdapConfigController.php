@@ -16,7 +16,10 @@
  * You should have received a copy of the GNU General Public License along with this program.
  * If not, see <https://www.gnu.org/licenses/>.
  */
+
 namespace Modules\ModuleUsersUI\App\Controllers;
+
+use Modules\ModuleUsersUI\Lib\Constants;
 use Modules\ModuleUsersUI\Lib\UsersUILdapAuth;
 use Modules\ModuleUsersUI\Models\LdapConfig;
 
@@ -45,6 +48,12 @@ class LdapConfigController extends ModuleUsersUIBaseController
         foreach ($ldapConfig as $name => $value) {
             switch ($name) {
                 case 'id':
+                    break;
+                case 'administrativePassword':
+                    if (isset($data['administrativePasswordHidden'])
+                        && $data['administrativePasswordHidden'] !== Constants::HIDDEN_ADMIN_PASSWORD) {
+                        $ldapConfig->$name = $data['administrativePasswordHidden'];
+                    }
                     break;
                 default:
                     if (isset($data[$name])) {
@@ -75,6 +84,13 @@ class LdapConfigController extends ModuleUsersUIBaseController
         }
 
         $data = $this->request->getPost();
+
+        if ($data['administrativePasswordHidden'] === Constants::HIDDEN_ADMIN_PASSWORD) {
+            $ldapConfig = LdapConfig::findFirst();
+            $data['administrativePassword'] = $ldapConfig->administrativePassword;
+        } else {
+            $data['administrativePassword'] = $data['administrativePasswordHidden'];
+        }
 
         $ldapCredentials = [
             'serverName' => $data['serverName'],

@@ -1,5 +1,6 @@
 {% for record in groups %}
     {% if loop.first %}
+        {{ link_to("module-users-u-i/access-groups/modify", '<i class="add circle icon"></i> '~t._('module_usersui_AddNewAccessGroup'), "class": "ui blue button", "id":"add-new-button") }}
         <table class="ui selectable compact table" id="access-groups-table">
         <thead>
         <tr>
@@ -37,6 +38,16 @@
         </table>
     {% endif %}
 {% endfor %}
+
+{% if groups is null %}
+<div class="ui placeholder segment">
+    <div class="ui icon header">
+        <i class="users icon"></i>
+        {{ t._('module_usersui_NoAnyAccessGroup') }}
+    </div>
+    {{ link_to("module-users-u-i/access-groups/modify", '<i class="add circle icon"></i> '~t._('module_usersui_AddNewAccessGroupShort'), "class": "ui blue button", "id":"add-new-button") }}
+</div>
+{% endif %}
 
 <select id="users-groups-list" style="display: none;">
     <option value="No access">{{ t._('module_usersui_NoAccessGroupName') }}</option>

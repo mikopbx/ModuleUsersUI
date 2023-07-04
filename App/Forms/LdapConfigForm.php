@@ -20,6 +20,7 @@
 namespace Modules\ModuleUsersUI\App\Forms;
 
 use MikoPBX\AdminCabinet\Forms\BaseForm;
+use Modules\ModuleUsersUI\Lib\Constants;
 use Phalcon\Forms\Element\Password;
 use Phalcon\Forms\Element\Text;
 
@@ -38,7 +39,7 @@ class LdapConfigForm extends BaseForm
         $this->add(new Text('administrativeLogin', ['placeholder' =>'Domain admin login']));
 
         // AdministrativePassword
-        $this->add(new Password('administrativePassword', ['autocomplete'=>'off', 'placeholder' =>'Domain admin password']));
+        $this->add(new Password('administrativePasswordHidden', ['autocomplete'=>'off', 'placeholder' =>'Domain admin password', 'value'=>Constants::HIDDEN_ADMIN_PASSWORD]));
 
         // BaseDN
         $this->add(new Text('baseDN', ['placeholder' =>'dc=domain, dc=com']));

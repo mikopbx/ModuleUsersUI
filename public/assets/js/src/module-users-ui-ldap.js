@@ -20,6 +20,13 @@
 
 
 const moduleUsersUILdap = {
+
+    /**
+     * jQuery object for the ldap check segment.
+     * @type {jQuery}
+     */
+    $ldapCheckSegment: $('#ldap-check-auth'),
+
     /**
      * jQuery object for the form.
      * @type {jQuery}
@@ -60,8 +67,8 @@ const moduleUsersUILdap = {
                 },
             ],
         },
-        administrativePassword: {
-            identifier: 'administrativePassword',
+        administrativePasswordHidden: {
+            identifier: 'administrativePasswordHidden',
             rules: [
                 {
                     type: 'empty',
@@ -96,32 +103,31 @@ const moduleUsersUILdap = {
         moduleUsersUILdap.$checkAuthButton.api({
             url: `${globalRootUrl}module-users-u-i/ldap-config/check-auth`,
             method: 'POST',
-            successTest: PbxApi.successTest,
             beforeSend(settings) {
                 $(this).addClass('loading disabled');
                 settings.data = moduleUsersUILdap.$formObj.form('get values');
                 return settings;
             },
-
+            successTest(response){
+                return response.success;
+            },
             /**
              * Handles the successful response of the 'check-ldap-auth' API request.
              * @param {object} response - The response object.
              */
-            onSuccess(response) {
+            onSuccess: function(response) {
                 $(this).removeClass('loading disabled');
                 $('.ui.message.ajax').remove();
-                $.each(response.message, (index, value) => {
-                    moduleUsersUILdap.$formObj.after(`<div class="ui ${index} message ajax">${value}</div>`);
-                });
+                moduleUsersUILdap.$ldapCheckSegment.after(`<div class="ui icon message ajax positive"><i class="icon check"></i> ${response.message}</div>`);
             },
-
             /**
              * Handles the failure response of the 'check-ldap-auth' API request.
              * @param {object} response - The response object.
              */
-            onFailure(response) {
+            onFailure: function(response) {
                 $(this).removeClass('loading disabled');
-                moduleUsersUILdap.$formObj.after(`<div class="ui negative message ajax">${response.message}</div>`);
+                $('.ui.message.ajax').remove();
+                moduleUsersUILdap.$ldapCheckSegment.after(`<div class="ui icon message ajax negative"><i class="icon exclamation circle"></i>${response.message}</div>`);
             },
         });
 

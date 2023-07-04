@@ -36,21 +36,21 @@ class AccessGroups extends ModulesModelsBase
      *
      * @Column(type="string", nullable=true)
      */
-    public ?string $name;
+    public $name;
 
     /**
      * Group description
      *
      * @Column(type="string", nullable=true)
      */
-    public ?string $description;
+    public $description;
 
     /**
      * Home page after user logs in
      *
      * @Column(type="string", nullable=true, default='session/end')
      */
-    public ?string $homePage;
+    public $homePage;
 
     /**
      * CDR filter mode
@@ -61,7 +61,7 @@ class AccessGroups extends ModulesModelsBase
      *
      * @Column(type="string", length=1, default='0')
      */
-    public ?string  $cdrFilterMode;
+    public  $cdrFilterMode;
 
 
     /**

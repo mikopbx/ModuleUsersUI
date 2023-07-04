@@ -30,4 +30,6 @@ class Constants
     // Module types constants
     public const ADMIN_CABINET = 'AdminCabinet';
     public const PBX_CORE_REST = 'PBXCoreREST';
+
+    public const HIDDEN_ADMIN_PASSWORD = 'xxxxxxxx';
 }

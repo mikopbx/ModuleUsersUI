@@ -24,7 +24,7 @@
     </div>
 
     <div class="field max-width-400">
-        {{ ldapForm.render('administrativePassword') }}
+        {{ ldapForm.render('administrativePasswordHidden') }}
     </div>
 </div>
 </div>
@@ -46,7 +46,7 @@
     <div class="ui segment">
         <div class="ui header">{{ t._('module_usersui_LdapCheckHeader') }}</div>
         <p>{{ t._('module_usersui_LdapCheckLogin') }}</p>
-        <div class="equal width fields">
+        <div class="equal width fields" id="ldap-check-auth">
             <div class="field max-width-250">
                 <input name="testLogin" id="testLogin" type="text" placeholder="DomainUser"/>
             </div>

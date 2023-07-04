@@ -26,10 +26,10 @@
  */
 
 return [
-	'repModuleUsersUI'         => 'Модуль пользовательский интерфейс - %repesent%',
-	'mo_ModuleModuleUsersUI'   => 'Модуль пользовательский интерфейс',
-    'BreadcrumbModuleUsersUI'  => 'Модуль пользовательский интерфейс',
-    'SubHeaderModuleUsersUI'   => 'Позволяет создавать отдельный пользовательский интерфейс',
+	'repModuleUsersUI'         => 'Модуль управление доступом в систему - %repesent%',
+	'mo_ModuleModuleUsersUI'   => 'Модуль управление доступом в систему ',
+    'BreadcrumbModuleUsersUI'  => 'Модуль управление доступом в систему ',
+    'SubHeaderModuleUsersUI'   => 'Позволяет создавать группы доступа и присваивать их пользователям',
     'BreadcrumbAccessGroups'   => 'Настройка группы доступа',
     'SubHeaderAccessGroups'    => 'Детальная настройка прав на элементы интерфейса и REST API',
 
@@ -140,5 +140,8 @@ return [
     'module_usersui_CDRFilterModeOff'   => 'Не фильтровать',
     'module_usersui_CDRFilterModeInList'=> 'Показывать только разговоры выбранных сотрудников',
     'module_usersui_CDRFilterModeNotInList'=> 'Показывать все, кроме записей выбранных сотрудников',
+
+    'module_usersui_NoAnyAccessGroup'=>'В модуле еще не создано ни одной группы доступа',
+    'module_usersui_AddNewAccessGroupShort'=>'Создать',
 
 ];

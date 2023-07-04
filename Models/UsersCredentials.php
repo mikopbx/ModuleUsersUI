@@ -42,42 +42,42 @@ class UsersCredentials extends ModulesModelsBase
      *
      * @Column(type="integer", nullable=false)
      */
-    public ?string $user_id;
+    public $user_id;
 
     /**
      * Link to the AccessGroups table
      *
      * @Column(type="integer", nullable=false, default='0')
      */
-    public ?string $user_access_group_id;
+    public $user_access_group_id;
 
     /**
      * User use ldap auth
      *
      *  @Column(type="string", length=1, default='0')
      */
-    public ?string  $use_ldap_auth;
+    public $use_ldap_auth;
 
     /**
      * User login
      *
      * @Column(type="string", nullable=false)
      */
-    public ?string $user_login;
+    public $user_login;
 
     /**
      * User password
      *
      * @Column(type="string", nullable=true)
      */
-    public ?string $user_password;
+    public $user_password;
 
     /**
      * Allows to enter the web interface
      *
      * @Column(type="string", nullable=false, default='0')
      */
-    public ?string $enabled;
+    public $enabled;
 
 
     public function initialize(): void
