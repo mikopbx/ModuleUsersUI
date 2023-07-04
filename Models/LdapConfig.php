@@ -35,56 +35,56 @@ class LdapConfig extends ModulesModelsBase
      *
      * @Column(type="string", nullable=false)
      */
-    public ?string $serverName;
+    public $serverName;
 
     /**
      * Ldap server port
      *
      * @Column(type="string", nullable=false)
      */
-    public ?string $serverPort;
+    public $serverPort;
 
     /**
      * Login of user with read rights on the domain
      *
      * @Column(type="string", nullable=false)
      */
-    public ?string $administrativeLogin;
+    public $administrativeLogin;
 
     /**
      * Password of user with read rights on the domain
      *
      * @Column(type="string", nullable=false)
      */
-    public ?string $administrativePassword;
+    public $administrativePassword;
 
     /**
      * Tree root (base DN)
      *
      * @Column(type="string", nullable=false)
      */
-    public ?string $baseDN;
+    public $baseDN;
 
     /**
      * User filter  i.e. s (&(objectClass=user)(objectCategory=PERSON))
      *
-     * @Column(type="string", nullable=false)
+     * @Column(type="string", nullable=true)
      */
-    public ?string $userFilter;
+    public $userFilter;
 
     /**
      * User id attribute i.e. samaccountname
      *
      * @Column(type="string", nullable=false)
      */
-    public ?string $userIdAttribute;
+    public $userIdAttribute;
 
     /**
      * Organizational unit filter  i.e. s OU=Accounting,DC=miko,DC=ru
      *
-     * @Column(type="string", nullable=false)
+     * @Column(type="string", nullable=true)
      */
-    public ?string $organizationalUnit;
+    public $organizationalUnit;
 
 
     public function initialize(): void

@@ -24,9 +24,6 @@ use Phalcon\Mvc\Model\Relation;
 
 class AccessGroupsRights extends ModulesModelsBase
 {
-    public const ADMIN_CABINET = 'AdminCabinet';
-    public const PBX_CORE_REST = 'PBXCoreREST';
-
 
     /**
      * @Primary

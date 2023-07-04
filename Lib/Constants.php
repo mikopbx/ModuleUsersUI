@@ -17,25 +17,17 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
+namespace Modules\ModuleUsersUI\Lib;
 
-namespace Modules\ModuleUsersUI\Models;
-
-use MikoPBX\Modules\Models\ModulesModelsBase;
-
-class ModuleUsersUI extends ModulesModelsBase
+class Constants
 {
-    /**
-     * @Primary
-     * @Identity
-     * @Column(type="integer", nullable=false)
-     */
-    public $id;
+    // CDR Filter constants
+    public const CDR_FILTER_DISABLED = 'all';
+    public const CDR_FILTER_ONLY_SELECTED = 'selected';
+    public const CDR_FILTER_EXCEPT_SELECTED = 'not-selected';
 
 
-    public function initialize(): void
-    {
-        $this->setSource('m_ModuleUsersUI');
-        parent::initialize();
-    }
-
+    // Module types constants
+    public const ADMIN_CABINET = 'AdminCabinet';
+    public const PBX_CORE_REST = 'PBXCoreREST';
 }

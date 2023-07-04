@@ -24,6 +24,8 @@ use LdapRecord\Container;
 use MikoPBX\Common\Providers\LoggerAuthProvider;
 use MikoPBX\Core\System\Util;
 
+include_once __DIR__.'/../vendor/autoload.php';
+
 class UsersUILdapAuth extends \Phalcon\Di\Injectable
 {
     private string $serverName;
@@ -108,6 +110,7 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
             global $errorLogger;
             $errorLogger->captureException($e);
             Util::sysLogMsg("UsersUILdapAuth_EXCEPTION", $e->getMessage(), LOG_ERR);
+            $message = $e->getMessage();
         }
 
         if (!$success) {

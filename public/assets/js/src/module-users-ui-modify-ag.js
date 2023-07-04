@@ -22,11 +22,13 @@
 const moduleUsersUIModifyAG = {
     $formObj: $('#module-users-ui-form'),
     $selectUsersDropDown: $('[data-tab="users"] .select-extension-field'),
-    $selectUsersForCDRFilterDropDown: $('[data-tab="cdr-filter"] .select-extension-field'),
     $statusToggle: $('#module-status-toggle'),
     $homePageDropdown: $('.home-page-dropdown'),
     $accessSettingsTabMenu: $('#access-settings-tab-menu .item'),
-    $mainTabMenu: $('#module-users-group-modify-menu .item'),
+    $mainTabMenu: $('#module-access-group-modify-menu .item'),
+    $cdrFilterTab: $('#module-access-group-modify-menu .item[data-tab="cdr-filter"]'),
+    $cdrFilterToggles: $('div.cdr-filter-toggles'),
+    $cdrFilterMode: $('div.cdr-filter-radio'),
     defaultExtension: '',
 
     /**
@@ -65,16 +67,15 @@ const moduleUsersUIModifyAG = {
         });
 
         moduleUsersUIModifyAG.$mainTabMenu.tab();
-
         moduleUsersUIModifyAG.$accessSettingsTabMenu.tab();
-
         moduleUsersUIModifyAG.initializeMembersDropDown();
-
-        moduleUsersUIModifyAG.initializeUsersForCDRFilterDropDown();
-
         moduleUsersUIModifyAG.initializeRightsCheckboxes();
-
         moduleUsersUIModifyAG.$homePageDropdown.dropdown();
+        moduleUsersUIModifyAG.$cdrFilterToggles.checkbox();
+        moduleUsersUIModifyAG.cbAfterChangeCDRFilterMode();
+        moduleUsersUIModifyAG.$cdrFilterMode.checkbox({
+            onChange: moduleUsersUIModifyAG.cbAfterChangeCDRFilterMode
+        });
 
         $('body').on('click', 'div.delete-user-row', (e) => {
             e.preventDefault();
@@ -93,6 +94,14 @@ const moduleUsersUIModifyAG = {
             $(e.target).parent('.ui.tab').find('.ui.checkbox').checkbox('uncheck');
         });
 
+    },
+    cbAfterChangeCDRFilterMode(){
+        const cdrFilterMode = moduleUsersUIModifyAG.$formObj.form('get value','cdrFilterMode');
+        if (cdrFilterMode==='all') {
+            $('#cdr-extensions-table').hide();
+        } else {
+            $('#cdr-extensions-table').show();
+        }
     },
 
     /**
@@ -157,7 +166,6 @@ const moduleUsersUIModifyAG = {
         Form.dataChanged();
     },
 
-
     initializeRightsCheckboxes() {
         $('#access-group-rights .list .master.checkbox')
             .checkbox({
@@ -209,9 +217,19 @@ const moduleUsersUIModifyAG = {
                     else {
                         $parentCheckbox.checkbox('set indeterminate');
                     }
+                    moduleUsersUIModifyAG.cdAfterChangeGroupRight();
                 }
             })
         ;
+    },
+
+    cdAfterChangeGroupRight(){
+        const accessToCdr = moduleUsersUIModifyAG.$formObj.form('get value','CallDetailRecordsController_main');
+        if (accessToCdr==='on') {
+            moduleUsersUIModifyAG.$cdrFilterTab.show();
+        } else {
+            moduleUsersUIModifyAG.$cdrFilterTab.hide();
+        }
     },
 
     /**
@@ -277,9 +295,9 @@ const moduleUsersUIModifyAG = {
 
         // CDR Filter
         const arrCDRFilter = [];
-        $('div.cdr-filter-toggles').each((index, obj) => {
+        moduleUsersUIModifyAG.$cdrFilterToggles.each((index, obj) => {
             if ($(obj).checkbox('is checked')) {
-                arrCDRFilter.push($(obj).attr('name'));
+                arrCDRFilter.push($(obj).attr('data-value'));
             }
         });
         result.data.cdrFilter = JSON.stringify(arrCDRFilter);

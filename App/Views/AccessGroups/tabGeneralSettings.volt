@@ -4,8 +4,8 @@
     {{ form.render('name') }}
 </div>
 <div class="field">
-    <label for="home-page">{{ t._('module_usersui_HomePage') }}</label>
-    {{ form.render('home-page') }}
+    <label for="homePage">{{ t._('module_usersui_HomePage') }}</label>
+    {{ form.render('homePage') }}
 </div>
 <div class="field">
     <label for="description">{{ t._('module_usersui_ColumnGroupDescription') }}</label>

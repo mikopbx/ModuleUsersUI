@@ -42,44 +42,36 @@ class ModuleUsersUIController extends ModuleUsersUIBaseController
             ->addCss('css/vendor/datatable/dataTables.semanticui.min.css', true)
             ->addCss("css/cache/{$this->moduleUniqueID}/module-users-ui.css", true);
 
-        $this->view->groups = AccessGroups::find();
+        $parameters = [
+            'models'     => [
+                'AccessGroups' => AccessGroups::class,
+            ],
+            'columns'    => [
+                'id' => 'AccessGroups.id',
+                'name' => 'AccessGroups.name',
+                'description' => 'AccessGroups.description',
+                'countUsers'=> 'COUNT(UsersCredentials.id)',
+            ],
+            'joins'      => [
+                'UsersCredentials' => [
+                    0 => UsersCredentials::class,
+                    1 => 'UsersCredentials.user_access_group_id = AccessGroups.id and UsersCredentials.enabled = 1',
+                    2 => 'UsersCredentials',
+                    3 => 'LEFT',
+                ],
+            ],
+            'group'      => 'AccessGroups.id',
+        ];
+        $groups      = $this->di->get('modelsManager')->createBuilder($parameters)->getQuery()->execute()->toArray();
+        $this->view->groups = $groups;
+
         $this->view->pick("{$this->moduleDir}/App/Views/index");
+
         $this->view->members = $this->getTheListOfUsersForDisplayInTheFilter();
+
         $ldapConfig = LdapConfig::findFirst();
         $this->view->ldapForm = new LdapConfigForm($ldapConfig);
-    }
-
-    /**
-     * Handles the action for changing user group.
-     *
-     * @return void
-     */
-    public function changeUserGroupAction(): void
-    {
-        if ( ! $this->request->isPost()) {
-            return;
-        }
-        $data        = $this->request->getPost();
-        $parameters  = [
-            'conditions' => 'user_id=:userID:',
-            'bind'       => [
-                'userID' => $data['user_id'],
-            ],
-        ];
-        $groupMember = UsersCredentials::findFirst($parameters);
-        if ($groupMember === null) {
-            $groupMember          = new UsersCredentials();
-            $groupMember->user_id = $data['user_id'];
-        }
-        $groupMember->user_access_group_id = $data['group_id'];
-        if ($groupMember->save() === false) {
-            $errors = $groupMember->getMessages();
-            $this->flash->error(implode('<br>', $errors));
-            $this->view->success = false;
-        } else {
-            $this->flash->success($this->translation->_('ms_SuccessfulSaved'));
-            $this->view->success = true;
-        }
+        $this->view->submitMode    = null;
     }
 
 }

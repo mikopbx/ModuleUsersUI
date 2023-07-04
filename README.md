@@ -1,11 +1,12 @@
-# MikoPBX extension module template #
+# MikoPBX users right management module#
 
 *Read this in other languages: [English](README.md), [Русский](README.ru.md).*
 
 ## Module description ##
 
-We are working on the module developing guide here [https://docs.mikopbx.com](https://docs.mikopbx.com/mikopbx-development/)
-
+The module helps to organize access to the UI with different rights.
+It makes possible to make multi-login access to the MikoPBX with separate permissions for each users group.
+The module also includes LDAP/AD login feature.
 
 ### Questions ###
 You are welcome to our telegram channel for developers [@mikopbx_dev](https://t.me/joinchat/AAPn5xSqZIpQnNnCAa3bBw)

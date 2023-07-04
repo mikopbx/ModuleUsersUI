@@ -1,9 +1,3 @@
-<div class="field">
-    <label for="cdrFilterMode">{{ t._('module_usersui_CDRFilterModeLabel') }}</label>
-    {{ form.render(cdrFilterMode) }}
-</div>
-
-
 <div class="grouped fields">
     <label>{{ t._('module_usersui_CDRFilterModeLabel') }}</label>
     <div class="field">
@@ -43,7 +37,7 @@
     {% endif %}
     <tr data-value="{{ member['userid'] }}">
         <td class="disability">
-            <div class="ui toggle checkbox cdr-filter-toggles">
+            <div class="ui toggle checkbox cdr-filter-toggles" data-value="{{ member['userid'] }}">
                 <input type="checkbox" name="cdr-filter-{{ member['userid'] }}"
                        {% if member['selected'] %}checked='checked'{% endif %} />
             </div>

@@ -232,7 +232,7 @@ class UsersUIConf extends ConfigClass
 
             // Retrieve all access groups from the database
             $accessGroups = AccessGroups::find();
-            $accessGroupsForSelect['No access'] = $this->translation->_('module_usersui_NoAccess');
+            $accessGroupsForSelect['No access'] = $this->translation->_('module_usersui_NoAccessGroupName');
 
             // Prepare the access groups data for a Select form element
             foreach ($accessGroups as $accessGroup) {
@@ -249,7 +249,6 @@ class UsersUIConf extends ConfigClass
                     'useEmpty' => false,
                     'value' => $accessGroupId,
                     'emptyValue' => 'No access',
-                    'placeholder' => 'Select access group',
                     'class' => 'ui selection dropdown',
                 ]
             );

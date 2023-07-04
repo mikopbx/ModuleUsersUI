@@ -32,7 +32,7 @@ use MikoPBX\AdminCabinet\Controllers\WikiLinksController;
 use MikoPBX\Common\Models\PbxExtensionModules;
 use MikoPBX\Common\Providers\PBXConfModulesProvider;
 use MikoPBX\Modules\Config\RestAPIConfigInterface;
-use Modules\ModuleUsersUI\Models\AccessGroups;
+use Modules\ModuleUsersUI\Lib\Constants;
 use Modules\ModuleUsersUI\Models\AccessGroupsRights;
 use Phalcon\Annotations\Reader;
 use Phalcon\Annotations\Reflection;
@@ -129,7 +129,7 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
             $publicMethods = $this->getControllersActions($controllerClass, $excludedActions);
 
             if (count($publicMethods) > 0) {
-                $controllers[AccessGroupsRights::ADMIN_CABINET]['APP'][$className] = $publicMethods;
+                $controllers[Constants::ADMIN_CABINET]['APP'][$className] = $publicMethods;
             }
 
         }
@@ -230,7 +230,7 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
             }
 
             if (count($actions) > 0) {
-                $controllers[AccessGroupsRights::PBX_CORE_REST]['REST'][$controllerName] = $actions;
+                $controllers[Constants::PBX_CORE_REST]['REST'][$controllerName] = $actions;
             }
         }
 

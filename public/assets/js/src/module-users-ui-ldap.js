@@ -16,7 +16,7 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* global globalRootUrl, globalTranslate, Form */
+/* global globalRootUrl, globalTranslate, Form, PbxApi*/
 
 
 const moduleUsersUILdap = {
@@ -96,6 +96,7 @@ const moduleUsersUILdap = {
         moduleUsersUILdap.$checkAuthButton.api({
             url: `${globalRootUrl}module-users-u-i/ldap-config/check-auth`,
             method: 'POST',
+            successTest: PbxApi.successTest,
             beforeSend(settings) {
                 $(this).addClass('loading disabled');
                 settings.data = moduleUsersUILdap.$formObj.form('get values');
@@ -120,7 +121,7 @@ const moduleUsersUILdap = {
              */
             onFailure(response) {
                 $(this).removeClass('loading disabled');
-                $('form').after(response);
+                moduleUsersUILdap.$formObj.after(`<div class="ui negative message ajax">${response.message}</div>`);
             },
         });
 

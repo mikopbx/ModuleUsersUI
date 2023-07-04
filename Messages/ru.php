@@ -53,12 +53,14 @@ return [
     'module_usersUiMainMenuItem'    => 'Права пользователей',
     'module_usersUiAccessGroups'    => 'Группы доступа',
 
+
     'module_usersui_GroupName'=> 'Название группы',
     'module_usersui_ColumnGroupName'=> 'Группа доступа',
     'module_usersui_ColumnGroupMembersCount'=> 'Количество участников',
     'module_usersui_ColumnGroupDescription' => 'Описание',
     'module_usersui_AddNewAccessGroup' =>   'Добавить новую группу доступа',
     'module_usersui_Groups'=>'Группы доступа',
+    'module_usersui_NoAccessGroupName'=>'Доступ запрещен',
     'module_usersui_Users'=>'Права на вход у сотрудников',
 
     'module_usersui_ExtensionTabName'=>'Права для входа в MikoPBX',
@@ -66,7 +68,6 @@ return [
     'module_usersui_Password'=> 'Пароль',
     'module_usersui_LdapCheckbox'=>'Использовать доменную авторизацию',
     'module_usersui_AccessGroup'=>'Группа доступа',
-    'module_usersui_NoAccess'=>'Нет доступа',
     'module_usersui_HomePage' =>'Страница, куда попадет пользователь после входа',
 
     'module_usersui_CheckBox_AdminCabinet_AsteriskManagers_index' => 'просмотр списка',
@@ -122,17 +123,16 @@ return [
 
     'module_usersui_LdapConfigTab' => 'Настройка доменной авторизации',
 
-    'module_usersui_LdapServerName'=>'Имя или IP адрес контроллера домена',
-    'module_usersui_LdapServerPort'=>'Порт контроллера домена',
-    'module_usersui_LdapAdminLogin'=>'Имя пользователя с правами на чтение в домене',
-    'module_usersui_LdapAdminPassword'=>'Пароль',
+    'module_usersui_LdapServerName'=>'Адрес контроллера домена',
+    'module_usersui_LdapServerPort'=>'Порт',
+    'module_usersui_LdapAdminLogin'=>'Имя пользователя и пароль с правами на чтение в домене',
     'module_usersui_LdapBaseDN'=>'Корень домена',
     'module_usersui_LdapPassword'=>'Пароль',
     'module_usersui_LdapUserAttribute'=>'Имя пользователя',
     'module_usersui_LdapUserFilter'=>'Дополнительный фильтр пользователей',
     'module_usersui_LdapUserIdAttribute'=>'Атрибут в котором хранится имя пользователя',
     'module_usersui_LdapOrganizationalUnit'=>'Подразделение',
-    'module_usersui_LdapCheckLogin'=>'Введите любой доменный логин и пароль для проверки',
+    'module_usersui_LdapCheckLogin'=>'Введите любой доменный логин и пароль для проверки, если авторизация успешная, можно сохранить настройки подключения.',
     'module_usersui_LdapCheckHeader'=>'Проверка параметров доменной авторизации',
     'module_usersui_LdapCheckButton'=>'Авторизоваться',
 

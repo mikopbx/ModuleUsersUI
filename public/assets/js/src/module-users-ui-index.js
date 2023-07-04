@@ -91,7 +91,7 @@ const ModuleUsersUIIndex = {
 	 */
 	changeGroupInList(value, text, $choice) {
 		$.api({
-			url: `${globalRootUrl}module-users-u-i/change-user-group/`,
+			url: `${globalRootUrl}module-users-u-i/users-credentials/change-user-group`,
 			on: 'now',
 			method: 'POST',
 			data: {

@@ -24,7 +24,6 @@ use Phalcon\Mvc\Model\Relation;
 
 class AccessGroups extends ModulesModelsBase
 {
-
     /**
      * @Primary
      * @Identity
@@ -56,9 +55,9 @@ class AccessGroups extends ModulesModelsBase
     /**
      * CDR filter mode
      *
-     * If is set to '0' the group can see and listen all users, the CDR filter is disabled
-     * If is set to '1' the group can see and listen only users from the AccessGroupCDRFilter list
-     * If is set to '2' the group can see and listen all users except users from the AccessGroupCDRFilter list
+     * If is set to 'all' the group can see and listen all users, the CDR filter is disabled
+     * If is set to 'selected' the group can see and listen only users from the AccessGroupCDRFilter list
+     * If is set to 'not-selected' the group can see and listen all users except users from the AccessGroupCDRFilter list
      *
      * @Column(type="string", length=1, default='0')
      */

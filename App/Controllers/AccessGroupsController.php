@@ -81,8 +81,10 @@ class AccessGroupsController extends ModuleUsersUIBaseController
             $accessGroupEntity=new AccessGroups();
             $accessGroupEntity->id = $data['id'];
         }
+        $accessGroupEntity->cdrFilterMode = $data['cdrFilterMode'];
         $accessGroupEntity->name = $data['name'];
         $accessGroupEntity->description = $data['description'];
+        $accessGroupEntity->homePage = $data['homePage'];
 
         // Save the access group object
         if ($accessGroupEntity->save()===false){

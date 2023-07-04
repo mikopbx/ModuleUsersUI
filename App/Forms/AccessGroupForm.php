@@ -20,6 +20,8 @@
 namespace Modules\ModuleUsersUI\App\Forms;
 
 use MikoPBX\AdminCabinet\Forms\BaseForm;
+use Modules\ModuleUsersUI\Lib\Constants;
+use Modules\ModuleUsersUI\Lib\UsersUICDRFilter;
 use Modules\ModuleUsersUI\Models\AccessGroupsRights;
 use Phalcon\Forms\Element\Check;
 use Phalcon\Forms\Element\Radio;
@@ -67,7 +69,7 @@ class AccessGroupForm extends BaseForm
             'conditions' => 'group_id = :group_id: and module_id = :module_id:',
             'bind' => [
                 'group_id' => $entity->id,
-                'module_id' => AccessGroupsRights::ADMIN_CABINET,
+                'module_id' => Constants::ADMIN_CABINET,
             ],
             'order' => 'controller'
         ];
@@ -85,7 +87,7 @@ class AccessGroupForm extends BaseForm
         if (empty($homepagesForSelect)) {
             $homepagesForSelect['session/end'] = 'session/end';
         }
-        $homePages = new Select('home-page', $homepagesForSelect, [
+        $homePages = new Select('homePage', $homepagesForSelect, [
             'using' => [
                 'id',
                 'name',
@@ -141,14 +143,17 @@ class AccessGroupForm extends BaseForm
 
         // CDR filter mode select
         $parameters = [
-            '0'=>['name'=>'cdrFilterMode', 'value'=>'0'],
-            '1'=>['name'=>'cdrFilterMode', 'value'=>'1'],
-            '2'=>['name'=>'cdrFilterMode', 'value'=>'2'],
+            Constants::CDR_FILTER_DISABLED =>
+                ['name'=>'cdrFilterMode', 'value'=>Constants::CDR_FILTER_DISABLED],
+            Constants::CDR_FILTER_ONLY_SELECTED =>
+                ['name'=>'cdrFilterMode', 'value'=>Constants::CDR_FILTER_ONLY_SELECTED],
+            Constants::CDR_FILTER_EXCEPT_SELECTED =>
+                ['name'=>'cdrFilterMode', 'value'=>Constants::CDR_FILTER_EXCEPT_SELECTED],
         ];
-        $parameters[$entity->cdrFilterMode]['checked'] = 'checked';
-        $this->add(new Radio('cdr_filter_mode_off', $parameters['0']));
-        $this->add(new Radio('cdr_filter_mode_by_list', $parameters['1']));
-        $this->add(new Radio('cdr_filter_mode_except_list', $parameters['2']));
+        $parameters[$entity->cdrFilterMode??Constants::CDR_FILTER_DISABLED]['checked'] = 'checked';
+        $this->add(new Radio('cdr_filter_mode_off', $parameters[Constants::CDR_FILTER_DISABLED]));
+        $this->add(new Radio('cdr_filter_mode_by_list', $parameters[Constants::CDR_FILTER_ONLY_SELECTED]));
+        $this->add(new Radio('cdr_filter_mode_except_list', $parameters[Constants::CDR_FILTER_EXCEPT_SELECTED]));
 
     }
     /**

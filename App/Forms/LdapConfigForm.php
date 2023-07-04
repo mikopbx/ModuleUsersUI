@@ -35,22 +35,22 @@ class LdapConfigForm extends BaseForm
         $this->add(new Text('serverPort',['placeholder' =>'389']));
 
         // AdministrativeLogin
-        $this->add(new Text('administrativeLogin'));
+        $this->add(new Text('administrativeLogin', ['placeholder' =>'Domain admin login']));
 
         // AdministrativePassword
-        $this->add(new Password('administrativePassword', ['autocomplete'=>'off']));
+        $this->add(new Password('administrativePassword', ['autocomplete'=>'off', 'placeholder' =>'Domain admin password']));
 
         // BaseDN
-        $this->add(new Text('baseDN', ['placeholder' =>'dc=domain,dc=com']));
+        $this->add(new Text('baseDN', ['placeholder' =>'dc=domain, dc=com']));
 
         // UserFilter
-        $this->addTextArea('userFilter', $entity->userFilter??'');
+        $this->addTextArea('userFilter', $entity->userFilter??'', 90, ['placeholder' =>'(&(objectClass=user)(objectCategory=PERSON))']);
 
         // UserIdAttribute
         $this->add(new Text('userIdAttribute', ['placeholder' =>'samaccountname']));
 
         // OrganizationUnit
-        $this->add(new Text('organizationalUnit', ['placeholder' =>'ou=users']));
+        $this->add(new Text('organizationalUnit', ['placeholder' =>'ou=users, dc=domain, dc=com']));
 
     }
 }

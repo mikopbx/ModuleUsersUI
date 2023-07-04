@@ -1,6 +1,6 @@
 {{ form('module-users-u-i/access-groups/save', 'role': 'form', 'class': 'ui large form','id':'module-users-ui-form') }}
 
-<div class="ui top attached tabular menu" id="module-users-group-modify-menu">
+<div class="ui top attached tabular menu" id="module-access-group-modify-menu">
     {% if id is null %}
         {% set disableOnNewFields="disabled" %}
     {% else %}

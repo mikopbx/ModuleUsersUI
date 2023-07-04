@@ -59,7 +59,7 @@ class UsersUICDRFilter extends \Phalcon\Di\Injectable
         $cdrFilterMode = $modelsManager->createBuilder($parameters)->getQuery()->execute()->getFirst()->cdrFilterMode;
 
         // Disabled filter
-        if ($cdrFilterMode === '0') {
+        if ($cdrFilterMode === Constants::CDR_FILTER_DISABLED) {
             return;
         }
 
@@ -104,10 +104,10 @@ class UsersUICDRFilter extends \Phalcon\Di\Injectable
         if (count(array_column($filteredExtensions, 'number')) > 0) {
             // Update CDR request parameters with filtered extensions
             $cdrRequestParameters['bind']['filteredExtensions'] = array_column($filteredExtensions, 'number');
-            if ($cdrFilterMode === '1') {
+            if ($cdrFilterMode === Constants::CDR_FILTER_ONLY_SELECTED) {
                 // Only show CDRs for the filtered extensions from the AccessGroupCDRFilter list
                 $cdrRequestParameters['conditions'] = '(src_num IN ({filteredExtensions:array}) OR dst_num IN ({filteredExtensions:array})) AND (' . $cdrRequestParameters['conditions'] . ')';
-            } elseif ($cdrFilterMode === '2') {
+            } elseif ($cdrFilterMode === Constants::CDR_FILTER_EXCEPT_SELECTED) {
                 // Only show CDRs for the filtered extensions NOT in the AccessGroupCDRFilter list
                 $cdrRequestParameters['conditions'] = 'src_num NOT IN ({filteredExtensions:array}) AND dst_num NOT IN ({filteredExtensions:array}) AND (' . $cdrRequestParameters['conditions'] . ')';
             }

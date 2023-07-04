@@ -42,9 +42,16 @@ class LdapConfigController extends ModuleUsersUIBaseController
         }
 
         // Update ldapConfig properties with the provided data
-        foreach ($ldapConfig as $key => $value) {
-            if (isset($data[$key])) {
-                $ldapConfig->$key = $data[$key];
+        foreach ($ldapConfig as $name => $value) {
+            switch ($name) {
+                case 'id':
+                    break;
+                default:
+                    if (isset($data[$name])) {
+                        $ldapConfig->$name = $data[$name];
+                    } else {
+                        $ldapConfig->$name = '';
+                    }
             }
         }
 
@@ -83,9 +90,7 @@ class LdapConfigController extends ModuleUsersUIBaseController
         $message = '';
 
         // Check authentication via LDAP
-        $this->view->success = true;
-        if ($ldapAuth->checkAuthViaLdap($data['testLogin'], $data['testPassword'], $message)) {
-            $this->view->message = $message;
-        }
+        $this->view->success = $ldapAuth->checkAuthViaLdap($data['testLogin'], $data['testPassword'], $message);
+        $this->view->message = $message;
     }
 }

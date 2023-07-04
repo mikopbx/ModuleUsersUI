@@ -35,6 +35,24 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
+/*
+ * MikoPBX - free phone system for small business
+ * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
 
 /*
  * MikoPBX - free phone system for small business
@@ -153,5 +171,46 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
         }
 
         return true;
+    }
+
+
+    /**
+     * Handles the action for changing user group.
+     *
+     * @return void
+     */
+    public function changeUserGroupAction(): void
+    {
+        if ( ! $this->request->isPost()) {
+            return;
+        }
+        $data        = $this->request->getPost();
+        $parameters  = [
+            'conditions' => 'user_id=:userID:',
+            'bind'       => [
+                'userID' => $data['user_id'],
+            ],
+        ];
+        $groupMember = UsersCredentials::findFirst($parameters);
+        if ($groupMember === null) {
+            $groupMember          = new UsersCredentials();
+            $groupMember->user_id = $data['user_id'];
+        }
+
+        if ($data['group_id']==='No access') {
+            $groupMember->enabled = '0';
+        } else {
+            $groupMember->user_access_group_id = $data['group_id'];
+            $groupMember->enabled = '1';
+        }
+
+        if ($groupMember->save() === false) {
+            $errors = $groupMember->getMessages();
+            $this->flash->error(implode('<br>', $errors));
+            $this->view->success = false;
+        } else {
+            $this->flash->success($this->translation->_('ms_SuccessfulSaved'));
+            $this->view->success = true;
+        }
     }
 }

@@ -51,7 +51,7 @@ class ModuleUsersUIBaseController extends BaseController
      *
      * @return array The list of users.
      */
-    public function getTheListOfUsersForDisplayInTheFilter(): array
+    public function getTheListOfUsersForDisplayInTheFilter(string $group_id = ''): array
     {
         // Get the list of users for display in the filter
         $parameters = [
@@ -67,7 +67,6 @@ class ModuleUsersUIBaseController extends BaseController
                 'userid' => 'Users.id',
                 'type' => 'Extensions.type',
                 'avatar' => 'Users.avatar',
-
             ],
             'order' => 'number',
             'joins' => [
@@ -87,6 +86,7 @@ class ModuleUsersUIBaseController extends BaseController
             'models' => [
                 'UsersCredentials' => UsersCredentials::class,
             ],
+            'conditions' => 'enabled = 1',
             'columns' => [
                 'user_id' => 'UsersCredentials.user_id',
                 'group' => 'AccessGroups.name',
@@ -113,7 +113,7 @@ class ModuleUsersUIBaseController extends BaseController
                     $extensionTable[$extension->userid]['number'] = $extension->number;
                     $extensionTable[$extension->userid]['id'] = $extension->id;
                     $extensionTable[$extension->userid]['username'] = $extension->username;
-                    $extensionTable[$extension->userid]['group'] = null;
+                    $extensionTable[$extension->userid]['group'] = 'No access';
                     $extensionTable[$extension->userid]['email'] = $extension->email;
                     $key = array_search(
                         $extension->userid,
@@ -121,7 +121,14 @@ class ModuleUsersUIBaseController extends BaseController
                         true
                     );
                     if ($key !== false) {
-                        $extensionTable[$extension->userid]['group'] = $groupMembers[$key]['group'];
+                        $extensionTable[$extension->userid]['group'] = $groupMembers[$key]['group']??'No access';
+                        if ($group_id == $groupMembers[$key]['group_id']) {
+                            $extensionTable[$extension->userid]['hidden'] = false;
+                        } else {
+                            $extensionTable[$extension->userid]['hidden'] = true;
+                        }
+                    } else {
+                        $extensionTable[$extension->userid]['hidden'] = true;
                     }
 
                     if (!array_key_exists('mobile', $extensionTable[$extension->userid])) {
