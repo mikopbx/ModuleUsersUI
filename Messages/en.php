@@ -17,14 +17,6 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
-/**
- * Copyright (C) MIKO LLC - All Rights Reserved
- * Unauthorized copying of this file, via any medium is strictly prohibited
- * Proprietary and confidential
- * Written by Nikolay Beketov, 6 2018
- *
- */
-
 return [
 	'repModuleUsersUI'       => 'Module users UI - %repesent%',
 	'mo_ModuleModuleUsersUI' => 'Module users UI',
