@@ -21,15 +21,17 @@
         </td>
         <td class="center aligned">{{ member['number'] }}</td>
         <td class="center aligned">
-            <div class="ui transparent fluid input inline-edit">
+            <div class="ui transparent fluid input inline-edit icon">
                 <input class="user-login-input" type="text" data-value="{{ member['userid'] }}"
                        value="{{ member['user_login'] }}">
+                <i class="ui spinner loading icon" style="display: none"></i>
             </div>
         </td>
         <td class="center aligned">
-            <div class="ui transparent fluid input inline-edit">
-                <input class="user-password-input" type="text" data-value="{{ member['userid'] }}"
+            <div class="ui transparent fluid input inline-edit icon">
+                <input class="user-password-input" type="password" data-value="{{ member['userid'] }}"
                        value="{{ member['user_password'] }}">
+                <i class="ui spinner loading icon" style="display: none"></i>
             </div>
         </td>
         <td class="center aligned show-only-if-ldap-enabled">

@@ -91,7 +91,8 @@ const ModuleUsersUIIndex = {
 		$(document).on('keydown', (e) => {
 			const keyCode = e.keyCode || e.which;
 			if (keyCode === 13
-				|| (keyCode === 9 && !$(':focus').hasClass('.number-input'))
+				|| (keyCode === 9 && !$(':focus').hasClass('.user-login-input'))
+				|| (keyCode === 9 && !$(':focus').hasClass('.user-password-input'))
 			) {
 				const $el = $('.changed-field').closest('tr');
 				$el.each((index, obj) => {
@@ -125,6 +126,7 @@ const ModuleUsersUIIndex = {
 			lengthChange: false,
 			paging: false,
 			columns: [
+				null,
 				null,
 				null,
 				null,
@@ -178,20 +180,36 @@ const ModuleUsersUIIndex = {
 	 * @param {jQuery} $choice - The dropdown element.
 	 */
 	changeGroupInList(value, text, $choice) {
+		const rowId = $($choice).closest('tr').attr('id');
+		ModuleUsersUIIndex.addProgressIcon(rowId);
 		$.api({
 			url: `${globalRootUrl}module-users-u-i/users-credentials/change-user-group`,
 			on: 'now',
 			method: 'POST',
 			data: {
-				user_id: $($choice).closest('tr').attr('id'),
+				user_id: rowId,
 				group_id: value,
 			},
+			successTest(response) {
+				// test whether a JSON response is valid
+				return response !== undefined
+					&& Object.keys(response).length > 0
+					&& response.success === true;
+			},
 			onSuccess() {
-				//	ModuleUsersUIIndex.initializeDataTable();
-				//	console.log('updated');
+				ModuleUsersUIIndex.removeProgressIcon(rowId);
 			},
 			onError(response) {
-				console.log(response);
+				if (response.message !== undefined) {
+					UserMessage.showMultiString(response.message);
+				}
+				ModuleUsersUIIndex.removeProgressIcon(rowId);
+			},
+			onFailure(response) {
+				if (response.message !== undefined) {
+					UserMessage.showMultiString(response.message);
+				}
+				ModuleUsersUIIndex.removeProgressIcon(rowId);
 			},
 		});
 	},
@@ -200,20 +218,36 @@ const ModuleUsersUIIndex = {
 	 * Handles the change of LDAP checkbox in the list.
 	 */
 	changeLdapInList() {
+		const rowId = $(this).closest('tr').attr('id');
+		ModuleUsersUIIndex.addProgressIcon(rowId);
 		$.api({
 			url: `${globalRootUrl}module-users-u-i/users-credentials/change-user-use-ldap`,
 			on: 'now',
 			method: 'POST',
 			data: {
-				user_id: $(this).closest('tr').attr('id'),
+				user_id: rowId,
 				useLdap: $(this).parent('.checkbox').checkbox('is checked'),
 			},
+			successTest(response) {
+				// test whether a JSON response is valid
+				return response !== undefined
+					&& Object.keys(response).length > 0
+					&& response.success === true;
+			},
 			onSuccess() {
-				//	ModuleUsersUIIndex.initializeDataTable();
-				//	console.log('updated');
+				ModuleUsersUIIndex.removeProgressIcon(rowId);
 			},
 			onError(response) {
-				console.log(response);
+				if (response.message !== undefined) {
+					UserMessage.showMultiString(response.message);
+				}
+				ModuleUsersUIIndex.removeProgressIcon(rowId);
+			},
+			onFailure(response) {
+				if (response.message !== undefined) {
+					UserMessage.showMultiString(response.message);
+				}
+				ModuleUsersUIIndex.removeProgressIcon(rowId);
 			},
 		});
 	},
@@ -223,8 +257,10 @@ const ModuleUsersUIIndex = {
 	 * @param {string} rowId - The ID of the row.
 	 */
 	changeLoginPasswordInList(rowId) {
-		const login = $(`#{rowId} input.user-login-input`).val();
-		const password = $(`#{rowId} input.user-password-input`).val();
+		const login = $(`#${rowId} input.user-login-input`).val();
+		const password = $(`#${rowId} input.user-password-input`).val();
+
+		ModuleUsersUIIndex.addProgressIcon(rowId);
 
 		$.api({
 			url: `${globalRootUrl}module-users-u-i/users-credentials/change-user-credentials`,
@@ -235,15 +271,43 @@ const ModuleUsersUIIndex = {
 				login: login,
 				password: password,
 			},
+			successTest(response) {
+				// test whether a JSON response is valid
+				return response !== undefined
+					&& Object.keys(response).length > 0
+					&& response.success === true;
+			},
 			onSuccess() {
-				//	ModuleUsersUIIndex.initializeDataTable();
-				//	console.log('updated');
+				ModuleUsersUIIndex.removeProgressIcon(rowId);
+				$(`tr#${rowId} .changed-field input`).attr('readonly', true);
+				$(`tr#${rowId} div.changed-field`).removeClass('changed-field loading').addClass('transparent');
 			},
 			onError(response) {
-				console.log(response);
+				if (response.message !== undefined) {
+					UserMessage.showMultiString(response.message);
+				}
+				ModuleUsersUIIndex.removeProgressIcon(rowId);
+			},
+			onFailure(response) {
+				if (response.message !== undefined) {
+					UserMessage.showMultiString(response.message);
+				}
+				ModuleUsersUIIndex.removeProgressIcon(rowId);
 			},
 		});
 	},
+	/**
+	 * Adds save icon from the row
+	 */
+	addProgressIcon(rowId){
+		$(`tr#${rowId} .changed-field`).find('.ui.spinner.loading.icon').show();
+	},
+	/**
+	 * Removes save icon from the row
+	 */
+	removeProgressIcon(rowId) {
+		$(`tr#${rowId} .changed-field`).find('.ui.spinner.loading.icon').hide();
+	}
 };
 
 $(document).ready(() => {

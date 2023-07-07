@@ -126,7 +126,7 @@ class UsersCredentials extends ModulesModelsBase
     public static function getDynamicRelations(&$calledModelObject): void
     {
         if (is_a($calledModelObject, Users::class)) {
-            $calledModelObject->belongsTo(
+            $calledModelObject->hasOne(
                 'id',
                 UsersCredentials::class,
                 'user_id',

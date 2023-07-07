@@ -127,11 +127,6 @@ const moduleUsersUILdap = {
     initialize() {
         moduleUsersUILdap.initializeForm();
 
-        moduleUsersUILdap.$useLdapCheckbox.checkbox({
-            onChange: moduleUsersUILdap.onChangeLdapCheckbox,
-        });
-        moduleUsersUILdap.onChangeLdapCheckbox();
-
         // Handle check button click
         moduleUsersUILdap.$checkAuthButton.api({
             url: `${globalRootUrl}module-users-u-i/ldap-config/check-auth`,
@@ -164,6 +159,12 @@ const moduleUsersUILdap = {
             },
         });
 
+        // General ldap switcher
+        moduleUsersUILdap.$useLdapCheckbox.checkbox({
+            onChange: moduleUsersUILdap.onChangeLdapCheckbox,
+        });
+        moduleUsersUILdap.onChangeLdapCheckbox();
+
     },
 
     /**
@@ -187,6 +188,12 @@ const moduleUsersUILdap = {
     cbBeforeSendForm(settings) {
         const result = settings;
         result.data = moduleUsersUILdap.$formObj.form('get values');
+        if (moduleUsersUILdap.$useLdapCheckbox.checkbox('is checked')){
+            result.data.useLdapAuthMethod = '1';
+        } else {
+            result.data.useLdapAuthMethod = '0';
+        }
+
         return result;
     },
 

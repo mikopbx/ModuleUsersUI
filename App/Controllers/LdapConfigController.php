@@ -55,13 +55,6 @@ class LdapConfigController extends ModuleUsersUIBaseController
                         $ldapConfig->$name = $data['administrativePasswordHidden'];
                     }
                     break;
-                case 'useLdapAuthMethod':
-                    if (array_key_exists($name, $data)) {
-                        $ldapConfig->$name = ($data[$name] === 'on') ? '1' : '0';
-                    } else {
-                        $ldapConfig->$name = '0';
-                    }
-                    break;
                 default:
                     if (isset($data[$name])) {
                         $ldapConfig->$name = $data[$name];
@@ -107,6 +100,7 @@ class LdapConfigController extends ModuleUsersUIBaseController
             'administrativePassword' => $data['administrativePassword'],
             'userIdAttribute' => $data['userIdAttribute'],
             'organizationalUnit' => $data['organizationalUnit'],
+            'userFilter' => $data['userFilter'],
 
         ];
         $ldapAuth = new UsersUILdapAuth($ldapCredentials);
@@ -115,5 +109,18 @@ class LdapConfigController extends ModuleUsersUIBaseController
         // Check authentication via LDAP
         $this->view->success = $ldapAuth->checkAuthViaLdap($data['testLogin'], $data['testPassword'], $message);
         $this->view->message = $message;
+    }
+
+    public function getAvailableLdapUsersAction(): void
+    {
+        $ldapCredentials = LdapConfig::findFirst()->toArray();
+        $ldapAuth = new UsersUILdapAuth($ldapCredentials);
+        $message = '';
+
+        $availableUsers = $ldapAuth->getUsersList($message);
+        $this->view->data = $availableUsers;
+        $this->view->success = true;
+        $this->view->message = $message;
+
     }
 }

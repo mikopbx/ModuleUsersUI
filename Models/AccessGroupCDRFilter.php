@@ -100,7 +100,7 @@ class AccessGroupCDRFilter extends ModulesModelsBase
     public static function getDynamicRelations(&$calledModelObject): void
     {
         if (is_a($calledModelObject, Users::class)) {
-            $calledModelObject->belongsTo(
+            $calledModelObject->hasMany(
                 'id',
                 AccessGroupCDRFilter::class,
                 'user_id',

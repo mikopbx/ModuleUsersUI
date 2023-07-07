@@ -34,8 +34,8 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
     private string $administrativeLogin;
     private string $administrativePassword;
     private string $userIdAttribute;
-
     private string $organizationalUnit;
+    private string $userFilter;
 
     public function __construct(array $ldapCredentials)
     {
@@ -46,6 +46,7 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
         $this->administrativePassword = $ldapCredentials['administrativePassword'];
         $this->userIdAttribute = $ldapCredentials['userIdAttribute'];
         $this->organizationalUnit = $ldapCredentials['organizationalUnit'];
+        $this->userFilter = $ldapCredentials['userFilter'];
     }
 
     /**
@@ -94,12 +95,14 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
             });
 
             // Query LDAP for the user
-            $query = $connection->query()
-                ->where($this->userIdAttribute, '=', $username);
+            $query = $connection->query();
+            if ($this->userFilter!==''){
+                $query->rawFilter($this->userFilter);
+            }
             if ($this->organizationalUnit!==''){
                 $query->in($this->organizationalUnit);
             }
-            $user = $query->first();
+            $user = $query->where($this->userIdAttribute, '=', $username)->first();;
 
             if ($user) {
                 // Continue with authentication if user is found and attempt authentication
@@ -120,5 +123,60 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
         }
 
         return $success;
+    }
+
+
+    /**
+     * Get available users list via LDAP.
+     *
+     * @param string $message The error message.
+     * @return array list of users.
+     */
+    public function getUsersList(string &$message=''): array
+    {
+        // Create a new LDAP connection
+        $connection = new \LdapRecord\Connection([
+            'hosts' => [$this->serverName],
+            'port' => $this->serverPort,
+            'base_dn' => $this->baseDN,
+            'username' => $this->administrativeLogin,
+            'password' => $this->administrativePassword,
+        ]);
+
+        $listOfAvailableUsers = [];
+        $message = $this->translation->_('module_usersui_ldap_user_not_found');
+        try {
+            $connection->connect();
+
+            $dispatcher = Container::getEventDispatcher();
+            // Listen for failed authentication event
+            $dispatcher->listen(Failed::class, function (Failed $event) use (&$message) {
+                $ldap = $event->getConnection();
+                $message = $ldap->getDiagnosticMessage();
+            });
+
+            // Query LDAP for the user
+            $query = $connection->query();
+            if ($this->userFilter!==''){
+                $query->rawFilter($this->userFilter);
+            }
+            if ($this->organizationalUnit!==''){
+                $query->in($this->organizationalUnit);
+            }
+            $users = $query->get();
+            foreach ($users as $user) {
+                if (array_key_exists($this->userIdAttribute, $user)
+                    && isset($user[$this->userIdAttribute][0]))
+                $listOfAvailableUsers[]=$user[$this->userIdAttribute][0];
+            }
+
+        } catch (\Throwable $e) {
+            global $errorLogger;
+            $errorLogger->captureException($e);
+            Util::sysLogMsg("UsersUILdapAuth_EXCEPTION", $e->getMessage(), LOG_ERR);
+            $message = $e->getMessage();
+        }
+
+        return $listOfAvailableUsers;
     }
 }
