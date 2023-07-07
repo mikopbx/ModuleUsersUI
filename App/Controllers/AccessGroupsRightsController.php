@@ -387,10 +387,8 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
                 $accessGroupRight->actions = json_encode($controller['actions']);
 
                 // Save the access group right object
-                if ($accessGroupRight->save() === false) {
+                if ($this->saveEntity($accessGroupRight) === false) {
                     // If there are validation errors, display them and return false
-                    $errors = $accessGroupRight->getMessages();
-                    $this->flash->error(implode('<br>', $errors));
                     return false;
                 }
 

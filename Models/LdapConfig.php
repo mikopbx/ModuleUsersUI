@@ -31,6 +31,13 @@ class LdapConfig extends ModulesModelsBase
     public $id;
 
     /**
+     * Allows to use LDAP authentication method
+     *
+     * @Column(type="string", nullable=false, default='0')
+     */
+    public $useLdapAuthMethod;
+
+    /**
      * Ldap server host name or IP
      *
      * @Column(type="string", nullable=false)

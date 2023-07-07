@@ -1,5 +1,13 @@
 {{ form('module-users-u-i/ldap-config/save', 'role': 'form', 'class': 'ui large form','id':'module-users-ui-ldap-form') }}
-<div class="fields">
+
+<div class="field">
+    <div class="ui toggle checkbox" id="use-ldap-auth-method">
+        {{ ldapForm.render('useLdapAuthMethod') }}
+        <label for="useLdapAuthMethod">{{ t._('module_usersui_LdapCheckbox') }}</label>
+    </div>
+</div>
+
+<div class="fields disable-if-no-ldap">
     <div class="six wide field">
         <label for="serverName">{{ t._('module_usersui_LdapServerName') }}</label>
         {{ ldapForm.render('serverName') }}
@@ -16,33 +24,32 @@
     </div>
 </div>
 
-<div class="field">
-<label>{{ t._('module_usersui_LdapAdminLogin') }}</label>
-<div class="equal width fields">
-    <div class="field max-width-250">
-        {{ ldapForm.render('administrativeLogin') }}
-    </div>
-
-    <div class="field max-width-400">
-        {{ ldapForm.render('administrativePasswordHidden') }}
+<div class="field disable-if-no-ldap">
+    <label>{{ t._('module_usersui_LdapAdminLogin') }}</label>
+    <div class="equal width fields">
+        <div class="field max-width-250">
+            {{ ldapForm.render('administrativeLogin') }}
+        </div>
+        <div class="field max-width-400">
+            {{ ldapForm.render('administrativePasswordHidden') }}
+        </div>
     </div>
 </div>
-</div>
-<div class="field">
+<div class="field disable-if-no-ldap">
     <label for="userIdAttribute">{{ t._('module_usersui_LdapUserIdAttribute') }}</label>
     <div class="field max-width-300">
         {{ ldapForm.render('userIdAttribute') }}
     </div>
 </div>
-<div class="field">
+<div class="field disable-if-no-ldap">
     <label for="organizationalUnit">{{ t._('module_usersui_LdapOrganizationalUnit') }}</label>
     {{ ldapForm.render('organizationalUnit') }}
 </div>
-<div class="field">
+<div class="field disable-if-no-ldap">
     <label for="userFilter">{{ t._('module_usersui_LdapUserFilter') }}</label>
     {{ ldapForm.render('userFilter') }}
 </div>
-<div class="field">
+<div class="field disable-if-no-ldap">
     <div class="ui segment">
         <div class="ui header">{{ t._('module_usersui_LdapCheckHeader') }}</div>
         <p>{{ t._('module_usersui_LdapCheckLogin') }}</p>

@@ -31,5 +31,7 @@ class Constants
     public const ADMIN_CABINET = 'AdminCabinet';
     public const PBX_CORE_REST = 'PBXCoreREST';
 
-    public const HIDDEN_ADMIN_PASSWORD = 'xxxxxxxx';
+    public const HIDDEN_PASSWORD = 'xxxxxxxx';
+
+    public const NO_ACCESS_GROUP_ID = 'No access';
 }

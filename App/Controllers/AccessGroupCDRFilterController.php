@@ -147,7 +147,7 @@ class AccessGroupCDRFilterController extends ModuleUsersUIBaseController
             $record = new AccessGroupCDRFilter();
             $record->group_id = $accessGroupId;
             $record->user_id = $user;
-            if (!$record->save()) {
+            if (!$this->saveEntity($record)) {
                 return false;
             }
         }

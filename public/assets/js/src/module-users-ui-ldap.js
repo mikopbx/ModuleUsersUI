@@ -22,6 +22,27 @@
 const moduleUsersUILdap = {
 
     /**
+     * Checkbox for LDAP authentication.
+     * @type {jQuery}
+     * @private
+     */
+    $useLdapCheckbox: $('#use-ldap-auth-method'),
+
+    /**
+     * Set of form fields to use for LDAP authentication.
+     * @type {jQuery}
+     * @private
+     */
+    $formFieldsForLdapSettings: $('.disable-if-no-ldap'),
+
+    /**
+     * Set of elements of the form adhered to ldap auth method.
+     * @type {jQuery}
+     * @private
+     */
+    $formElementsAvailableIfLdapIsOn: $('.show-only-if-ldap-enabled'),
+
+    /**
      * jQuery object for the ldap check segment.
      * @type {jQuery}
      */
@@ -39,6 +60,10 @@ const moduleUsersUILdap = {
      */
     $checkAuthButton: $('.check-ldap-credentials.button'),
 
+    /**
+     * Validation rules for the form fields.
+     * @type {Object}
+     */
     validateRules: {
         serverName: {
             identifier: 'serverName',
@@ -96,8 +121,16 @@ const moduleUsersUILdap = {
         },
     },
 
+    /**
+     * Initializes the module.
+     */
     initialize() {
         moduleUsersUILdap.initializeForm();
+
+        moduleUsersUILdap.$useLdapCheckbox.checkbox({
+            onChange: moduleUsersUILdap.onChangeLdapCheckbox,
+        });
+        moduleUsersUILdap.onChangeLdapCheckbox();
 
         // Handle check button click
         moduleUsersUILdap.$checkAuthButton.api({
@@ -133,14 +166,40 @@ const moduleUsersUILdap = {
 
     },
 
+    /**
+     * Handles the change of the LDAP checkbox.
+     */
+    onChangeLdapCheckbox(){
+        if (moduleUsersUILdap.$useLdapCheckbox.checkbox('is checked')) {
+            moduleUsersUILdap.$formFieldsForLdapSettings.removeClass('disabled');
+            moduleUsersUILdap.$formElementsAvailableIfLdapIsOn.show();
+        } else {
+            moduleUsersUILdap.$formFieldsForLdapSettings.addClass('disabled');
+            moduleUsersUILdap.$formElementsAvailableIfLdapIsOn.hide();
+        }
+    },
+
+    /**
+     * Callback function before sending the form.
+     * @param {object} settings - The settings object.
+     * @returns {object} - The modified settings object.
+     */
     cbBeforeSendForm(settings) {
         const result = settings;
         result.data = moduleUsersUILdap.$formObj.form('get values');
         return result;
     },
-    cbAfterSendForm() {
 
+    /**
+     * Callback function after sending the form.
+     */
+    cbAfterSendForm() {
+        // Callback implementation
     },
+
+    /**
+     * Initializes the form.
+     */
     initializeForm() {
         Form.$formObj = moduleUsersUILdap.$formObj;
         Form.url = `${globalRootUrl}module-users-u-i/ldap-config/save`;

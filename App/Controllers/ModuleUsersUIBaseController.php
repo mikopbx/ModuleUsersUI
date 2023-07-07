@@ -24,6 +24,7 @@ use MikoPBX\AdminCabinet\Controllers\BaseController;
 use MikoPBX\Common\Models\Extensions;
 use MikoPBX\Common\Models\Users;
 use MikoPBX\Modules\PbxExtensionUtils;
+use Modules\ModuleUsersUI\Lib\Constants;
 use Modules\ModuleUsersUI\Models\AccessGroups;
 use Modules\ModuleUsersUI\Models\UsersCredentials;
 use function MikoPBX\Common\Config\appPath;
@@ -49,9 +50,10 @@ class ModuleUsersUIBaseController extends BaseController
     }
 
     /**
-     * Retrieves the list of users for display in the filter.
+     * Get the list of users for display in the filter.
      *
-     * @return array The list of users.
+     * @param string $group_id (optional) The group ID to filter the users.
+     * @return array The list of users for display in the filter.
      */
     public function getTheListOfUsersForDisplayInTheFilter(string $group_id = ''): array
     {
@@ -88,11 +90,13 @@ class ModuleUsersUIBaseController extends BaseController
             'models' => [
                 'UsersCredentials' => UsersCredentials::class,
             ],
-            'conditions' => 'enabled = 1',
             'columns' => [
                 'user_id' => 'UsersCredentials.user_id',
                 'group' => 'AccessGroups.name',
                 'group_id' => 'AccessGroups.id',
+                'user_login' => 'UsersCredentials.user_login',
+                'use_ldap_auth' => 'UsersCredentials.use_ldap_auth',
+                'user_enabled' => 'UsersCredentials.enabled',
             ],
             'joins' => [
                 'AccessGroups' => [
@@ -115,20 +119,29 @@ class ModuleUsersUIBaseController extends BaseController
                     $extensionTable[$extension->userid]['number'] = $extension->number;
                     $extensionTable[$extension->userid]['id'] = $extension->id;
                     $extensionTable[$extension->userid]['username'] = $extension->username;
-                    $extensionTable[$extension->userid]['group'] = 'No access';
+                    $extensionTable[$extension->userid]['group'] = Constants::NO_ACCESS_GROUP_ID;
                     $extensionTable[$extension->userid]['email'] = $extension->email;
+                    $extensionTable[$extension->userid]['user_password'] = Constants::HIDDEN_PASSWORD;
                     $key = array_search(
                         $extension->userid,
                         $groupMembersIds,
                         true
                     );
                     if ($key !== false) {
-                        $extensionTable[$extension->userid]['group'] = $groupMembers[$key]['group']??'No access';
-                        if ($group_id == $groupMembers[$key]['group_id']) {
+                        if ($group_id == $groupMembers[$key]['group_id'] and $groupMembers[$key]['user_enabled'] === '1') {
                             $extensionTable[$extension->userid]['hidden'] = false;
                         } else {
                             $extensionTable[$extension->userid]['hidden'] = true;
                         }
+                        $extensionTable[$extension->userid]['user_login'] = $groupMembers[$key]['user_login'];
+                        $extensionTable[$extension->userid]['use_ldap_auth'] = $groupMembers[$key]['use_ldap_auth'];
+
+                        if (empty($groupMembers[$key]['group']) || $groupMembers[$key]['user_enabled'] === '0') {
+                            $extensionTable[$extension->userid]['group'] = Constants::NO_ACCESS_GROUP_ID;
+                        } else {
+                            $extensionTable[$extension->userid]['group'] = $groupMembers[$key]['group'];
+                        }
+
                     } else {
                         $extensionTable[$extension->userid]['hidden'] = true;
                     }
@@ -154,6 +167,25 @@ class ModuleUsersUIBaseController extends BaseController
             }
         }
         return $extensionTable;
+    }
+
+    /**
+     * Save an entity and handle success or error messages.
+     *
+     * @param mixed $entity The entity to be saved.
+     * @return bool True if the entity was successfully saved, false otherwise.
+     */
+    protected function saveEntity($entity):bool
+    {
+        if ($entity->save() === false) {
+            $errors = $entity->getMessages();
+            $this->flash->error(implode('<br>', $errors));
+            $this->view->success = false;
+        } else {
+            $this->flash->success($this->translation->_('ms_SuccessfulSaved'));
+            $this->view->success = true;
+        }
+        return $this->view->success;
     }
 
 }

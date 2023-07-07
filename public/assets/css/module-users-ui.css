@@ -16,11 +16,6 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
- * Copyright (C) MIKO LLC - All Rights Reserved
- * Unauthorized copying of this file, via any medium is strictly prohibited
- * Proprietary and confidential
- * Written by Nikolay Beketov, 9 2018
- *
- */
-
+#users-table .ui.input.inline-edit>input {
+    cursor: text!important;
+}

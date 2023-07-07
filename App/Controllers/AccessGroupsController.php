@@ -87,10 +87,8 @@ class AccessGroupsController extends ModuleUsersUIBaseController
         $accessGroupEntity->homePage = $data['homePage'];
 
         // Save the access group object
-        if ($accessGroupEntity->save()===false){
+        if ($this->saveEntity($accessGroupEntity)===false){
             // If there are validation errors, display them and return false
-            $errors = $accessGroupEntity->getMessages();
-            $this->flash->error(implode('<br>', $errors));
             $this->db->rollback();
             return;
         }

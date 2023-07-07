@@ -48,10 +48,3 @@
     {{ link_to("module-users-u-i/access-groups/modify", '<i class="add circle icon"></i> '~t._('module_usersui_AddNewAccessGroupShort'), "class": "ui blue button", "id":"add-new-button") }}
 </div>
 {% endif %}
-
-<select id="users-groups-list" style="display: none;">
-    <option value="No access">{{ t._('module_usersui_NoAccessGroupName') }}</option>
-    {% for record in groups %}
-        <option value="{{ record['id'] }}">{{ record['name'] }}</option>
-    {% endfor %}
-</select>

@@ -51,8 +51,15 @@ class LdapConfigController extends ModuleUsersUIBaseController
                     break;
                 case 'administrativePassword':
                     if (isset($data['administrativePasswordHidden'])
-                        && $data['administrativePasswordHidden'] !== Constants::HIDDEN_ADMIN_PASSWORD) {
+                        && $data['administrativePasswordHidden'] !== Constants::HIDDEN_PASSWORD) {
                         $ldapConfig->$name = $data['administrativePasswordHidden'];
+                    }
+                    break;
+                case 'useLdapAuthMethod':
+                    if (array_key_exists($name, $data)) {
+                        $ldapConfig->$name = ($data[$name] === 'on') ? '1' : '0';
+                    } else {
+                        $ldapConfig->$name = '0';
                     }
                     break;
                 default:
@@ -85,7 +92,7 @@ class LdapConfigController extends ModuleUsersUIBaseController
 
         $data = $this->request->getPost();
 
-        if ($data['administrativePasswordHidden'] === Constants::HIDDEN_ADMIN_PASSWORD) {
+        if ($data['administrativePasswordHidden'] === Constants::HIDDEN_PASSWORD) {
             $ldapConfig = LdapConfig::findFirst();
             $data['administrativePassword'] = $ldapConfig->administrativePassword;
         } else {

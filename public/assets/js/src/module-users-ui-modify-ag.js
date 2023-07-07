@@ -20,15 +20,65 @@
 
 
 const moduleUsersUIModifyAG = {
+
+    /**
+     * jQuery object for the form.
+     * @type {jQuery}
+     */
     $formObj: $('#module-users-ui-form'),
+
+    /**
+     * jQuery object for the select users dropdown.
+     * @type {jQuery}
+     */
     $selectUsersDropDown: $('[data-tab="users"] .select-extension-field'),
+
+    /**
+     * jQuery object for the module status toggle.
+     * @type {jQuery}
+     */
     $statusToggle: $('#module-status-toggle'),
+
+    /**
+     * jQuery object for the home page dropdown select.
+     * @type {jQuery}
+     */
     $homePageDropdown: $('.home-page-dropdown'),
+
+    /**
+     * jQuery object for the access settings tab menu.
+     * @type {jQuery}
+     */
     $accessSettingsTabMenu: $('#access-settings-tab-menu .item'),
+
+    /**
+     * jQuery object for the main tab menu.
+     * @type {jQuery}
+     */
     $mainTabMenu: $('#module-access-group-modify-menu .item'),
+
+    /**
+     * jQuery object for the CDR filter tab.
+     * @type {jQuery}
+     */
     $cdrFilterTab: $('#module-access-group-modify-menu .item[data-tab="cdr-filter"]'),
+
+    /**
+     * jQuery object for the CDR filter toggles.
+     * @type {jQuery}
+     */
     $cdrFilterToggles: $('div.cdr-filter-toggles'),
+
+    /**
+     * jQuery object for the CDR filter mode.
+     * @type {jQuery}
+     */
     $cdrFilterMode: $('div.cdr-filter-radio'),
+
+    /**
+     * Default extension.
+     * @type {string}
+     */
     defaultExtension: '',
 
     /**
@@ -43,6 +93,10 @@ const moduleUsersUIModifyAG = {
      */
     $checkButton: $('.check.button'),
 
+    /**
+     * Validation rules for the form fields.
+     * @type {Object}
+     */
     validateRules: {
         name: {
             identifier: 'name',
@@ -55,6 +109,9 @@ const moduleUsersUIModifyAG = {
         },
     },
 
+    /**
+     * Initializes the module.
+     */
     initialize() {
         moduleUsersUIModifyAG.checkStatusToggle();
         window.addEventListener('ModuleStatusChanged', moduleUsersUIModifyAG.checkStatusToggle);
@@ -95,6 +152,10 @@ const moduleUsersUIModifyAG = {
         });
 
     },
+
+    /**
+     * Callback function after changing the CDR filter mode.
+     */
     cbAfterChangeCDRFilterMode(){
         const cdrFilterMode = moduleUsersUIModifyAG.$formObj.form('get value','cdrFilterMode');
         if (cdrFilterMode==='all') {
@@ -105,7 +166,7 @@ const moduleUsersUIModifyAG = {
     },
 
     /**
-     * Настройка выпадающего списка пользователей для назначения текущей группы доступа
+     * Initializes the members dropdown for assigning current access group.
      */
     initializeMembersDropDown() {
         const dropdownParams = Extensions.getDropdownSettingsOnlyInternalWithoutEmpty();
@@ -115,10 +176,10 @@ const moduleUsersUIModifyAG = {
     },
 
     /**
-     * Change custom menu visualisation
-     * @param response
-     * @param fields
-     * @returns {string}
+     * Customizes the members dropdown menu visualization.
+     * @param {Object} response - The response object.
+     * @param {Object} fields - The fields object.
+     * @returns {string} - The HTML string for the dropdown menu.
      */
     customMembersDropdownMenu(response, fields) {
         const values = response[fields.values] || {};
@@ -141,9 +202,12 @@ const moduleUsersUIModifyAG = {
         });
         return html;
     },
+
     /**
-     * Колбек после выбора пользователя в группу
-     * @param value
+     * Callback function after selecting a user for the group.
+     * @param {string} text - The text value.
+     * @param {string} value - The selected value.
+     * @param {jQuery} $element - The jQuery element.
      */
     cbAfterUsersSelect(text, value, $element) {
         $(`#ext-${value}`)
@@ -155,8 +219,8 @@ const moduleUsersUIModifyAG = {
     },
 
     /**
-     * Delete Group member from list
-     * @param target - link to pushed button
+     * Deletes a group member from the table.
+     * @param {HTMLElement} target - The target element.
      */
     deleteMemberFromTable(target) {
         const id = $(target).closest('div').attr('data-value');
@@ -166,6 +230,9 @@ const moduleUsersUIModifyAG = {
         Form.dataChanged();
     },
 
+    /**
+     * Initializes the rights checkboxes.
+     */
     initializeRightsCheckboxes() {
         $('#access-group-rights .list .master.checkbox')
             .checkbox({
@@ -223,6 +290,9 @@ const moduleUsersUIModifyAG = {
         ;
     },
 
+    /**
+     * Callback function after changing the group right.
+     */
     cdAfterChangeGroupRight(){
         const accessToCdr = moduleUsersUIModifyAG.$formObj.form('get value','CallDetailRecordsController_main');
         if (accessToCdr==='on') {
@@ -233,7 +303,7 @@ const moduleUsersUIModifyAG = {
     },
 
     /**
-     * Изменение статуса кнопок при изменении статуса модуля
+     * Changes the status of buttons when the module status changes.
      */
     checkStatusToggle() {
         if (moduleUsersUIModifyAG.$statusToggle.checkbox('is checked')) {
@@ -249,6 +319,11 @@ const moduleUsersUIModifyAG = {
         }
     },
 
+    /**
+     * Callback function before sending the form.
+     * @param {Object} settings - The form settings.
+     * @returns {Object} - The modified form settings.
+     */
     cbBeforeSendForm(settings) {
         const result = settings;
         result.data = moduleUsersUIModifyAG.$formObj.form('get values');
@@ -304,9 +379,16 @@ const moduleUsersUIModifyAG = {
 
         return result;
     },
+    /**
+     * Callback function after sending the form.
+     */
     cbAfterSendForm() {
-
+        // Add implementation
     },
+
+    /**
+     * Initializes the form.
+     */
     initializeForm() {
         Form.$formObj = moduleUsersUIModifyAG.$formObj;
         Form.url = `${globalRootUrl}module-users-u-i/access-groups/save`;
