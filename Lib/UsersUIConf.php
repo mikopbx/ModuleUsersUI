@@ -78,11 +78,11 @@ class UsersUIConf extends ConfigClass
         switch ("$controller:$blockName") {
             case 'Extensions:TabularMenu':
                 // Add additional tab to the Extension edit page
-                $result = "Modules/ModuleUsersUI/App/Views/Extensions/tabularmenu";
+                $result = "Modules/ModuleUsersUI/Extensions/tabularmenu";
                 break;
             case 'Extensions:AdditionalTab':
                 // Add content for an additional tab on the Extension edit page
-                $result = "Modules/ModuleUsersUI/App/Views/Extensions/additionaltab";
+                $result = "Modules/ModuleUsersUI/Extensions/additionaltab";
                 break;
             default:
                 // Default case when no specific action is required
@@ -161,6 +161,10 @@ class UsersUIConf extends ConfigClass
         $currentController = $dispatcher->getControllerName();
         $currentAction = $dispatcher->getActionName();
         if ($currentController==='Extensions' and $currentAction==='modify') {
+            $assets->collection(AssetProvider::SEMANTIC_UI_CSS)
+                ->addCss('css/vendor/semantic/search.min.css', true);
+            $assets->collection(AssetProvider::SEMANTIC_UI_JS)
+                ->addJs('js/vendor/semantic/search.min.js', true);
             $assets->collection(AssetProvider::FOOTER_JS)
                 ->addJs("js/cache/{$this->moduleUniqueId}/module-users-ui-extensions-modify.js", true);
         }

@@ -19,7 +19,7 @@
 /* global globalRootUrl, globalTranslate, Form, PbxApi*/
 
 
-const moduleUsersUILdap = {
+const moduleUsersUiIndexLdap = {
 
     /**
      * Checkbox for LDAP authentication.
@@ -59,6 +59,19 @@ const moduleUsersUILdap = {
      * @type {jQuery}
      */
     $checkAuthButton: $('.check-ldap-credentials.button'),
+
+
+    /**
+     * jQuery object for the getting LDAP users list button.
+     * @type {jQuery}
+     */
+    $checkGetUsersButton: $('.check-ldap-get-users'),
+
+    /**
+     * jQuery object for the ldap check segment.
+     * @type {jQuery}
+     */
+    $ldapCheckGetUsersSegment: $('#ldap-check-get-users'),
 
     /**
      * Validation rules for the form fields.
@@ -125,15 +138,80 @@ const moduleUsersUILdap = {
      * Initializes the module.
      */
     initialize() {
-        moduleUsersUILdap.initializeForm();
+        moduleUsersUiIndexLdap.initializeForm();
+
+        // Handle get users list button click
+        moduleUsersUiIndexLdap.$checkGetUsersButton.on('click', function(e) {
+            e.preventDefault();
+            moduleUsersUiIndexLdap.apiCallGetLdapUsers();
+        });
 
         // Handle check button click
-        moduleUsersUILdap.$checkAuthButton.api({
-            url: `${globalRootUrl}module-users-u-i/ldap-config/check-auth`,
+        moduleUsersUiIndexLdap.$checkAuthButton.on('click', function(e) {
+            e.preventDefault();
+            moduleUsersUiIndexLdap.apiCallCheckAuth();
+        });
+
+        // General ldap switcher
+        moduleUsersUiIndexLdap.$useLdapCheckbox.checkbox({
+            onChange: moduleUsersUiIndexLdap.onChangeLdapCheckbox,
+        });
+        moduleUsersUiIndexLdap.onChangeLdapCheckbox();
+    },
+
+    /**
+     * Handles get LDAP users list button click.
+     */
+    apiCallGetLdapUsers(){
+        $.api({
+            url: `${globalRootUrl}module-users-u-i/ldap-config/get-available-ldap-users`,
+            on: 'now',
             method: 'POST',
             beforeSend(settings) {
-                $(this).addClass('loading disabled');
-                settings.data = moduleUsersUILdap.$formObj.form('get values');
+                moduleUsersUiIndexLdap.$checkGetUsersButton.addClass('loading disabled');
+                settings.data = moduleUsersUiIndexLdap.$formObj.form('get values');
+                return settings;
+            },
+            successTest(response){
+                return response.success;
+            },
+            /**
+             * Handles the successful response of the 'get-available-ldap-users' API request.
+             * @param {object} response - The response object.
+             */
+            onSuccess: function(response) {
+                moduleUsersUiIndexLdap.$checkGetUsersButton.removeClass('loading disabled');
+                $('.ui.message.ajax').remove();
+                let html = '<ul class="ui list">';
+                $.each(response.data, (index, user) => {
+                    html += `<li class="item">${user.name} (${user.login})</li>`;
+                });
+                html += '</ul>';
+                moduleUsersUiIndexLdap.$ldapCheckGetUsersSegment.after(`<div class="ui icon message ajax positive">${html}</div>`);
+            },
+            /**
+             * Handles the failure response of the 'get-available-ldap-users' API request.
+             * @param {object} response - The response object.
+             */
+            onFailure: function(response) {
+                moduleUsersUiIndexLdap.$checkGetUsersButton.removeClass('loading disabled');
+                $('.ui.message.ajax').remove();
+                moduleUsersUiIndexLdap.$ldapCheckGetUsersSegment.after(`<div class="ui icon message ajax negative"><i class="icon exclamation circle"></i>${response.message}</div>`);
+            },
+        })
+    },
+
+    /**
+     * Handles check LDAP authentication button click.
+     */
+    apiCallCheckAuth(){
+        $.api({
+            url: `${globalRootUrl}module-users-u-i/ldap-config/check-auth`,
+            on: 'now',
+            method: 'POST',
+            beforeSend(settings) {
+                moduleUsersUiIndexLdap.$checkAuthButton.addClass('loading disabled');
+                settings.data = moduleUsersUiIndexLdap.$formObj.form('get values');
                 return settings;
             },
             successTest(response){
@@ -144,39 +222,32 @@ const moduleUsersUILdap = {
              * @param {object} response - The response object.
              */
             onSuccess: function(response) {
-                $(this).removeClass('loading disabled');
+                moduleUsersUiIndexLdap.$checkAuthButton.removeClass('loading disabled');
                 $('.ui.message.ajax').remove();
-                moduleUsersUILdap.$ldapCheckSegment.after(`<div class="ui icon message ajax positive"><i class="icon check"></i> ${response.message}</div>`);
+                moduleUsersUiIndexLdap.$ldapCheckSegment.after(`<div class="ui icon message ajax positive"><i class="icon check"></i> ${response.message}</div>`);
             },
             /**
              * Handles the failure response of the 'check-ldap-auth' API request.
              * @param {object} response - The response object.
              */
             onFailure: function(response) {
-                $(this).removeClass('loading disabled');
+                moduleUsersUiIndexLdap.$checkAuthButton.removeClass('loading disabled');
                 $('.ui.message.ajax').remove();
-                moduleUsersUILdap.$ldapCheckSegment.after(`<div class="ui icon message ajax negative"><i class="icon exclamation circle"></i>${response.message}</div>`);
+                moduleUsersUiIndexLdap.$ldapCheckSegment.after(`<div class="ui icon message ajax negative"><i class="icon exclamation circle"></i>${response.message}</div>`);
             },
-        });
-
-        // General ldap switcher
-        moduleUsersUILdap.$useLdapCheckbox.checkbox({
-            onChange: moduleUsersUILdap.onChangeLdapCheckbox,
-        });
-        moduleUsersUILdap.onChangeLdapCheckbox();
-
+        })
     },
 
     /**
      * Handles the change of the LDAP checkbox.
      */
     onChangeLdapCheckbox(){
-        if (moduleUsersUILdap.$useLdapCheckbox.checkbox('is checked')) {
-            moduleUsersUILdap.$formFieldsForLdapSettings.removeClass('disabled');
-            moduleUsersUILdap.$formElementsAvailableIfLdapIsOn.show();
+        if (moduleUsersUiIndexLdap.$useLdapCheckbox.checkbox('is checked')) {
+            moduleUsersUiIndexLdap.$formFieldsForLdapSettings.removeClass('disabled');
+            moduleUsersUiIndexLdap.$formElementsAvailableIfLdapIsOn.show();
         } else {
-            moduleUsersUILdap.$formFieldsForLdapSettings.addClass('disabled');
-            moduleUsersUILdap.$formElementsAvailableIfLdapIsOn.hide();
+            moduleUsersUiIndexLdap.$formFieldsForLdapSettings.addClass('disabled');
+            moduleUsersUiIndexLdap.$formElementsAvailableIfLdapIsOn.hide();
         }
     },
 
@@ -187,8 +258,8 @@ const moduleUsersUILdap = {
      */
     cbBeforeSendForm(settings) {
         const result = settings;
-        result.data = moduleUsersUILdap.$formObj.form('get values');
-        if (moduleUsersUILdap.$useLdapCheckbox.checkbox('is checked')){
+        result.data = moduleUsersUiIndexLdap.$formObj.form('get values');
+        if (moduleUsersUiIndexLdap.$useLdapCheckbox.checkbox('is checked')){
             result.data.useLdapAuthMethod = '1';
         } else {
             result.data.useLdapAuthMethod = '0';
@@ -208,15 +279,15 @@ const moduleUsersUILdap = {
      * Initializes the form.
      */
     initializeForm() {
-        Form.$formObj = moduleUsersUILdap.$formObj;
+        Form.$formObj = moduleUsersUiIndexLdap.$formObj;
         Form.url = `${globalRootUrl}module-users-u-i/ldap-config/save`;
-        Form.validateRules = moduleUsersUILdap.validateRules;
-        Form.cbBeforeSendForm = moduleUsersUILdap.cbBeforeSendForm;
-        Form.cbAfterSendForm = moduleUsersUILdap.cbAfterSendForm;
+        Form.validateRules = moduleUsersUiIndexLdap.validateRules;
+        Form.cbBeforeSendForm = moduleUsersUiIndexLdap.cbBeforeSendForm;
+        Form.cbAfterSendForm = moduleUsersUiIndexLdap.cbAfterSendForm;
         Form.initialize();
     },
 };
 
 $(document).ready(() => {
-    moduleUsersUILdap.initialize();
+    moduleUsersUiIndexLdap.initialize();
 });

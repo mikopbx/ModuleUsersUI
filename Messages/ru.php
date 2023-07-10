@@ -51,6 +51,7 @@ return [
     'module_usersui_ColumnGroupName'=> 'Группа доступа',
     'module_usersui_ColumnGroupMembersCount'=> 'Количество участников',
     'module_usersui_ColumnGroupDescription' => 'Описание',
+    'module_usersui_ColumnUserExtension'=> 'Номер',
     'module_usersui_ColumnUserLogin'    => 'Логин',
     'module_usersui_ColumnUseLdap'    => 'LDAP',
     'module_usersui_ColumnUserPassword' => 'Пароль',
@@ -60,7 +61,7 @@ return [
     'module_usersui_Users'=>'Права на вход у сотрудников',
 
     'module_usersui_ExtensionTabName'=>'Права для входа в MikoPBX',
-    'module_userыui_UserLoginAndPasswordLabel'=>'Данные для авторизации в системе',
+    'module_usersui_UserLoginAndPasswordLabel'=>'Данные для авторизации в системе',
     'module_usersui_LdapCheckbox'=>'Использовать доменную авторизацию',
     'module_usersui_AccessGroup'=>'Группа доступа',
     'module_usersui_HomePage' =>'Страница, куда попадет пользователь после входа',
@@ -130,8 +131,11 @@ return [
     'module_usersui_LdapUserFilter'=>'Дополнительный фильтр пользователей',
     'module_usersui_LdapUserIdAttribute'=>'Атрибут в котором хранится имя пользователя',
     'module_usersui_LdapOrganizationalUnit'=>'Подразделение',
+    'module_usersui_LdapCheckGetListHeader'=>'1. Получение списка LDAP пользователей',
+    'module_usersui_LdapCheckGetUsersList'=>'Используя указанный параметры доступа и фильтры выполним запрос к LDAP/AD и получим список пользователей для авторизации',
+    'module_usersui_LdapGetUsersButton' => 'Выполнить запрос',
     'module_usersui_LdapCheckLogin'=>'Введите любой доменный логин и пароль для проверки, если авторизация успешная, можно сохранить настройки подключения.',
-    'module_usersui_LdapCheckHeader'=>'Проверка параметров доменной авторизации',
+    'module_usersui_LdapCheckHeader'=>'2. Проверка параметров доменной авторизации',
     'module_usersui_LdapCheckButton'=>'Авторизоваться',
 
     'module_usersui_CDRFilterModeLabel' => 'Выберите режим фильтрации CDR записей',
@@ -141,5 +145,6 @@ return [
 
     'module_usersui_NoAnyAccessGroup'=>'В модуле еще не создано ни одной группы доступа',
     'module_usersui_AddNewAccessGroupShort'=>'Создать',
+    'module_usersui_LoginNameNotUnique' => 'Не уникальное имя пользователя'
 
 ];

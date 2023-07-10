@@ -66,6 +66,7 @@ class ExtensionEditAdditionalForm extends BaseForm
       $login = new Text('module_users_ui_login', [
           'value' => $userLogin,
           'placeholder' => $form->translation->_('module_usersui_UserLoginPlaceholder'),
+          'class'=>'prompt'
       ]);
       $form->add($login);
 

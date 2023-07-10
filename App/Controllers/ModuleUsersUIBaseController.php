@@ -169,23 +169,4 @@ class ModuleUsersUIBaseController extends BaseController
         return $extensionTable;
     }
 
-    /**
-     * Save an entity and handle success or error messages.
-     *
-     * @param mixed $entity The entity to be saved.
-     * @return bool True if the entity was successfully saved, false otherwise.
-     */
-    protected function saveEntity($entity):bool
-    {
-        if ($entity->save() === false) {
-            $errors = $entity->getMessages();
-            $this->flash->error(implode('<br>', $errors));
-            $this->view->success = false;
-        } else {
-            $this->flash->success($this->translation->_('ms_SuccessfulSaved'));
-            $this->view->success = true;
-        }
-        return $this->view->success;
-    }
-
 }

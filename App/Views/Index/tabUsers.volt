@@ -3,11 +3,11 @@
         <table class="ui selectable compact table" id="users-table">
         <thead>
         <tr>
-            <th>{{ t._('ex_Name') }}</th>
-            <th class="center aligned">{{ t._('ex_Extension') }}</th>
+            <th class="">{{ t._('ex_Name') }}</th>
+            <th class="center aligned collapsing">{{ t._('module_usersui_ColumnUserExtension') }}</th>
+            <th class="center aligned show-only-if-ldap-enabled collapsing">{{ t._('module_usersui_ColumnUseLdap') }}</th>
             <th class="center aligned">{{ t._('module_usersui_ColumnUserLogin') }}</th>
             <th class="center aligned">{{ t._('module_usersui_ColumnUserPassword') }}</th>
-            <th class="center aligned show-only-if-ldap-enabled">{{ t._('module_usersui_ColumnUseLdap') }}</th>
             <th class="center aligned">{{ t._('module_usersui_ColumnGroupName') }}</th>
         </tr>
         </thead>
@@ -19,25 +19,28 @@
             <img src="{{ member['avatar'] }}" class="ui avatar image"
                  data-value="{{ member['userid'] }} /"> {{ member['username'] }}
         </td>
-        <td class="center aligned">{{ member['number'] }}</td>
-        <td class="center aligned">
-            <div class="ui transparent fluid input inline-edit icon">
-                <input class="user-login-input" type="text" data-value="{{ member['userid'] }}"
-                       value="{{ member['user_login'] }}">
-                <i class="ui spinner loading icon" style="display: none"></i>
-            </div>
-        </td>
-        <td class="center aligned">
-            <div class="ui transparent fluid input inline-edit icon">
-                <input class="user-password-input" type="password" data-value="{{ member['userid'] }}"
-                       value="{{ member['user_password'] }}">
-                <i class="ui spinner loading icon" style="display: none"></i>
-            </div>
+        <td class="center aligned collapsing">
+            {{ member['number'] }}
         </td>
         <td class="center aligned show-only-if-ldap-enabled">
             <div class="ui checkbox user-use-ldap-checkbox">
                 <input name="use_ldap_auth{{ member['userid'] }}"
                        type="checkbox" {% if member['use_ldap_auth'] == '1' %} checked="checked" {% endif %} >
+            </div>
+        </td>
+        <td class="center aligned login" {% if member['use_ldap_auth'] == '1'%} colspan="2" {% endif %}>
+            <div class="ui transparent fluid input search inline-edit icon">
+                <input class="user-login-input prompt" data-value="{{ member['userid'] }}"
+                       value="{{ member['user_login'] }}" type="text" >
+                <i class="ui spinner loading icon" style="display: none"></i>
+                <div class="results"></div>
+            </div>
+        </td>
+        <td class="center aligned password" {% if member['use_ldap_auth'] == '1'%} style="display: none" {% endif %}>
+            <div class="ui transparent fluid input inline-edit icon">
+                <input class="user-password-input" type="password" data-value="{{ member['userid'] }}"
+                       value="{{ member['user_password'] }}">
+                <i class="ui spinner loading icon" style="display: none"></i>
             </div>
         </td>
         <td class="left aligned">

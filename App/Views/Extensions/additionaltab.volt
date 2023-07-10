@@ -16,10 +16,11 @@
     </div>
 
     <div class="field disable-if-no-access">
-        <label>{{ t._('module_userыui_UserLoginAndPasswordLabel') }}</label>
+        <label>{{ t._('module_usersui_UserLoginAndPasswordLabel') }}</label>
         <div class="equal width fields">
-            <div class="field max-width-250">
+            <div class="ui input search field max-width-300">
                 {{ form.render('module_users_ui_login') }}
+                <div class="results"></div>
             </div>
             <div class="field max-width-400">
                 {{ form.render('module_users_ui_password') }}

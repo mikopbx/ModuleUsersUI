@@ -51,6 +51,16 @@
 </div>
 <div class="field disable-if-no-ldap">
     <div class="ui segment">
+        <div class="ui header">{{ t._('module_usersui_LdapCheckGetListHeader') }}</div>
+        <p>{{ t._('module_usersui_LdapCheckGetUsersList') }}</p>
+            <div class="field" id="ldap-check-get-users">
+                <div class="ui labeled icon basic button check-ldap-get-users"><i
+                            class="ui icon check"></i>{{ t._('module_usersui_LdapGetUsersButton') }}</div>
+            </div>
+    </div>
+</div>
+<div class="field disable-if-no-ldap">
+    <div class="ui segment">
         <div class="ui header">{{ t._('module_usersui_LdapCheckHeader') }}</div>
         <p>{{ t._('module_usersui_LdapCheckLogin') }}</p>
         <div class="equal width fields" id="ldap-check-auth">

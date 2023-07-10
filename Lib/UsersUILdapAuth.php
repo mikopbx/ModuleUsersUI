@@ -165,10 +165,24 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
             }
             $users = $query->get();
             foreach ($users as $user) {
+                $record = [];
                 if (array_key_exists($this->userIdAttribute, $user)
-                    && isset($user[$this->userIdAttribute][0]))
-                $listOfAvailableUsers[]=$user[$this->userIdAttribute][0];
+                    && isset($user[$this->userIdAttribute][0])){
+                    $record['login']=$user[$this->userIdAttribute][0];
+                    $record['name']=$user[$this->userIdAttribute][0];
+                }
+                if (array_key_exists('name', $user)
+                    && isset($user['name'][0])){
+                    $record['name']=$user['name'][0];
+                }
+                if (!empty($record)){
+                    $listOfAvailableUsers[] = $record;
+                }
             }
+            // Sort the array based on the name value
+            usort($listOfAvailableUsers, function($a, $b){
+                return $a['name'] > $b['name'];
+            });
 
         } catch (\Throwable $e) {
             global $errorLogger;

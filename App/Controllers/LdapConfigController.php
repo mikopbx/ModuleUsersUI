@@ -19,9 +19,11 @@
 
 namespace Modules\ModuleUsersUI\App\Controllers;
 
+use MikoPBX\Common\Providers\ManagedCacheProvider;
 use Modules\ModuleUsersUI\Lib\Constants;
 use Modules\ModuleUsersUI\Lib\UsersUILdapAuth;
 use Modules\ModuleUsersUI\Models\LdapConfig;
+use Phalcon\Cache\Adapter\Redis;
 
 class LdapConfigController extends ModuleUsersUIBaseController
 {
@@ -64,12 +66,46 @@ class LdapConfigController extends ModuleUsersUIBaseController
             }
         }
 
-        // Save the ldap config data
-        if ($ldapConfig->save() === false) {
-            // If there are validation errors, display them and return false
-            $errors = $ldapConfig->getMessages();
-            $this->flash->error(implode('<br>', $errors));
+        $this->saveEntity($ldapConfig);
+    }
+
+    /**
+     * Prepares the LDAP users list for dropdown fields for ajax requests
+     *
+     * @param string $pattern for search
+     * @return void
+     */
+    public function searchLdapUserAction(string $pattern=''): void
+    {
+        /** @var Redis $redis */
+        $redis = $this->di->getShared(ManagedCacheProvider::SERVICE_NAME);
+        $cacheKey = 'LdapConfigController:searchLdapUser1';
+        if ($redis->has($cacheKey)) {
+            $availableUsers = $redis->get($cacheKey, []);
+        } else {
+            $ldapCredentials = LdapConfig::findFirst()->toArray();
+            $ldapAuth = new UsersUILdapAuth($ldapCredentials);
+            $message = '';
+            // Get the list of available LDAP users
+            $availableUsers = $ldapAuth->getUsersList($message);
+            $redis->set($cacheKey, $availableUsers, 600);
+            $this->view->message = $message;
         }
+        $pattern = urldecode($pattern);
+        $usersForDropDown = [];
+        foreach ($availableUsers as $user){
+            if (    stripos($user['name'], $pattern)!==false
+                || stripos($user['login'], $pattern)!==false){
+                $usersForDropDown[]=[
+                    'title'=>$user['login'],
+                    'description'=>$user['name'],
+                ];
+            }
+        }
+
+        // Set the data to be passed to the view
+        $this->view->results = $usersForDropDown;
+        $this->view->success = count($availableUsers) > 0;
     }
 
     /**
@@ -79,48 +115,75 @@ class LdapConfigController extends ModuleUsersUIBaseController
      */
     public function checkAuthAction(): void
     {
+        // Check if the request method is POST
         if (!$this->request->isPost()) {
             return;
         }
 
         $data = $this->request->getPost();
 
-        if ($data['administrativePasswordHidden'] === Constants::HIDDEN_PASSWORD) {
-            $ldapConfig = LdapConfig::findFirst();
-            $data['administrativePassword'] = $ldapConfig->administrativePassword;
-        } else {
-            $data['administrativePassword'] = $data['administrativePasswordHidden'];
-        }
-
-        $ldapCredentials = [
-            'serverName' => $data['serverName'],
-            'serverPort' => $data['serverPort'],
-            'baseDN' => $data['baseDN'],
-            'administrativeLogin' => $data['administrativeLogin'],
-            'administrativePassword' => $data['administrativePassword'],
-            'userIdAttribute' => $data['userIdAttribute'],
-            'organizationalUnit' => $data['organizationalUnit'],
-            'userFilter' => $data['userFilter'],
-
-        ];
+        $ldapCredentials = $this->prepareLdapCredentialsArrayFromPost($data);
         $ldapAuth = new UsersUILdapAuth($ldapCredentials);
         $message = '';
 
-        // Check authentication via LDAP
+        // Check authentication via LDAP and set the data to be passed to the view
         $this->view->success = $ldapAuth->checkAuthViaLdap($data['testLogin'], $data['testPassword'], $message);
         $this->view->message = $message;
     }
 
+    /**
+     * Retrieves the available LDAP users.
+     *
+     * @return void
+     */
     public function getAvailableLdapUsersAction(): void
     {
-        $ldapCredentials = LdapConfig::findFirst()->toArray();
+        // Check if the request method is POST
+        if (!$this->request->isPost()) {
+            return;
+        }
+        $data = $this->request->getPost();
+        $ldapCredentials = $this->prepareLdapCredentialsArrayFromPost($data);
         $ldapAuth = new UsersUILdapAuth($ldapCredentials);
         $message = '';
 
+        // Get the list of available LDAP users
         $availableUsers = $ldapAuth->getUsersList($message);
-        $this->view->data = $availableUsers;
-        $this->view->success = true;
-        $this->view->message = $message;
 
+        // Set the data to be passed to the view
+        $this->view->data = $availableUsers;
+        $this->view->success = count($availableUsers) > 0;
+        $this->view->message = $message;
+    }
+
+    /**
+     * Prepares the LDAP credentials array from the POST data.
+     *
+     * @param array $postData The POST data.
+     *
+     * @return array The prepared LDAP credentials array.
+     */
+    private function prepareLdapCredentialsArrayFromPost(array $postData): array
+    {
+        // Admin password can be stored in DB on the time, on this way it has only xxxxxx value.
+        // It can be empty as well, if some password manager tried to fill it.
+        if (empty($postData['administrativePasswordHidden'])
+            || $postData['administrativePasswordHidden'] === Constants::HIDDEN_PASSWORD) {
+            $ldapConfig = LdapConfig::findFirst();
+            $postData['administrativePassword'] = $ldapConfig->administrativePassword??'';
+        } else {
+            $postData['administrativePassword'] = $postData['administrativePasswordHidden'];
+        }
+
+       return [
+            'serverName' => $postData['serverName'],
+            'serverPort' => $postData['serverPort'],
+            'baseDN' => $postData['baseDN'],
+            'administrativeLogin' => $postData['administrativeLogin'],
+            'administrativePassword' => $postData['administrativePassword'],
+            'userIdAttribute' => $postData['userIdAttribute'],
+            'organizationalUnit' => $postData['organizationalUnit'],
+            'userFilter' => $postData['userFilter'],
+        ];
     }
 }

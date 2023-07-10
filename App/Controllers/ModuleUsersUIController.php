@@ -17,6 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 namespace Modules\ModuleUsersUI\App\Controllers;
+use MikoPBX\AdminCabinet\Providers\AssetProvider;
 use Modules\ModuleUsersUI\App\Forms\LdapConfigForm;
 use Modules\ModuleUsersUI\Models\AccessGroups;
 use Modules\ModuleUsersUI\Models\LdapConfig;
@@ -31,13 +32,20 @@ class ModuleUsersUIController extends ModuleUsersUIBaseController
      */
     public function indexAction(): void
     {
-        $footerCollection = $this->assets->collection('footerJS');
+        $semanticCollection = $this->assets->collection(AssetProvider::SEMANTIC_UI_JS);
+        $semanticCollection->addJs('js/vendor/semantic/search.min.js', true);
+
+        $semanticCSSCollection = $this->assets->collection(AssetProvider::SEMANTIC_UI_CSS);
+        $semanticCSSCollection->addCss('css/vendor/semantic/search.min.css', true);
+
+        $footerCollection = $this->assets->collection(AssetProvider::FOOTER_JS);
         $footerCollection->addJs('js/vendor/datatable/dataTables.semanticui.js', true);
         $footerCollection->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-index.js", true);
+        $footerCollection->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-index-users.js", true);
         $footerCollection->addJs('js/pbx/main/form.js', true);
-        $footerCollection->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-ldap.js", true);
+        $footerCollection->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-index-ldap.js", true);
 
-        $headerCollectionCSS = $this->assets->collection('headerCSS');
+        $headerCollectionCSS = $this->assets->collection(AssetProvider::HEADER_CSS);
         $headerCollectionCSS
             ->addCss('css/vendor/datatable/dataTables.semanticui.min.css', true)
             ->addCss("css/cache/{$this->moduleUniqueID}/module-users-ui.css", true);

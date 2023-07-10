@@ -36,6 +36,13 @@ const ExtensionCredentialsTab = {
     $useLdapCheckbox: $('#module_users_ui_use_ldap_auth'),
 
     /**
+     * Login input field.
+     * @type {jQuery}
+     * @private
+     */
+    $loginField: $('#module_users_ui_login'),
+
+    /**
      * Password input field.
      * @type {jQuery}
      * @private
@@ -103,7 +110,23 @@ const ExtensionCredentialsTab = {
         } else {
             ExtensionCredentialsTab.$passwordField.parent('.field').show();
         }
-    }
+        ExtensionCredentialsTab.activateLdapLoginSearch();
+    },
+    /**
+     * Activate or disactivate ldap search feature
+     */
+    activateLdapLoginSearch(){
+        if (ExtensionCredentialsTab.$useLdapCheckbox.parent('.checkbox').checkbox('is checked')){
+            ExtensionCredentialsTab.$loginField.parent('.ui.search').search({
+                apiSettings: {
+                    url: `${globalRootUrl}module-users-u-i/ldap-config/search-ldap-user/{query}`
+                },
+            });
+        } else {
+            ExtensionCredentialsTab.$loginField.parent('.ui.search').search('hide results').search('destroy');
+        }
+
+    },
 }
 $(document).ready(() => {
     ExtensionCredentialsTab.initialize();

@@ -22,6 +22,8 @@ namespace Modules\ModuleUsersUI\Models;
 use MikoPBX\Common\Models\Users;
 use MikoPBX\Modules\Models\ModulesModelsBase;
 use Phalcon\Mvc\Model\Relation;
+use Phalcon\Validation;
+use Phalcon\Validation\Validator\Uniqueness as UniquenessValidator;
 
 /**
  * Class ModuleUsers
@@ -141,5 +143,27 @@ class UsersCredentials extends ModulesModelsBase
             );
         }
     }
+
+
+    /**
+     * Perform validation on the model.
+     *
+     * @return bool Whether the validation was successful or not.
+     */
+    public function validation(): bool
+    {
+        $validation = new Validation();
+        $validation->add(
+            'user_login',
+            new UniquenessValidator(
+                [
+                    'message' => $this->t('module_usersui_LoginNameNotUnique'),
+                ]
+            )
+        );
+
+        return $this->validate($validation);
+    }
+
 
 }
