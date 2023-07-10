@@ -34,4 +34,6 @@ class Constants
     public const HIDDEN_PASSWORD = 'xxxxxxxx';
 
     public const NO_ACCESS_GROUP_ID = 'No access';
+
+    public const MODULE_ROLE_PREFIX = 'UsersUIRoleID';
 }

@@ -140,7 +140,7 @@ class UsersUIConf extends ConfigClass
         $session = $this->getDI()->get(SessionProvider::SERVICE_NAME);
         if (is_array($session) and isset($session[SessionController::ROLE])) {
             $role = $session[SessionController::ROLE];
-            $accessGroupId = str_replace("UsersUIRoleID", "", $role);
+            $accessGroupId = str_replace(Constants::MODULE_ROLE_PREFIX, "", $role);
             if (!empty($accessGroupId) and $role !== $accessGroupId) {
                 UsersUICDRFilter::applyCDRFilterRules($accessGroupId, $parameters);
             }

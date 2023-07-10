@@ -54,6 +54,13 @@ class AccessGroupForm extends BaseForm
         // Add input field for Name
         $this->add(new Text('name'));
 
+        // FullAccess checkbox
+        $cheskArr = [];
+        if ($entity->fullAccess === '1') {
+            $cheskArr['checked'] = 'checked';
+        }
+        $this->add(new Check('fullAccess', $cheskArr));
+
         // Add textarea for Description
         $this->addTextArea('description', $entity->description ?? '', 80);
 
@@ -196,11 +203,11 @@ class AccessGroupForm extends BaseForm
         // Remove "Module" from the module name
         $module = str_replace("Module", "", $module);
 
-        // Remove "Controller" and "/" from the controller name
-        $controllerName = str_replace(["Controller", "/"], ["", "_"], $controllerName);
+        // Remove "/" from the controller name
+        $controllerName = str_replace(["/"], ["_"], $controllerName);
 
-        // Remove "Action" and "/" from the action name
-        $actionName = str_replace(["Action", "/"], ["", ""], $actionName);
+        // Remove "/" from the action name
+        $actionName = str_replace(["/"], [""], $actionName);
 
         // Create the translation template
         $translationTemplate = "module_usersui_CheckBox_{$module}_{$controllerName}_{$actionName}";

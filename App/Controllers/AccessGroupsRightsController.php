@@ -129,7 +129,9 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
             $publicMethods = $this->getControllersActions($controllerClass, $excludedActions);
 
             if (count($publicMethods) > 0) {
-                $controllers[Constants::ADMIN_CABINET]['APP'][$className] = $publicMethods;
+                // Remove "Controller" from the controller name
+                $controllerName = str_replace("Controller", "", $className);
+                $controllers[Constants::ADMIN_CABINET]['APP'][$controllerName] = $publicMethods;
             }
 
         }
@@ -157,7 +159,9 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
                     $controllerClass = "Modules\\{$module->uniqid}\\App\\Controllers\\{$className}";
                     $publicMethods = $this->getControllersActions($controllerClass);
                     if (count($publicMethods) > 0) {
-                        $controllers[$module->uniqid]['APP'][$className] = $publicMethods;
+                        // Remove "Controller" from the controller name
+                        $controllerName = substr($className, 0, -10);
+                        $controllers[$module->uniqid]['APP'][$controllerName] = $publicMethods;
                     }
                 }
             }
@@ -345,10 +349,12 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
 
         // Get all public methods ending with "Action"
         foreach ($reflection->getMethods() as $method) {
-            if ($method->isPublic() && substr($method->getName(), -6) === 'Action') {
-                $actionName = $method->getName();
+            $actionName = $method->getName();
+            if ($method->isPublic() && substr($actionName, -6) === 'Action') {
                 // Filter the actions array based on excluded actions
                 if (!in_array($actionName, $excludedActions[$controllerClass])) {
+                    // Remove "Action" from the action name
+                    $actionName = substr($actionName, 0, -6);
                     $publicMethods[$actionName] = false;
                 }
             }

@@ -85,6 +85,7 @@ class AccessGroupsController extends ModuleUsersUIBaseController
         $accessGroupEntity->name = $data['name'];
         $accessGroupEntity->description = $data['description'];
         $accessGroupEntity->homePage = $data['homePage'];
+        $accessGroupEntity->fullAccess = $data['fullAccess'];
 
         // Save the access group object
         if ($this->saveEntity($accessGroupEntity)===false){

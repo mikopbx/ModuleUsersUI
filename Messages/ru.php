@@ -48,6 +48,7 @@ return [
 
 
     'module_usersui_GroupName'=> 'Название группы',
+    'module_usersui_FullAccessCheckbox'=> 'Группа без ограничений доступа',
     'module_usersui_ColumnGroupName'=> 'Группа доступа',
     'module_usersui_ColumnGroupMembersCount'=> 'Количество участников',
     'module_usersui_ColumnGroupDescription' => 'Описание',

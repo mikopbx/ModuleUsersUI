@@ -42,16 +42,16 @@ class UsersUIAuthenticator extends \Phalcon\Di\Injectable
         $parameters = [
             'columns' => [
                 'homePage' => 'AccessGroups.homePage',
-                'sessionAccessGroup' => 'CONCAT("UsersUIRoleID",AccessGroups.id)',
+                'accessGroupId' => 'AccessGroups.id',
                 'enabled' => 'UsersCredentials.enabled',
                 'useLdapAuth' => 'UsersCredentials.use_ldap_auth',
-                'user_password' => 'UsersCredentials.user_password',
+                'userPasswordHash' => 'UsersCredentials.user_password',
             ],
             'models' => [
                 'UsersCredentials' => UsersCredentials::class,
             ],
             'conditions' => 'user_login=:login:',
-            'binds' => [
+            'bind' => [
                 'login' => $this->login,
             ],
             'joins' => [
@@ -66,11 +66,12 @@ class UsersUIAuthenticator extends \Phalcon\Di\Injectable
 
         $userData = $this->di->get('modelsManager')->createBuilder($parameters)->getQuery()->getSingleResult();
         if ($userData) {
-            if ($userData->enabled == '0') {
+            if ($userData->enabled === '0') {
                 return [];
             }
+
             $successAuthData = [
-                SessionController::ROLE => $userData->role,
+                SessionController::ROLE => Constants::MODULE_ROLE_PREFIX.$userData->accessGroupId,
                 SessionController::HOME_PAGE => $userData->homePage ?? 'call-detail-records/index'
             ];
 
@@ -86,7 +87,7 @@ class UsersUIAuthenticator extends \Phalcon\Di\Injectable
             } else {
                 // Authenticate via password
                 $security = new Security();
-                if ($security->checkHash($this->password, $userData->user_password)) {
+                if ($security->checkHash($this->password, $userData->userPasswordHash)) {
                     return $successAuthData;
                 }
             }

@@ -39,20 +39,20 @@ class UsersUIACL extends \Phalcon\Di\Injectable
     {
         $parameters = [
             'columns' => [
-                'role' => 'CONCAT("UsersUIRoleID", AccessGroups.id)',
+                'accessGroupId' => 'AccessGroups.id',
                 'name' => 'AccessGroups.name',
                 'controller' => 'AccessGroupsRights.controller',
                 'actions' => 'AccessGroupsRights.actions',
             ],
             'models' => [
-                'AccessGroupsRights' => AccessGroupsRights::class,
+                'AccessGroups' => AccessGroups::class,
             ],
             'joins' => [
-                'AccessGroups' => [
-                    0 => AccessGroups::class,
-                    1 => 'AccessGroups.id = UsersCredentials.user_access_group_id',
-                    2 => 'AccessGroups',
-                    3 => 'INNER',
+                'AccessGroupsRights' => [
+                    0 => AccessGroupsRights::class,
+                    1 => 'AccessGroupsRights.group_id = AccessGroups.id',
+                    2 => 'AccessGroupsRights',
+                    3 => 'LEFT',
                 ],
             ],
             'group' => 'AccessGroups.id, AccessGroupsRights.controller',
@@ -64,14 +64,17 @@ class UsersUIACL extends \Phalcon\Di\Injectable
 
         $previousRole = null;
         foreach ($aclFromModule as $acl) {
-            if ($previousRole !== $acl->role) {
-                $previousRole = $acl->role;
-                $aclList->addRole(new AclRole($acl->role, $acl->name));
+            $role = Constants::MODULE_ROLE_PREFIX.$acl->accessGroupId;
+            if ($previousRole !== $role) {
+                $previousRole = $role;
+                $aclList->addRole(new AclRole($role, $acl->name));
             }
 
-            $actionsArray = json_decode($acl->actions, true);
-            $aclList->addComponent(new Component($acl->controller), $actionsArray);
-            $aclList->allow($acl->role, $acl->controller, $actionsArray);
+            if (isset($acl->actions)){
+                $actionsArray = json_decode($acl->actions, true);
+                $aclList->addComponent(new Component($acl->controller), $actionsArray);
+                $aclList->allow($role, $acl->controller, $actionsArray);
+            }
         }
     }
 }

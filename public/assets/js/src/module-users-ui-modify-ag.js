@@ -28,6 +28,13 @@ const moduleUsersUIModifyAG = {
     $formObj: $('#module-users-ui-form'),
 
     /**
+     * Checkbox allows full access to the system.
+     * @type {jQuery}
+     * @private
+     */
+    $fullAccessCheckbox: $('#full-access-group'),
+
+    /**
      * jQuery object for the select users dropdown.
      * @type {jQuery}
      */
@@ -62,6 +69,12 @@ const moduleUsersUIModifyAG = {
      * @type {jQuery}
      */
     $cdrFilterTab: $('#module-access-group-modify-menu .item[data-tab="cdr-filter"]'),
+
+    /**
+     * jQuery object for the group rights tab.
+     * @type {jQuery}
+     */
+    $groupRightsTab: $('#module-access-group-modify-menu .item[data-tab="group-rights"]'),
 
     /**
      * jQuery object for the CDR filter toggles.
@@ -128,6 +141,13 @@ const moduleUsersUIModifyAG = {
         moduleUsersUIModifyAG.initializeMembersDropDown();
         moduleUsersUIModifyAG.initializeRightsCheckboxes();
         moduleUsersUIModifyAG.$homePageDropdown.dropdown();
+
+        moduleUsersUIModifyAG.cbAfterChangeFullAccessToggle();
+        moduleUsersUIModifyAG.$fullAccessCheckbox.checkbox({
+            onChange: moduleUsersUIModifyAG.cbAfterChangeFullAccessToggle
+        });
+
+
         moduleUsersUIModifyAG.$cdrFilterToggles.checkbox();
         moduleUsersUIModifyAG.cbAfterChangeCDRFilterMode();
         moduleUsersUIModifyAG.$cdrFilterMode.checkbox({
@@ -151,6 +171,20 @@ const moduleUsersUIModifyAG = {
             $(e.target).parent('.ui.tab').find('.ui.checkbox').checkbox('uncheck');
         });
 
+    },
+
+    /**
+     * Callback function after changing the full access toggle.
+     */
+    cbAfterChangeFullAccessToggle(){
+        if (moduleUsersUIModifyAG.$fullAccessCheckbox.checkbox('is checked')) {
+            moduleUsersUIModifyAG.$cdrFilterTab.hide();
+            moduleUsersUIModifyAG.$groupRightsTab.hide();
+            moduleUsersUIModifyAG.$mainTabMenu.tab('change tab','general')
+        } else {
+            moduleUsersUIModifyAG.$groupRightsTab.show();
+            moduleUsersUIModifyAG.cbAfterChangeCDRFilterMode();
+        }
     },
 
     /**
@@ -376,6 +410,12 @@ const moduleUsersUIModifyAG = {
             }
         });
         result.data.cdrFilter = JSON.stringify(arrCDRFilter);
+
+        if (moduleUsersUiIndexLdap.$fullAccessCheckbox.checkbox('is checked')){
+            result.data.fullAccess = '1';
+        } else {
+            result.data.fullAccess = '0';
+        }
 
         return result;
     },

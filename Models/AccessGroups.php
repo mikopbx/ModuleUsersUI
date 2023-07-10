@@ -63,6 +63,13 @@ class AccessGroups extends ModulesModelsBase
      */
     public  $cdrFilterMode;
 
+    /**
+     * If it is set to '1' the group has full access
+     *
+     * @Column(type="string", nullable=false, default='0')
+     */
+    public $fullAccess;
+
 
     /**
      * Initialize the AccessGroups model.
