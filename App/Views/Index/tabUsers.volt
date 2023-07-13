@@ -4,25 +4,25 @@
         <thead>
         <tr>
             <th class="">{{ t._('ex_Name') }}</th>
-            <th class="center aligned collapsing">{{ t._('module_usersui_ColumnUserExtension') }}</th>
-            <th class="center aligned show-only-if-ldap-enabled collapsing">{{ t._('module_usersui_ColumnUseLdap') }}</th>
+            <th class="center aligned collapsing hide-on-mobile">{{ t._('module_usersui_ColumnUserExtension') }}</th>
+            <th class="center aligned show-only-if-ldap-enabled collapsing hide-on-mobile">{{ t._('module_usersui_ColumnUseLdap') }}</th>
             <th class="center aligned">{{ t._('module_usersui_ColumnUserLogin') }}</th>
             <th class="center aligned">{{ t._('module_usersui_ColumnUserPassword') }}</th>
-            <th class="center aligned">{{ t._('module_usersui_ColumnGroupName') }}</th>
+            <th class="center aligned collapsing">{{ t._('module_usersui_ColumnGroupName') }}</th>
         </tr>
         </thead>
         <tbody>
     {% endif %}
 
     <tr class="member-row" id="{{ member['userid'] }}">
-        <td>
+        <td class="collapsing">
             <img src="{{ member['avatar'] }}" class="ui avatar image"
                  data-value="{{ member['userid'] }} /"> {{ member['username'] }}
         </td>
-        <td class="center aligned collapsing">
+        <td class="center aligned collapsing hide-on-mobile">
             {{ member['number'] }}
         </td>
-        <td class="center aligned show-only-if-ldap-enabled">
+        <td class="center aligned show-only-if-ldap-enabled hide-on-mobile">
             <div class="ui checkbox user-use-ldap-checkbox">
                 <input name="use_ldap_auth{{ member['userid'] }}"
                        type="checkbox" {% if member['use_ldap_auth'] == '1' %} checked="checked" {% endif %} >
@@ -43,7 +43,7 @@
                 <i class="ui spinner loading icon" style="display: none"></i>
             </div>
         </td>
-        <td class="left aligned">
+        <td class="left aligned collapsing">
             <div class="ui dropdown select-group" data-value="{{ member['group'] }}">
                 <div class="text">{{ member['group'] }}</div>
                 <i class="dropdown icon"></i>

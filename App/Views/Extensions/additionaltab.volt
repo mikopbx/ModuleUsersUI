@@ -1,3 +1,4 @@
+{% if addCustomTabFromModuleUsersUI %}
 <div class="ui bottom attached tab segment" data-tab="usersUI">
     {{ form.render('module_users_ui_ldap_enabled') }}
 
@@ -29,3 +30,4 @@
     </div>
 
 </div>
+{% endif %}

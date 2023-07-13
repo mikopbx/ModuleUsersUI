@@ -19,25 +19,17 @@
 
 namespace Modules\ModuleUsersUI\App\Controllers;
 
-use MikoPBX\AdminCabinet\Controllers\ConsoleController;
-use MikoPBX\AdminCabinet\Controllers\ErrorsController;
-use MikoPBX\AdminCabinet\Controllers\ExtensionsController;
-use MikoPBX\AdminCabinet\Controllers\LicensingController;
-use MikoPBX\AdminCabinet\Controllers\LocalizationController;
-use MikoPBX\AdminCabinet\Controllers\SessionController;
-use MikoPBX\AdminCabinet\Controllers\TopMenuSearchController;
-use MikoPBX\AdminCabinet\Controllers\UpdateController;
-use MikoPBX\AdminCabinet\Controllers\UsersController;
-use MikoPBX\AdminCabinet\Controllers\WikiLinksController;
 use MikoPBX\Common\Models\PbxExtensionModules;
 use MikoPBX\Common\Providers\PBXConfModulesProvider;
 use MikoPBX\Modules\Config\RestAPIConfigInterface;
 use Modules\ModuleUsersUI\Lib\Constants;
+use Modules\ModuleUsersUI\Lib\UsersUIACL;
 use Modules\ModuleUsersUI\Models\AccessGroupsRights;
 use Phalcon\Annotations\Reader;
 use Phalcon\Annotations\Reflection;
 use Phalcon\Text;
 use ReflectionClass;
+use Throwable;
 use function MikoPBX\Common\Config\appPath;
 
 class AccessGroupsRightsController extends ModuleUsersUIBaseController
@@ -72,7 +64,6 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
         // Get available REST controller actions from modules
         $availableModulesRESTControllersActions = $this->getAvailableRESTActionsInModules();
 
-
         // Combine all available actions
         $combined = array_merge_recursive(
             $availableUiControllersActions,
@@ -91,31 +82,14 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
      */
     private function getAvailableUIControllersActions(): array
     {
-
         // Scan files in the controllers directory
         $controllersDir = appPath('src/AdminCabinet/Controllers');
         $controllerFiles = glob("{$controllersDir}/*.php", GLOB_NOSORT);
 
         $controllers = [];
 
-        $excludedControllers = [
-            ConsoleController::class,
-            ErrorsController::class,
-            LocalizationController::class,
-            SessionController::class,
-            TopMenuSearchController::class,
-            UpdateController::class,
-            UsersController::class,
-            WikiLinksController::class,
-            LicensingController::class,
-        ];
-
-        $excludedActions = [
-            ExtensionsController::class => [
-                'GetPhoneRepresentAction',
-                'GetPhonesRepresentAction'
-            ],
-        ];
+        // Get the list of controllers and actions which we hide from settings
+        [$excludedControllers, $excludedActions] = $this->getExclusionsActionsControllers();
 
         foreach ($controllerFiles as $file) {
 
@@ -129,45 +103,89 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
             $publicMethods = $this->getControllersActions($controllerClass, $excludedActions);
 
             if (count($publicMethods) > 0) {
-                // Remove "Controller" from the controller name
-                $controllerName = str_replace("Controller", "", $className);
-                $controllers[Constants::ADMIN_CABINET]['APP'][$controllerName] = $publicMethods;
+                $controllers[Constants::ADMIN_CABINET]['APP'][$controllerClass] = $publicMethods;
             }
 
         }
+        // Sort the controllers array by translated controller name
+        uksort($controllers[Constants::ADMIN_CABINET]['APP'], function ($a, $b) {
+            $controllerAParts = explode('\\', $a);
+            $controllerAName = end($controllerAParts);
+            $controllerAName = str_replace("Controller", "", $controllerAName);
+            $controllerANameTranslation = $this->translation->_('mm_' . $controllerAName);
+
+            $controllerBParts = explode('\\', $b);
+            $controllerBName = end($controllerBParts);
+            $controllerBName = str_replace("Controller", "", $controllerBName);
+            $controllerBNameTranslation = $this->translation->_('mm_' . $controllerBName);
+
+            return strcmp($controllerANameTranslation, $controllerBNameTranslation);
+        });
+
         return $controllers;
     }
 
     /**
-     * Retrieves the available controller actions for modules.
+     * Get the list of controllers and actions which we hide from settings
      *
-     * @return array An array containing the available controller actions for modules.
+     * @return array An array containing the excluded controllers and actions.
      */
-    private function getAvailableModulesControllerActions(): array
+    private function getExclusionsActionsControllers(): array
     {
-        $controllers = [];
-        $modules = PbxExtensionModules::find('disabled=0');
-        $modulesDir = $this->getDI()->getShared('config')->path('core.modulesDir');
-        foreach ($modules as $module) {
-            $controllersDir = "{$modulesDir}/{$module->uniqid}/App/Controllers";
-            // Check if the controllers directory exists
-            if (is_dir($controllersDir)) {
-                $controllerFiles = glob("{$controllersDir}/*.php", GLOB_NOSORT);
+        $excludedControllers = [];
+        $excludedActions = [];
 
-                foreach ($controllerFiles as $file) {
-                    $className = pathinfo($file)['filename'];
-                    $controllerClass = "Modules\\{$module->uniqid}\\App\\Controllers\\{$className}";
-                    $publicMethods = $this->getControllersActions($controllerClass);
-                    if (count($publicMethods) > 0) {
-                        // Remove "Controller" from the controller name
-                        $controllerName = substr($className, 0, -10);
-                        $controllers[$module->uniqid]['APP'][$controllerName] = $publicMethods;
-                    }
+        $arrayOfExclusions = array_merge_recursive(UsersUIACL::getAlwaysAllowed(), UsersUIACL::getAlwaysDisAllowed());
+        // Iterate through the always allowed and disallowed controllers and actions
+        foreach ($arrayOfExclusions as $controllerClass => $actions) {
+            if (is_array($actions)) {
+                // Store the controller and its actions as a key-value pair in the allowed and disallowed actions array
+                $excludedActions[$controllerClass] = $actions;
+            } elseif ($actions === '*') {
+                // Add the controller to the allowed and disallowed controllers array
+                $excludedControllers[] = $controllerClass;
+            }
+        }
+
+        return [$excludedControllers, $excludedActions];
+    }
+
+    /**
+     * Get the actions for a given controller class, excluding specified actions which are always allowed.
+     *
+     * @param string $controllerClass The controller class.
+     * @param array $excludedActions Actions to be allowed or disallowed for the controller class without user settings.
+     *
+     * @return array The public methods of the controller class, filtered by allowed actions.
+     */
+    private function getControllersActions(string $controllerClass, array $excludedActions = []): array
+    {
+        try {
+            $reflection = new ReflectionClass($controllerClass);
+            // If the controller class is abstract, return an empty array
+            if ($reflection->isAbstract()) {
+                return [];
+            }
+        } catch (Throwable $exception) {
+            return [];
+        }
+
+        $publicMethods = [];
+
+        // Get all public methods ending with "Action"
+        foreach ($reflection->getMethods() as $method) {
+            $actionName = $method->getName();
+            if ($method->isPublic() && substr($actionName, -6) === 'Action') {
+                // Remove "Action" from the action name
+                $actionName = substr($actionName, 0, -6);
+                // Remove always allowed or always disallowed actions
+                if (!in_array($actionName, $excludedActions[$controllerClass])) {
+                    $publicMethods[$actionName] = false;
                 }
             }
         }
 
-        return $controllers;
+        return $publicMethods;
     }
 
     /**
@@ -184,17 +202,8 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
 
         $controllers = [];
 
-        // List of excluded controllers
-        $excludedControllers = [
-            '/pbxcore/api/license',
-            '/pbxcore/api/storage'
-        ];
-
-        $excludedActions = [
-            '/pbxcore/api/cdr' => [
-                '/playback',
-            ],
-        ];
+        // Get the list of controllers and actions which we hide from settings
+        [$excludedControllers, $excludedActions] = $this->getExclusionsActionsControllers();
 
         foreach ($controllerFiles as $file) {
 
@@ -226,6 +235,7 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
                 foreach ($methodAnnotations as $annotation) {
                     if (in_array($annotation->getName(), $possibleHTTPMethods)) {
                         $actionName = $annotation->getArgument(0);
+                        // Remove always allowed or always disallowed actions
                         if (!empty($actionName) and !in_array($actionName, $excludedActions[$controllerName])) {
                             $actions[$actionName] = false;
                         }
@@ -234,13 +244,50 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
             }
 
             if (count($actions) > 0) {
-                $controllers[Constants::PBX_CORE_REST]['REST'][$controllerName] = $actions;
+                $currentContext = &$controllers[Constants::PBX_CORE_REST]['REST'][$controllerName];
+                $currentContext = array_merge_recursive($currentContext ?? [], $actions);
             }
         }
 
         return $controllers;
     }
 
+    /**
+     * Retrieves the available controller actions for modules.
+     *
+     * @return array An array containing the available controller actions for modules.
+     */
+    private function getAvailableModulesControllerActions(): array
+    {
+
+        // Get the list of controllers and actions which we hide from settings
+        [$excludedControllers, $excludedActions] = $this->getExclusionsActionsControllers();
+
+        $controllers = [];
+        $modules = PbxExtensionModules::find('disabled=0');
+        $modulesDir = $this->getDI()->getShared('config')->path('core.modulesDir');
+        foreach ($modules as $module) {
+            $controllersDir = "{$modulesDir}/{$module->uniqid}/App/Controllers";
+            // Check if the controllers directory exists
+            if (is_dir($controllersDir)) {
+                $controllerFiles = glob("{$controllersDir}/*.php", GLOB_NOSORT);
+
+                foreach ($controllerFiles as $file) {
+                    $className = pathinfo($file)['filename'];
+                    $controllerClass = "Modules\\{$module->uniqid}\\App\\Controllers\\{$className}";
+                    if (in_array($controllerClass, $excludedControllers)) {
+                        continue;
+                    }
+                    $publicMethods = $this->getControllersActions($controllerClass, $excludedActions);
+                    if (count($publicMethods) > 0) {
+                        $controllers[$module->uniqid]['APP'][$controllerClass] = $publicMethods;
+                    }
+                }
+            }
+        }
+
+        return $controllers;
+    }
 
     /**
      * Retrieves the available actions of external modules REST controllers.
@@ -249,6 +296,9 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
      */
     private function getAvailableRESTActionsInModules(): array
     {
+        // Get the list of controllers and actions which we hide from settings
+        [$excludedControllers, $excludedActions] = $this->getExclusionsActionsControllers();
+
         $controllers = [];
         $configObjects = $this->di->getShared(PBXConfModulesProvider::SERVICE_NAME);
 
@@ -261,6 +311,8 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
                 // Create a reflection of the controller class
                 $reflection = new Reflection($parsedClass);
 
+                $controllerName = '/pbxcore/api/modules/' . Text::uncamelize($configObject->moduleUniqueId, '-');
+
                 // Get the actions of the controller if they are defined in the method description
                 $actions = [];
                 $possibleHTTPMethods = ['Get', 'Post', 'Put', 'Delete', 'Patch', 'Head', 'Options', 'Trace'];
@@ -271,18 +323,21 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
                     foreach ($methodAnnotations as $annotation) {
                         if (in_array($annotation->getName(), $possibleHTTPMethods)) {
                             $actionName = $annotation->getArgument(0);
-                            if (!empty($actionName)) {
+                            // filter always allowed or always disallowed actions
+                            if (!empty($actionName) and !in_array($actionName, $excludedActions[$controllerName])) {
                                 $actions[$actionName] = false;
                             }
                         }
                     }
                 }
-
-                $controllerName = '/pbxcore/api/modules/' . Text::uncamelize($configObject->moduleUniqueId, '-');
                 if (empty($actions)) {
                     $actions['*'] = false;
                 }
-                $controllers[$configObject->moduleUniqueId]['REST'][$controllerName] = $actions;
+                if (in_array($controllerName, $excludedControllers)) {
+                    continue;
+                }
+                $currentContext = &$controllers[$configObject->moduleUniqueId]['REST'][$controllerName];
+                $currentContext = array_merge_recursive($currentContext ?? [], $actions);
             }
 
             // Parse custom REST API endpoints described in modules
@@ -312,12 +367,21 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
                         }
                     }
                 }
+                if (!empty($controllerName) && !in_array($controllerName, $excludedControllers)) {
+                    if (is_array($actions)) {
+                        // Remove always allowed or always disallowed actions
+                        foreach ($actions as $index => $action) {
+                            if (in_array($action, $excludedActions[$controllerName])) {
+                                unset($actions[$index]);
+                            }
+                        }
+                    }
 
-                if (!empty($controllerName)) {
                     if (empty($actions)) {
                         $actions['*'] = false;
                     }
-                    $controllers[$configObject->moduleUniqueId]['REST'][$controllerName] = $actions;
+                    $currentContext = &$controllers[$configObject->moduleUniqueId]['REST'][$controllerName];
+                    $currentContext = array_merge_recursive($currentContext ?? [], $actions);
                 }
             }
 
@@ -326,41 +390,34 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
     }
 
     /**
-     * Get the actions for a given controller class, excluding specified actions.
+     * Fills the combined actions with allowed rights and marks them as true.
      *
-     * @param string $controllerClass The name of the controller class.
-     * @param array $excludedActions Actions to be excluded for the controller class.
+     * @param array $combined The combined actions array.
+     * @param array $allowedRights The allowed rights array.
      *
-     * @return array The public methods of the controller class, filtered by excluded actions.
+     * @return array The updated combined actions array.
      */
-    private function getControllersActions(string $controllerClass, array $excludedActions = []): array
+    public function fillAllowed(array $combined, array $allowedRights): array
     {
-        try {
-            $reflection = new ReflectionClass($controllerClass);
-            // If the controller class is abstract, return an empty array
-            if ($reflection->isAbstract()) {
-                return [];
-            }
-        } catch (\Throwable $exception) {
-            return [];
-        }
-
-        $publicMethods = [];
-
-        // Get all public methods ending with "Action"
-        foreach ($reflection->getMethods() as $method) {
-            $actionName = $method->getName();
-            if ($method->isPublic() && substr($actionName, -6) === 'Action') {
-                // Filter the actions array based on excluded actions
-                if (!in_array($actionName, $excludedActions[$controllerClass])) {
-                    // Remove "Action" from the action name
-                    $actionName = substr($actionName, 0, -6);
-                    $publicMethods[$actionName] = false;
+        // Check if allowed rights exist for the combined actions and mark them as true
+        foreach ($combined as $moduleId => $types) {
+            foreach ($types as $type => $controllers) {
+                foreach ($controllers as $controllerClass => $actions) {
+                    foreach ($actions as $actionName => $value) {
+                        foreach ($allowedRights as $allowedRight) {
+                            $allowedActions = json_decode($allowedRight['actions'], true);
+                            if ($allowedRight['module_id'] === $moduleId
+                                && $allowedRight['controller'] === $controllerClass
+                                && in_array($actionName, $allowedActions)
+                            ) {
+                                $combined[$moduleId][$type][$controllerClass][$actionName] = true;
+                            }
+                        }
+                    }
                 }
             }
         }
-
-        return $publicMethods;
+        return $combined;
     }
 
     /**
@@ -403,36 +460,4 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
         }
         return true;
     }
-
-    /**
-     * Fills the combined actions with allowed rights and marks them as true.
-     *
-     * @param array $combined       The combined actions array.
-     * @param array $allowedRights  The allowed rights array.
-     *
-     * @return array The updated combined actions array.
-     */
-    public function fillAllowed(array $combined, array $allowedRights): array
-    {
-        // Check if allowed rights exist for the combined actions and mark them as true
-        foreach ($combined as $moduleId => $types) {
-            foreach ($types as $type=>$controllers) {
-                foreach ($controllers as $controller => $actions) {
-                    foreach ($actions as $actionName=>$value) {
-                        foreach ($allowedRights as $allowedRight) {
-                            $allowedActions = json_decode($allowedRight['actions'], true);
-                            if ($allowedRight['module_id'] === $moduleId
-                                && $allowedRight['controller'] === $controller
-                                && in_array($actionName, $allowedActions)
-                            ) {
-                                $combined[$moduleId][$type][$controller][$actionName] = true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return $combined;
-    }
 }
-

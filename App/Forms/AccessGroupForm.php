@@ -20,6 +20,7 @@
 namespace Modules\ModuleUsersUI\App\Forms;
 
 use MikoPBX\AdminCabinet\Forms\BaseForm;
+use MikoPBX\Common\Providers\UrlProvider;
 use Modules\ModuleUsersUI\Lib\Constants;
 use Modules\ModuleUsersUI\Lib\UsersUICDRFilter;
 use Modules\ModuleUsersUI\Models\AccessGroupsRights;
@@ -65,40 +66,19 @@ class AccessGroupForm extends BaseForm
         $this->addTextArea('description', $entity->description ?? '', 80);
 
         // Prepare homepages for select dropdown
-        $parameters = [
-            'columns' => [
-                'controller',
-                'actions',
-            ],
-            'models' => [
-                'AccessGroupsRights' => AccessGroupsRights::class,
-            ],
-            'conditions' => 'group_id = :group_id: and module_id = :module_id:',
-            'bind' => [
-                'group_id' => $entity->id,
-                'module_id' => Constants::ADMIN_CABINET,
-            ],
-            'order' => 'controller'
-        ];
-        $records = $this->di->get('modelsManager')->createBuilder($parameters)->getQuery()->execute();
-        $homepagesForSelect = [];
-        foreach ($records as $record) {
-            $possibleActions = json_decode($record->actions, true);
-            foreach ($possibleActions as $action) {
-                $controllerName = \Phalcon\Text::uncamelize(str_replace("Controller", "", $record->controller),'-');
-                $actionName  = \Phalcon\Text::uncamelize(str_replace("Action", "", $action),'-');
-                $homePage = $controllerName . '/' . $actionName;
-                $homepagesForSelect[$homePage] = $homePage;
-            }
+        if (empty($entity->homePage)) {
+            $url = $this->di->get(UrlProvider::SERVICE_NAME)->get('/session/end');
+            $homepagesForSelect[$url] = $url;
+        } else {
+            $homepagesForSelect[$entity->homePage] = $entity->homePage;
         }
-        if (empty($homepagesForSelect)) {
-            $homepagesForSelect['session/end'] = 'session/end';
-        }
+
         $homePages = new Select('homePage', $homepagesForSelect, [
             'using' => [
                 'id',
                 'name',
             ],
+            'value' => $entity->homePage,
             'useEmpty' => false,
             'class' => "ui selection dropdown home-page-dropdown $disabledClass",
         ]);
@@ -121,19 +101,25 @@ class AccessGroupForm extends BaseForm
         // Prepare rights matrix
         foreach ($options['groupRights'] as $module => $types) {
             foreach ($types as $type => $controllers) {
-                foreach ($controllers as $controller => $actions) {
+                foreach ($controllers as $controllerClass => $actions) {
+
+                    $controllerParts = explode('\\', $controllerClass);
+                    $controllerName = end($controllerParts);
+                    $controllerName = str_replace("Controller", "", $controllerName);
+
                     // Main CheckBox
-                    $checkBox = new Check("{$controller}_main");
-                    $checkBox->setLabel("<b>" . $this->getControllerTranslation($controller) . '</b>');
+                    $checkBox = new Check("{$controllerClass}_main");
+                    $checkBox->setLabel("<b>" . $this->getControllerTranslation($controllerName) . '</b>');
                     $this->add($checkBox);
 
                     foreach ($actions as $action => $allowed) {
                         // Add child checkbox for action
-                        $checkBoxId = 'check-box-' . md5($module . $controller . $action);
+                        $checkBoxId = 'check-box-' . md5($module . $controllerClass . $action);
                         $parameters = [
                             'class' => 'access-group-checkbox hidden',
                             'data-module' => $module,
-                            'data-controller' => $controller,
+                            'data-controller' => $controllerClass,
+                            'data-controller-name' => $controllerName,
                             'data-action' => $action,
                             'tabindex' => '0'
                         ];
@@ -141,7 +127,7 @@ class AccessGroupForm extends BaseForm
                             $parameters['checked'] = 'checked';
                         }
                         $checkBox = new Check($checkBoxId, $parameters);
-                        $checkBox->setLabel($this->getActionTranslation($module, $controller, $action));
+                        $checkBox->setLabel($this->getActionTranslation($module, $controllerName, $action));
                         $this->add($checkBox);
                     }
                 }
@@ -166,15 +152,12 @@ class AccessGroupForm extends BaseForm
     /**
      * Retrieves the translated controller name.
      *
-     * @param string $controllerName The controller name.
+     * @param string $controllerName The controller class name.
      *
      * @return string The translated controller name.
      */
     private function getControllerTranslation(string $controllerName): string
     {
-        // Remove "Controller" from the controller name
-        $controllerName = str_replace("Controller", "", $controllerName);
-
         // Create the translation template
         $translationTemplate = "mm_{$controllerName}";
 
@@ -193,7 +176,7 @@ class AccessGroupForm extends BaseForm
      * Retrieves the translated action name.
      *
      * @param string $module         The module name.
-     * @param string $controllerName The controller name.
+     * @param string $controllerName The controller class name.
      * @param string $actionName     The action name.
      *
      * @return string The translated action name.

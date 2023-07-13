@@ -57,6 +57,7 @@ class ModuleUsersUIController extends ModuleUsersUIBaseController
             'columns'    => [
                 'id' => 'AccessGroups.id',
                 'name' => 'AccessGroups.name',
+                'fullAccess' => 'AccessGroups.fullAccess=1',
                 'description' => 'AccessGroups.description',
                 'countUsers'=> 'COUNT(UsersCredentials.id)',
             ],

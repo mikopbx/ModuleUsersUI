@@ -13,7 +13,14 @@
         <tbody>
     {% endif %}
     <tr class="group-row" id="{{ record['id'] }}">
-        <td>{{ record['name'] }}</td>
+        <td>
+            {% if record['fullAccess'] %}
+                <i class="user cog icon"></i>
+            {% else %}
+                <i class="users icon"></i>
+            {% endif %}
+            {{ record['name'] }}
+        </td>
         <td class="center aligned">{{ record['countUsers'] }}</td>
         <td class="">
             {% if not (record['description'] is empty) and record['description']|length>80 %}

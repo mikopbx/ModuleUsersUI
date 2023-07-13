@@ -182,7 +182,7 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
      *
      * @return void
      */
-    public function changeUserUseLDapAction(): void
+    public function changeUserUseLdapAction(): void
     {
         if (!$this->request->isPost()) {
             return;

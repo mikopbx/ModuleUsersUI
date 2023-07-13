@@ -128,7 +128,6 @@ const moduleUsersUIModifyAG = {
     initialize() {
         moduleUsersUIModifyAG.checkStatusToggle();
         window.addEventListener('ModuleStatusChanged', moduleUsersUIModifyAG.checkStatusToggle);
-        moduleUsersUIModifyAG.initializeForm();
 
         $('.avatar').each(() => {
             if ($(this).attr('src') === '') {
@@ -140,13 +139,12 @@ const moduleUsersUIModifyAG = {
         moduleUsersUIModifyAG.$accessSettingsTabMenu.tab();
         moduleUsersUIModifyAG.initializeMembersDropDown();
         moduleUsersUIModifyAG.initializeRightsCheckboxes();
-        moduleUsersUIModifyAG.$homePageDropdown.dropdown();
+        moduleUsersUIModifyAG.$homePageDropdown.dropdown(moduleUsersUIModifyAG.getHomePagesForSelect());
 
         moduleUsersUIModifyAG.cbAfterChangeFullAccessToggle();
         moduleUsersUIModifyAG.$fullAccessCheckbox.checkbox({
             onChange: moduleUsersUIModifyAG.cbAfterChangeFullAccessToggle
         });
-
 
         moduleUsersUIModifyAG.$cdrFilterToggles.checkbox();
         moduleUsersUIModifyAG.cbAfterChangeCDRFilterMode();
@@ -171,6 +169,7 @@ const moduleUsersUIModifyAG = {
             $(e.target).parent('.ui.tab').find('.ui.checkbox').checkbox('uncheck');
         });
 
+        moduleUsersUIModifyAG.initializeForm();
     },
 
     /**
@@ -180,9 +179,13 @@ const moduleUsersUIModifyAG = {
         if (moduleUsersUIModifyAG.$fullAccessCheckbox.checkbox('is checked')) {
             moduleUsersUIModifyAG.$cdrFilterTab.hide();
             moduleUsersUIModifyAG.$groupRightsTab.hide();
-            moduleUsersUIModifyAG.$mainTabMenu.tab('change tab','general')
+            moduleUsersUIModifyAG.$homePageDropdown.hide();
+            moduleUsersUIModifyAG.$mainTabMenu.tab('change tab','general');
+            // Check all checkboxes
+            $('div.tab[data-tab="group-rights"] .ui.checkbox').checkbox('check');
         } else {
             moduleUsersUIModifyAG.$groupRightsTab.show();
+            moduleUsersUIModifyAG.$homePageDropdown.show();
             moduleUsersUIModifyAG.cbAfterChangeCDRFilterMode();
         }
     },
@@ -308,7 +311,7 @@ const moduleUsersUIModifyAG = {
                             allChecked = false;
                         }
                     });
-                    // set parent checkbox state, but dont trigger its onChange callback
+                    // set parent checkbox state, but don't trigger its onChange callback
                     if(allChecked) {
                         $parentCheckbox.checkbox('set checked');
                     }
@@ -353,6 +356,43 @@ const moduleUsersUIModifyAG = {
         }
     },
 
+    /**
+     * Prepares list of possible home pages to select from
+     */
+    getHomePagesForSelect(){
+        const currentHomePage = moduleUsersUIModifyAG.$formObj.form('get value','homePage');
+        const selectedRights = $('.checked .access-group-checkbox');
+        const values = [];
+        selectedRights.each((index, obj) => {
+            const module = moduleUsersUIModifyAG.convertCamelToDash($(obj).attr('data-module'));
+            const controllerName = moduleUsersUIModifyAG.convertCamelToDash($(obj).attr('data-controller-name'));
+            const action = moduleUsersUIModifyAG.convertCamelToDash($(obj).attr('data-action'));
+            if (controllerName.indexOf('pbxcore') === -1 && action.indexOf('index') > -1) {
+                let url = `/${module}/${controllerName}/${action}`;
+                if (currentHomePage === url){
+                    values.push( { name: url, value: url, selected: true });
+                } else {
+                    values.push( { name: url, value: url });
+                }
+            }
+        });
+        if (values.length===0){
+            const failBackHomePage =  `${globalRootUrl}session/end`;
+            values.push( { name: failBackHomePage, value: failBackHomePage, selected: true });
+        }
+        return {
+            values:values,
+            onChange: Form.dataChanged
+        };
+    },
+    /**
+     * Converts a string from camel case to dash case.
+     * @param str
+     * @returns {*}
+     */
+    convertCamelToDash(str) {
+        return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+    },
     /**
      * Callback function before sending the form.
      * @param {Object} settings - The form settings.
@@ -411,10 +451,29 @@ const moduleUsersUIModifyAG = {
         });
         result.data.cdrFilter = JSON.stringify(arrCDRFilter);
 
-        if (moduleUsersUiIndexLdap.$fullAccessCheckbox.checkbox('is checked')){
+        // Full access group toggle
+        if (moduleUsersUIModifyAG.$fullAccessCheckbox.checkbox('is checked')){
             result.data.fullAccess = '1';
         } else {
             result.data.fullAccess = '0';
+        }
+
+        // Home Page value
+        const selectedHomePage = moduleUsersUIModifyAG.$homePageDropdown.dropdown('get text');
+        const dropdownParams = moduleUsersUIModifyAG.getHomePagesForSelect();
+        moduleUsersUIModifyAG.$homePageDropdown.dropdown('setup menu', dropdownParams);
+        let homePage = '';
+        $.each(dropdownParams.values, function(index, record) {
+            if (record.name === selectedHomePage) {
+                homePage = selectedHomePage;
+                return true;
+            }
+        });
+        if (homePage===''){
+            result.data.homePage = dropdownParams.values[0].value;
+            moduleUsersUIModifyAG.$homePageDropdown.dropdown('set selected', result.data.homePage);
+        } else {
+            result.data.homePage = selectedHomePage;
         }
 
         return result;
@@ -423,7 +482,7 @@ const moduleUsersUIModifyAG = {
      * Callback function after sending the form.
      */
     cbAfterSendForm() {
-        // Add implementation
+
     },
 
     /**

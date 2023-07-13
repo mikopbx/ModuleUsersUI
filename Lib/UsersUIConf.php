@@ -23,6 +23,7 @@ use MikoPBX\AdminCabinet\Controllers\ExtensionsController;
 use MikoPBX\AdminCabinet\Controllers\SessionController;
 use MikoPBX\AdminCabinet\Forms\ExtensionEditForm;
 use MikoPBX\AdminCabinet\Providers\AssetProvider;
+use MikoPBX\AdminCabinet\Providers\SecurityPluginProvider;
 use MikoPBX\Common\Providers\SessionProvider;
 use MikoPBX\Modules\Config\ConfigClass;
 use Modules\ModuleUsersUI\App\Controllers\UsersCredentialsController;
@@ -87,6 +88,7 @@ class UsersUIConf extends ConfigClass
             default:
                 // Default case when no specific action is required
         }
+
         return $result;
     }
 
@@ -107,6 +109,23 @@ class UsersUIConf extends ConfigClass
     }
 
     /**
+     * Called from BaseController before executing a route.
+     * @see https://docs.mikopbx.com/mikopbx-development/module-developement/module-class#onbeforeexecuteroute
+     *
+     * @param Controller $controller The called controller instance.
+     *
+     * @return void
+     */
+    public function onBeforeExecuteRoute(Controller $controller):void{
+        if (is_a($controller, ExtensionsController::class)
+            && $controller->dispatcher->getActionName() === 'modify'
+        ) {
+            $controller->view->addCustomTabFromModuleUsersUI =
+                $this->di->get(SecurityPluginProvider::SERVICE_NAME, [UsersCredentialsController::class,'changeUserCredentials']);
+        }
+    }
+
+    /**
      * This method is called from BaseController's onAfterExecuteRoute function.
      * It handles the form submission and updates the user credentials.
      *
@@ -122,8 +141,11 @@ class UsersUIConf extends ConfigClass
         ) {
             return;
         }
-        $userController = new UsersCredentialsController();
-        $userController->saveUserCredential($controller);
+        $isAllowed = $this->di->get(SecurityPluginProvider::SERVICE_NAME, [UsersCredentialsController::class,'changeUserCredentials']);
+        if ($isAllowed) {
+            $userController = new UsersCredentialsController();
+            $userController->saveUserCredential($controller);
+        }
     }
 
 
@@ -161,13 +183,26 @@ class UsersUIConf extends ConfigClass
         $currentController = $dispatcher->getControllerName();
         $currentAction = $dispatcher->getActionName();
         if ($currentController==='Extensions' and $currentAction==='modify') {
-            $assets->collection(AssetProvider::SEMANTIC_UI_CSS)
-                ->addCss('css/vendor/semantic/search.min.css', true);
-            $assets->collection(AssetProvider::SEMANTIC_UI_JS)
-                ->addJs('js/vendor/semantic/search.min.js', true);
-            $assets->collection(AssetProvider::FOOTER_JS)
-                ->addJs("js/cache/{$this->moduleUniqueId}/module-users-ui-extensions-modify.js", true);
+            $isAllowed = $this->di->get(SecurityPluginProvider::SERVICE_NAME, [UsersCredentialsController::class,'changeUserCredentials']);
+            if ($isAllowed){
+                $assets->collection(AssetProvider::SEMANTIC_UI_CSS)
+                    ->addCss('css/vendor/semantic/search.min.css', true);
+                $assets->collection(AssetProvider::SEMANTIC_UI_JS)
+                    ->addJs('js/vendor/semantic/search.min.js', true);
+                $assets->collection(AssetProvider::FOOTER_JS)
+                    ->addJs("js/cache/{$this->moduleUniqueId}/module-users-ui-extensions-modify.js", true);
+            }
         }
     }
 
+    /**
+     * Returns array of additional routes for PBXCoreREST interface from module
+     * [ControllerClass, ActionMethod, RequestTemplate, HttpMethod, RootUrl, NoAuth ]
+     * @see https://docs.mikopbx.com/mikopbx-development/module-developement/module-class#getpbxcorerestadditionalroutes
+     *
+     */
+    public function getPBXCoreRESTAdditionalRoutes(): array
+    {
+        return [];
+    }
 }
