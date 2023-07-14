@@ -103,7 +103,7 @@ class ModuleUsersUIBaseController extends BaseController
                     0 => AccessGroups::class,
                     1 => 'AccessGroups.id = UsersCredentials.user_access_group_id',
                     2 => 'AccessGroups',
-                    3 => 'INNER',
+                    3 => 'LEFT',
                 ],
             ],
         ];

@@ -20,6 +20,7 @@
 namespace Modules\ModuleUsersUI\App\Controllers;
 use MikoPBX\AdminCabinet\Providers\AssetProvider;
 use Modules\ModuleUsersUI\App\Forms\AccessGroupForm;
+use Modules\ModuleUsersUI\Lib\Constants;
 use Modules\ModuleUsersUI\Models\AccessGroups;
 
 class AccessGroupsController extends ModuleUsersUIBaseController
@@ -43,7 +44,7 @@ class AccessGroupsController extends ModuleUsersUIBaseController
         $record = AccessGroups::findFirstById($id);
         if ($record === null) {
             $record = new AccessGroups();
-            $record->cdrFilterMode = '0';
+            $record->cdrFilterMode = Constants::CDR_FILTER_DISABLED;
             $record->name = '';
             $record->description = '';
         } else {
@@ -81,10 +82,20 @@ class AccessGroupsController extends ModuleUsersUIBaseController
             $accessGroupEntity=new AccessGroups();
             $accessGroupEntity->id = $data['id'];
         }
-        $accessGroupEntity->cdrFilterMode = $data['cdrFilterMode'];
+        if (empty($data['cdrFilterMode'])){
+            $accessGroupEntity->cdrFilterMode = Constants::CDR_FILTER_DISABLED;
+        } else {
+            $accessGroupEntity->cdrFilterMode = $data['cdrFilterMode'];
+        }
+
+        if (empty($data['homePage'])){
+            $accessGroupEntity->homePage = $this->url->get('session/end');
+        } else {
+            $accessGroupEntity->homePage = $data['homePage'];
+        }
+
         $accessGroupEntity->name = $data['name'];
         $accessGroupEntity->description = $data['description'];
-        $accessGroupEntity->homePage = $data['homePage'];
         $accessGroupEntity->fullAccess = $data['fullAccess'];
 
         // Save the access group object

@@ -20,6 +20,7 @@
 namespace Modules\ModuleUsersUI\Models;
 
 use MikoPBX\Modules\Models\ModulesModelsBase;
+use Modules\ModuleUsersUI\Lib\Constants;
 use Phalcon\Mvc\Model\Relation;
 
 class AccessGroups extends ModulesModelsBase
@@ -48,7 +49,7 @@ class AccessGroups extends ModulesModelsBase
     /**
      * Home page after user logs in
      *
-     * @Column(type="string", nullable=true, default='session/end')
+     * @Column(type="string", nullable=true, default='/admin-cabinet/session/end')
      */
     public $homePage;
 
@@ -59,7 +60,7 @@ class AccessGroups extends ModulesModelsBase
      * If is set to 'selected' the group can see and listen only users from the AccessGroupCDRFilter list
      * If is set to 'not-selected' the group can see and listen all users except users from the AccessGroupCDRFilter list
      *
-     * @Column(type="string", length=1, default='0')
+     * @Column(type="string", default='all')
      */
     public  $cdrFilterMode;
 
@@ -114,13 +115,23 @@ class AccessGroups extends ModulesModelsBase
             'user_access_group_id',
             [
                 'alias'      => 'UsersCredentials',
-                'foreignKey' => [
-                    'allowNulls' => true,
-                    'action'     => Relation::ACTION_RESTRICT,
-                    // When a group is deleted, prevent to delete the associated users
-                ],
             ]
         );
+    }
+
+    public function beforeDelete(): bool
+    {
+        $parameters = [
+            'conditions' => 'user_access_group_id = :group_id:',
+            'bind' => [
+                'group_id' => $this->id
+            ]
+        ];
+        foreach (UsersCredentials::find($parameters) as $userCredential){
+            $userCredential->user_access_group_id = null;
+            $userCredential->save();
+        }
+        return parent::beforeDelete();
     }
 
 }

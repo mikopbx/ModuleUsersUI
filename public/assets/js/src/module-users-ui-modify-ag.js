@@ -331,7 +331,7 @@ const moduleUsersUIModifyAG = {
      * Callback function after changing the group right.
      */
     cdAfterChangeGroupRight(){
-        const accessToCdr = moduleUsersUIModifyAG.$formObj.form('get value','CallDetailRecordsController_main');
+        const accessToCdr = moduleUsersUIModifyAG.$formObj.form('get value','MikoPBX\\AdminCabinet\\Controllers\\CallDetailRecordsController_main');
         if (accessToCdr==='on') {
             moduleUsersUIModifyAG.$cdrFilterTab.show();
         } else {

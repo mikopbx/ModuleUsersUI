@@ -49,7 +49,7 @@ class UsersCredentials extends ModulesModelsBase
     /**
      * Link to the AccessGroups table
      *
-     * @Column(type="integer", nullable=false, default='0')
+     * @Column(type="string", nullable=false, default='No access')
      */
     public $user_access_group_id;
 
@@ -105,10 +105,6 @@ class UsersCredentials extends ModulesModelsBase
             'id',
             [
                 'alias' => 'AccessGroups',
-                'foreignKey' => [
-                    'allowNulls' => false,
-                    'action' => Relation::NO_ACTION,
-                ],
             ]
         );
     }

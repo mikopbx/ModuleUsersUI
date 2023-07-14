@@ -18,8 +18,8 @@
  */
 namespace Modules\ModuleUsersUI\Setup;
 
+use MikoPBX\Common\Models\PbxSettings;
 use MikoPBX\Modules\Setup\PbxExtensionSetupBase;
-
 
 /**
  * Class PbxExtensionSetup
@@ -44,9 +44,9 @@ class PbxExtensionSetup extends PbxExtensionSetupBase
     /**
      * Creates database structure according to models annotations
      *
-     * If it necessary, it fills some default settings, and change sidebar menu item representation for this module
+     * If necessary, it fills some default settings, and change sidebar menu item representation for this module
      *
-     * After installation it registers module on PbxExtensionModules model
+     * After installation, it registers module on PbxExtensionModules model
      *
      *
      * @return bool result of installation
@@ -91,4 +91,28 @@ class PbxExtensionSetup extends PbxExtensionSetupBase
         return parent::unInstallDB($keepSettings);
     }
 
+    /**
+     * Adds the module to the sidebar menu.
+     *
+     * @return bool The result of the addition process.
+     */
+    public function addToSidebar(): bool
+    {
+        $menuSettingsKey           = "AdditionalMenuItem{$this->moduleUniqueID}";
+        $menuSettings              = PbxSettings::findFirstByKey($menuSettingsKey);
+        if ($menuSettings === null) {
+            $menuSettings      = new PbxSettings();
+            $menuSettings->key = $menuSettingsKey;
+        }
+        $value               = [
+            'uniqid'        => $this->moduleUniqueID,
+            'group'         => 'server',
+            'iconClass'     => 'users cog',
+            'caption'       => "Breadcrumb{$this->moduleUniqueID}",
+            'showAtSidebar' => true,
+        ];
+        $menuSettings->value = json_encode($value);
+
+        return $menuSettings->save();
+    }
 }

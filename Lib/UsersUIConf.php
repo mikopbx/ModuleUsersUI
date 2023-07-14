@@ -159,7 +159,7 @@ class UsersUIConf extends ConfigClass
      */
     public function applyACLFiltersToCDRQuery(array &$parameters): void
     {
-        $session = $this->getDI()->get(SessionProvider::SERVICE_NAME);
+        $session = $this->getDI()->get(SessionProvider::SERVICE_NAME)->get(SessionController::SESSION_ID);
         if (is_array($session) and isset($session[SessionController::ROLE])) {
             $role = $session[SessionController::ROLE];
             $accessGroupId = str_replace(Constants::MODULE_ROLE_PREFIX, "", $role);

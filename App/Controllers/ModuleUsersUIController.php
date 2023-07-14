@@ -32,6 +32,8 @@ class ModuleUsersUIController extends ModuleUsersUIBaseController
      */
     public function indexAction(): void
     {
+        $this->showModuleStatusToggle = true;
+
         $semanticCollection = $this->assets->collection(AssetProvider::SEMANTIC_UI_JS);
         $semanticCollection->addJs('js/vendor/semantic/search.min.js', true);
 

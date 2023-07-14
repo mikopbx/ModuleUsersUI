@@ -19,9 +19,9 @@
 
 
 return [
-    'repModuleUsersUI' => 'Модуль управление доступом в систему - %repesent%',
-    'mo_ModuleModuleUsersUI' => 'Модуль управление доступом в систему ',
-    'BreadcrumbModuleUsersUI' => 'Модуль управление доступом в систему ',
+    'repModuleUsersUI' => 'Управление доступом в систему - %repesent%',
+    'mo_ModuleModuleUsersUI' => 'Управление доступом в систему ',
+    'BreadcrumbModuleUsersUI' => 'Управление доступом в систему ',
     'SubHeaderModuleUsersUI' => 'Позволяет создавать группы доступа и присваивать их пользователям',
     'BreadcrumbAccessGroups' => 'Настройка группы доступа',
     'SubHeaderAccessGroups' => 'Детальная настройка прав на элементы интерфейса и REST API',
@@ -45,7 +45,6 @@ return [
 
     'module_usersUiMainMenuItem' => 'Права пользователей',
     'module_usersUiAccessGroups' => 'Группы доступа',
-
 
     'module_usersui_GroupName' => 'Название группы',
     'module_usersui_FullAccessCheckbox' => 'Группа без ограничений доступа',
