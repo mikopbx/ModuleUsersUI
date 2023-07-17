@@ -115,4 +115,5 @@ class PbxExtensionSetup extends PbxExtensionSetupBase
 
         return $menuSettings->save();
     }
+
 }
