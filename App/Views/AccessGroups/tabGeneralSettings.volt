@@ -11,7 +11,11 @@
 </div>
 <div class="field">
     <label for="homePage">{{ t._('module_usersui_HomePage') }}</label>
-    {{ form.render('homePage') }}
+    <div class="ui selection dropdown search item" id="home-page-dropdown">
+        {{ form.render('homePage') }}
+        <div class="text"></div>
+        <i class="dropdown icon"></i>
+    </div>
 </div>
 <div class="field">
     <label for="description">{{ t._('module_usersui_ColumnGroupDescription') }}</label>

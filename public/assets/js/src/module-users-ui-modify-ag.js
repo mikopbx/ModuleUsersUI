@@ -50,7 +50,7 @@ const moduleUsersUIModifyAG = {
      * jQuery object for the home page dropdown select.
      * @type {jQuery}
      */
-    $homePageDropdown: $('.home-page-dropdown'),
+    $homePageDropdown: $('#home-page-dropdown'),
 
     /**
      * jQuery object for the access settings tab menu.
@@ -75,6 +75,12 @@ const moduleUsersUIModifyAG = {
      * @type {jQuery}
      */
     $groupRightsTab: $('#module-access-group-modify-menu .item[data-tab="group-rights"]'),
+
+    /**
+     * Users table for CDR filter.
+     * @type {jQuery}
+     */
+    $cdrFilterUsersTable: $('#cdr-filter-users-table'),
 
     /**
      * jQuery object for the CDR filter toggles.
@@ -139,7 +145,6 @@ const moduleUsersUIModifyAG = {
         moduleUsersUIModifyAG.$accessSettingsTabMenu.tab();
         moduleUsersUIModifyAG.initializeMembersDropDown();
         moduleUsersUIModifyAG.initializeRightsCheckboxes();
-        moduleUsersUIModifyAG.$homePageDropdown.dropdown(moduleUsersUIModifyAG.getHomePagesForSelect());
 
         moduleUsersUIModifyAG.cbAfterChangeFullAccessToggle();
         moduleUsersUIModifyAG.$fullAccessCheckbox.checkbox({
@@ -169,6 +174,9 @@ const moduleUsersUIModifyAG = {
             $(e.target).parent('.ui.tab').find('.ui.checkbox').checkbox('uncheck');
         });
 
+        // Initialize CDR filter datatable
+        moduleUsersUIModifyAG.initializeCDRFilterTable();
+
         moduleUsersUIModifyAG.initializeForm();
     },
 
@@ -177,17 +185,15 @@ const moduleUsersUIModifyAG = {
      */
     cbAfterChangeFullAccessToggle(){
         if (moduleUsersUIModifyAG.$fullAccessCheckbox.checkbox('is checked')) {
+            // Check all checkboxes
+            moduleUsersUIModifyAG.$mainTabMenu.tab('change tab','general');
             moduleUsersUIModifyAG.$cdrFilterTab.hide();
             moduleUsersUIModifyAG.$groupRightsTab.hide();
-            moduleUsersUIModifyAG.$homePageDropdown.hide();
-            moduleUsersUIModifyAG.$mainTabMenu.tab('change tab','general');
-            // Check all checkboxes
-            $('div.tab[data-tab="group-rights"] .ui.checkbox').checkbox('check');
         } else {
             moduleUsersUIModifyAG.$groupRightsTab.show();
-            moduleUsersUIModifyAG.$homePageDropdown.show();
             moduleUsersUIModifyAG.cbAfterChangeCDRFilterMode();
         }
+        moduleUsersUIModifyAG.$homePageDropdown.dropdown(moduleUsersUIModifyAG.getHomePagesForSelect());
     },
 
     /**
@@ -196,9 +202,9 @@ const moduleUsersUIModifyAG = {
     cbAfterChangeCDRFilterMode(){
         const cdrFilterMode = moduleUsersUIModifyAG.$formObj.form('get value','cdrFilterMode');
         if (cdrFilterMode==='all') {
-            $('#cdr-extensions-table').hide();
+            $('#cdr-filter-users-table_wrapper').hide();
         } else {
-            $('#cdr-extensions-table').show();
+            $('#cdr-filter-users-table_wrapper').show();
         }
     },
 
@@ -286,6 +292,9 @@ const moduleUsersUIModifyAG = {
                         $childCheckbox  = $(this).closest('.checkbox').siblings('.list').find('.checkbox')
                     ;
                     $childCheckbox.checkbox('uncheck');
+                },
+                onChange: function() {
+                    moduleUsersUIModifyAG.$homePageDropdown.dropdown(moduleUsersUIModifyAG.getHomePagesForSelect());
                 }
             })
         ;
@@ -360,30 +369,57 @@ const moduleUsersUIModifyAG = {
      * Prepares list of possible home pages to select from
      */
     getHomePagesForSelect(){
+        let valueSelected = false;
         const currentHomePage = moduleUsersUIModifyAG.$formObj.form('get value','homePage');
-        const selectedRights = $('.checked .access-group-checkbox');
+        let selectedRights = $('.checked .access-group-checkbox');
+        if (moduleUsersUIModifyAG.$fullAccessCheckbox.checkbox('is checked')){
+           selectedRights = $('.access-group-checkbox');
+        }
         const values = [];
         selectedRights.each((index, obj) => {
-            const module = moduleUsersUIModifyAG.convertCamelToDash($(obj).attr('data-module'));
-            const controllerName = moduleUsersUIModifyAG.convertCamelToDash($(obj).attr('data-controller-name'));
-            const action = moduleUsersUIModifyAG.convertCamelToDash($(obj).attr('data-action'));
+            const module = $(obj).attr('data-module');
+            const controllerName = $(obj).attr('data-controller-name');
+            const action = $(obj).attr('data-action');
             if (controllerName.indexOf('pbxcore') === -1 && action.indexOf('index') > -1) {
-                let url = `/${module}/${controllerName}/${action}`;
+                let url = moduleUsersUIModifyAG.convertCamelToDash(`/${module}/${controllerName}/${action}`);
+
+                let nameTemplates = [
+                    `mm_${controllerName}`,
+                    `Breadcrumb${module}`,
+                    `module_usersui_${module}_${controllerName}_${action}`
+                ];
+
+                let name = '';
+                nameTemplates.every((nameTemplate)=>{
+                    name = globalTranslate[nameTemplate];
+                    if (name === undefined) {
+                        name = nameTemplate;
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
                 if (currentHomePage === url){
-                    values.push( { name: url, value: url, selected: true });
+                    values.push( { name: name, value: url, selected: true });
+                    valueSelected = true;
                 } else {
-                    values.push( { name: url, value: url });
+                    values.push( { name: name, value: url });
                 }
             }
         });
         if (values.length===0){
             const failBackHomePage =  `${globalRootUrl}session/end`;
             values.push( { name: failBackHomePage, value: failBackHomePage, selected: true });
+            valueSelected = true;
+        }
+        if (!valueSelected){
+            values[0].selected = true;
         }
         return {
             values:values,
             onChange: Form.dataChanged
         };
+
     },
     /**
      * Converts a string from camel case to dash case.
@@ -459,12 +495,12 @@ const moduleUsersUIModifyAG = {
         }
 
         // Home Page value
-        const selectedHomePage = moduleUsersUIModifyAG.$homePageDropdown.dropdown('get text');
+        const selectedHomePage = moduleUsersUIModifyAG.$homePageDropdown.dropdown('get value');
         const dropdownParams = moduleUsersUIModifyAG.getHomePagesForSelect();
         moduleUsersUIModifyAG.$homePageDropdown.dropdown('setup menu', dropdownParams);
         let homePage = '';
         $.each(dropdownParams.values, function(index, record) {
-            if (record.name === selectedHomePage) {
+            if (record.value === selectedHomePage) {
                 homePage = selectedHomePage;
                 return true;
             }
@@ -477,6 +513,45 @@ const moduleUsersUIModifyAG = {
         }
 
         return result;
+    },
+    /**
+     * Initializes the users table DataTable.
+     */
+    initializeCDRFilterTable() {
+        moduleUsersUIModifyAG.$cdrFilterUsersTable.DataTable({
+            // destroy: true,
+            lengthChange: false,
+            paging: false,
+            columns: [
+                // CheckBox
+                {
+                    orderable: false,  // This column is not orderable
+                    searchable: false  // This column is not searchable
+                },
+                // Username
+                {
+                    orderable: true,  // This column is orderable
+                    searchable: true  // This column is searchable
+                },
+                // Extension
+                {
+                    orderable: true,  // This column is orderable
+                    searchable: true  // This column is searchable
+                },
+                // Mobile
+                {
+                    orderable: false,  // This column is not orderable
+                    searchable: false  // This column is not searchable
+                },
+                // Email
+                {
+                    orderable: true,  // This column is orderable
+                    searchable: true  // This column is searchable
+                },
+            ],
+            order: [0, 'asc'],
+            language: SemanticLocalization.dataTableLocalisation,
+        });
     },
     /**
      * Callback function after sending the form.

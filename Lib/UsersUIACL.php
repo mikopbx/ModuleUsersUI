@@ -20,6 +20,8 @@
 namespace Modules\ModuleUsersUI\Lib;
 
 use MikoPBX\AdminCabinet\Controllers\AsteriskManagersController;
+use MikoPBX\AdminCabinet\Controllers\CallDetailRecordsController;
+use MikoPBX\AdminCabinet\Controllers\CallQueuesController;
 use MikoPBX\AdminCabinet\Controllers\ConsoleController;
 use MikoPBX\AdminCabinet\Controllers\CustomFilesController;
 use MikoPBX\AdminCabinet\Controllers\ErrorsController;
@@ -27,11 +29,13 @@ use MikoPBX\AdminCabinet\Controllers\ExtensionsController;
 use MikoPBX\AdminCabinet\Controllers\Fail2BanController;
 use MikoPBX\AdminCabinet\Controllers\FirewallController;
 use MikoPBX\AdminCabinet\Controllers\GeneralSettingsController;
+use MikoPBX\AdminCabinet\Controllers\IvrMenuController;
 use MikoPBX\AdminCabinet\Controllers\LicensingController;
 use MikoPBX\AdminCabinet\Controllers\LocalizationController;
 use MikoPBX\AdminCabinet\Controllers\MailSettingsController;
 use MikoPBX\AdminCabinet\Controllers\NetworkController;
 use MikoPBX\AdminCabinet\Controllers\PbxExtensionModulesController;
+use MikoPBX\AdminCabinet\Controllers\ProvidersController;
 use MikoPBX\AdminCabinet\Controllers\RestartController;
 use MikoPBX\AdminCabinet\Controllers\SessionController;
 use MikoPBX\AdminCabinet\Controllers\SoundFilesController;
@@ -68,6 +72,7 @@ class UsersUIACL extends \Phalcon\Di\Injectable
 
         $previousRole = null;
         $actionsArray = [];
+        $linkedRestAPIActions = self::getLinkedRESTAPI();
         foreach ($aclFromModule as $acl) {
             $role = Constants::MODULE_ROLE_PREFIX . $acl->accessGroupId;
             if ($previousRole !== $role) {
@@ -97,12 +102,32 @@ class UsersUIACL extends \Phalcon\Di\Injectable
                     && is_array($actionsArray[$acl->controller])) {
                     // Merge allowed actions with existing actions for the controller
                     $actionsArray[$acl->controller] = array_merge($actionsArray[$acl->controller], $allowedActions);
+                    $actionsArray[$acl->controller] = array_unique($actionsArray[$acl->controller]);
                 } else {
                     // Set allowed actions for the controller
                     $actionsArray[$acl->controller] = $allowedActions;
                 }
-            }
 
+                // Process linked REST API actions
+                if (array_key_exists($acl->controller, $linkedRestAPIActions)){
+                    foreach ($linkedRestAPIActions[$acl->controller] as $mainAction=>$restApiControllers){
+                        if ($allowedActions==='*'
+                            || is_array($allowedActions) && in_array($mainAction, $allowedActions)){
+                            foreach ($restApiControllers as $restApiController=>$restApiActions){
+                                if (array_key_exists($restApiController, $actionsArray)
+                                    && is_array($actionsArray[$restApiController])) {
+                                    // Merge linked actions with existing actions for the rest controller
+                                    $actionsArray[$restApiController] = array_merge($actionsArray[$restApiController], $restApiActions);
+                                    $actionsArray[$restApiController] = array_unique($actionsArray[$restApiController]);
+                                } else {
+                                    // Set linked actions for the rest controller
+                                    $actionsArray[$restApiController] = $restApiActions;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -169,9 +194,6 @@ class UsersUIACL extends \Phalcon\Di\Injectable
             ],
             TopMenuSearchController::class => '*',
             WikiLinksController::class => '*',
-            '/pbxcore/api/cdr' => [
-                '/playback',
-            ],
             '/pbxcore/api/files'=>[
                 '/statusUpload',
             ],
@@ -182,6 +204,9 @@ class UsersUIACL extends \Phalcon\Di\Injectable
             '/pbxcore/api/license' => [
                 '/sendPBXMetrics'
             ],
+            '/pbxcore/api/advices' => [
+                '/getList',
+            ],
         ];
     }
 
@@ -190,7 +215,7 @@ class UsersUIACL extends \Phalcon\Di\Injectable
      * only for superusers
      * @return array
      */
-    public static function getAlwaysDisAllowed(): array
+    public static function getAlwaysDenied(): array
     {
         return [
             // AdminCabinet controllers
@@ -241,6 +266,105 @@ class UsersUIACL extends \Phalcon\Di\Injectable
             '/pbxcore/api/modules/module-users-u-i'=>'*',
 
         ];
+    }
 
+    /**
+     * Prepares list of linked REST API controllers to AdminCabinet controllers to hide it from UI
+     * @return array[]
+     */
+    public static function getLinkedRESTAPI(): array
+    {
+        return [
+            RestartController::class => [
+                'index'=>[
+                    '/pbxcore/api/cdr'=>[
+                        '/getActiveChannels',
+                        '/getActiveCalls'
+                    ]
+                ]
+            ],
+            CallDetailRecordsController::class=>[
+                'getNewRecords'=>[
+                    '/pbxcore/api/cdr'=>[
+                        '/v2/playback',
+                        '/playback',
+                        '/v2/getRecordFile'
+                    ]
+                ]
+            ],
+            SoundFilesController::class=>[
+                'index'=>[
+                    '/pbxcore/api/cdr'=>[
+                        '/v2/playback',
+                        '/v2/getRecordFile'
+                    ]
+                ],
+                'save' =>[
+                    '/pbxcore/api/files'=>[
+                        '/uploadFile'
+                    ]
+                ],
+                'delete' =>[
+                    '/pbxcore/api/files'=>[
+                        '/removeAudioFile'
+                    ]
+                ]
+            ],
+            IvrMenuController::class=>[
+                'modify'=>[
+                    '/pbxcore/api/cdr'=>[
+                        '/v2/playback',
+                        '/v2/getRecordFile'
+                    ]
+                ]
+            ],
+            CallQueuesController::class=>[
+                'modify'=>[
+                    '/pbxcore/api/cdr'=>[
+                        '/v2/playback',
+                        '/v2/getRecordFile'
+                    ]
+                ]
+            ],
+            GeneralSettingsController::class=>[
+                'modify'=>[
+                    '/pbxcore/api/cdr'=>[
+                        '/v2/playback',
+                        '/v2/getRecordFile'
+                    ]
+                ]
+            ],
+            ProvidersController::class=>[
+                'index'=>[
+                    '/pbxcore/api/iax'=>[
+                        '/getRegistry'
+                     ]
+                ],
+                'modifyiax'=>[
+                    '/pbxcore/api/iax'=>[
+                        '/getRegistry'
+                    ]
+                ],
+                'modifysip'=>[
+                    '/pbxcore/api/sip'=>[
+                        '/getRegistry'
+                    ]
+                ]
+            ],
+            ExtensionsController::class=>
+            [
+                'index'=>[
+                    '/pbxcore/api/sip'=>[
+                        '/getPeersStatuses'
+                    ]
+                ],
+                'modify'=>[
+                    '/pbxcore/api/sip'=>[
+                        '/getSipPeer'
+                    ]
+                ],
+            ]
+
+        ];
     }
 }

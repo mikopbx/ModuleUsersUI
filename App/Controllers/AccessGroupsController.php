@@ -36,11 +36,16 @@ class AccessGroupsController extends ModuleUsersUIBaseController
     public function modifyAction(string $id = null): void
     {
         $headerCssCollection = $this->assets->collection(AssetProvider::HEADER_CSS);
-        $headerCssCollection->addCss('css/vendor/semantic/list.min.css', true);
+        $headerCssCollection
+            ->addCss('css/vendor/datatable/dataTables.semanticui.min.css', true)
+            ->addCss('css/vendor/semantic/list.min.css', true);
 
         $footerCollection = $this->assets->collection('footerJS');
-        $footerCollection->addJs('js/pbx/main/form.js', true);
-        $footerCollection->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-modify-ag.js", true);
+        $footerCollection
+            ->addJs('js/pbx/main/form.js', true)
+            ->addJs('js/vendor/datatable/dataTables.semanticui.js', true)
+            ->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-modify-ag.js", true);
+
         $record = AccessGroups::findFirstById($id);
         if ($record === null) {
             $record = new AccessGroups();

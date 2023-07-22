@@ -66,23 +66,7 @@ class AccessGroupForm extends BaseForm
         $this->addTextArea('description', $entity->description ?? '', 80);
 
         // Prepare homepages for select dropdown
-        if (empty($entity->homePage)) {
-            $url = $this->di->get(UrlProvider::SERVICE_NAME)->get('/session/end');
-            $homepagesForSelect[$url] = $url;
-        } else {
-            $homepagesForSelect[$entity->homePage] = $entity->homePage;
-        }
-
-        $homePages = new Select('homePage', $homepagesForSelect, [
-            'using' => [
-                'id',
-                'name',
-            ],
-            'value' => $entity->homePage,
-            'useEmpty' => false,
-            'class' => "ui selection dropdown home-page-dropdown $disabledClass",
-        ]);
-
+        $homePages = new Hidden('homePage');
         $this->add($homePages);
 
         // Select User to assign the user group field

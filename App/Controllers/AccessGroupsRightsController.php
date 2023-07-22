@@ -134,16 +134,34 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
     {
         $excludedControllers = [];
         $excludedActions = [];
+        $arrayOfExclusions = [];
 
-        $arrayOfExclusions = array_merge_recursive(UsersUIACL::getAlwaysAllowed(), UsersUIACL::getAlwaysDisAllowed());
+        // Get the list of REST API controllers and actions which we hide from settings because they are linked
+        foreach (UsersUIACL::getLinkedRESTAPI() as $controllerClass=>$actions) {
+            // Iterate through the AdminCabinet controllers actions
+            foreach ($actions as $action=>$restApiControllers) {
+                // Iterate through the linked REST API controllers
+                foreach ($restApiControllers as $restApiController=>$restApiActions) {
+                    if (array_key_exists($restApiController, $arrayOfExclusions)) {
+                        $arrayOfExclusions[$restApiController] = array_merge($arrayOfExclusions[$restApiController], $restApiActions);
+                        $arrayOfExclusions[$restApiController] = array_unique($arrayOfExclusions[$restApiController]);
+                    } else {
+                        $arrayOfExclusions[$restApiController] = $restApiActions;
+                    }
+                }
+            }
+        }
+
+        $arrayOfExclusions = array_merge_recursive(UsersUIACL::getAlwaysAllowed(), UsersUIACL::getAlwaysDenied(), $arrayOfExclusions);
         // Iterate through the always allowed and disallowed controllers and actions
         foreach ($arrayOfExclusions as $controllerClass => $actions) {
-            if (is_array($actions)) {
-                // Store the controller and its actions as a key-value pair in the allowed and disallowed actions array
-                $excludedActions[$controllerClass] = $actions;
-            } elseif ($actions === '*') {
-                // Add the controller to the allowed and disallowed controllers array
+            if ($actions === '*'
+                || (is_array($actions) && in_array('*', $actions))) {
+                // Add the controller with all actions to the excluded from settings array
                 $excludedControllers[] = $controllerClass;
+            } elseif (is_array($actions)){
+                // Add the controller with defined actions to the excluded from settings array
+                $excludedActions[$controllerClass] = $actions;
             }
         }
 

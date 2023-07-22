@@ -23,7 +23,7 @@
 
 {% for member in cdrFilterMembers %}
     {% if loop.first %}
-        <table class="ui very compact table" id="cdr-extensions-table">
+        <table class="ui very compact table" id="cdr-filter-users-table">
         <thead>
         <tr>
             <th></th>

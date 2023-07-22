@@ -27,7 +27,7 @@ const ModuleUsersUIIndex = {
 	 * Disability fields.
 	 * @type {jQuery}
 	 */
-	$disabilityFields: $('#module-users-ui-form .disability'),
+	$disabilityFields: $('.disability'),
 
 	/**
 	 * Body.

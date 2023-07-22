@@ -22,7 +22,7 @@ return [
     'repModuleUsersUI' => 'Управление доступом в систему - %repesent%',
     'mo_ModuleModuleUsersUI' => 'Управление доступом в систему ',
     'BreadcrumbModuleUsersUI' => 'Управление доступом в систему ',
-    'SubHeaderModuleUsersUI' => 'Позволяет создавать группы доступа, гибко настраивать права, добавляет множественную авторизацию, и авторизацию через LDAP',
+    'SubHeaderModuleUsersUI' => 'Создание групп доступа, изменение прав для пользователей, множественная авторизация, LDAP авторизация',
     'BreadcrumbAccessGroups' => 'Настройка группы доступа',
     'SubHeaderAccessGroups' => 'Детальная настройка прав на элементы интерфейса и REST API',
 
@@ -93,7 +93,7 @@ return [
 
     'module_usersui_CheckBox_AdminCabinet_Extensions_index' => 'доступ к разделу',
     'module_usersui_CheckBox_AdminCabinet_Extensions_modify' => 'просмотр карточки сотрудника',
-    'module_usersui_CheckBox_AdminCabinet_Extensions_save' => 'изменение параметров',
+    'module_usersui_CheckBox_AdminCabinet_Extensions_save' => 'изменить или создать нового',
     'module_usersui_CheckBox_AdminCabinet_Extensions_delete' => 'удаление',
 
     'module_usersui_CheckBox_AdminCabinet_IncomingRoutes_index' => 'доступ к разделу',
@@ -130,18 +130,6 @@ return [
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_modify' => 'открыть карточку файла',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_save' => 'изменить или добавить аудио файл',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_delete' => 'удалить',
-
-    'module_usersui_CheckBox_PBXCoreREST__pbxcore_api_cdr_getActiveChannels' => 'получить список активных каналов',
-    'module_usersui_CheckBox_PBXCoreREST__pbxcore_api_cdr_getActiveCalls' => 'получить список активных вызовов',
-    'module_usersui_CheckBox_PBXCoreREST__pbxcore_api_advices_getList' => 'получать уведомления о состоянии системы',
-    'module_usersui_CheckBox_PBXCoreREST__pbxcore_api_cdr_v2playback' => 'прослушать запись',
-    'module_usersui_CheckBox_PBXCoreREST__pbxcore_api_cdr_v2getRecordFile' => 'скачать файл записи',
-    'module_usersui_CheckBox_PBXCoreREST__pbxcore_api_files_removeAudioFile' => 'удалить аудио файл',
-    'module_usersui_CheckBox_PBXCoreREST__pbxcore_api_files_uploadFile' => 'загрузить файл',
-    'module_usersui_CheckBox_PBXCoreREST__pbxcore_api_iax_getRegistry' => 'получить статусы IAX провайдеров',
-    'module_usersui_CheckBox_PBXCoreREST__pbxcore_api_sip_getSipPeer' => 'получить статус телефона сотрудника',
-    'module_usersui_CheckBox_PBXCoreREST__pbxcore_api_sip_getRegistry' => 'получить статусы SIP провайдеров',
-    'module_usersui_CheckBox_PBXCoreREST__pbxcore_api_sip_getPeersStatuses' => 'получить статусы телефонов сотрудников',
 
     'module_usersui_CheckBox_save' => 'сохранение',
     'module_usersui_CheckBox_modify' => 'редактирование',

@@ -4,13 +4,12 @@
     <a class="item disability" data-tab="ldap">{{ t._('module_usersui_LdapConfigTab') }}</a>
 </div>
 
-<div class="ui bottom attached tab segment active" data-tab="groups">
+<div class="ui bottom attached tab segment active disability" data-tab="groups">
     {{ partial("Modules/ModuleUsersUI/Index/tabGroups") }}
 </div>
-<div class="ui bottom attached tab segment" data-tab="users">
+<div class="ui bottom attached tab segment disability" data-tab="users">
     {{ partial("Modules/ModuleUsersUI/Index/tabUsers") }}
 </div>
-
-<div class="ui bottom attached tab segment" data-tab="ldap">
+<div class="ui bottom attached tab segment disability" data-tab="ldap">
     {{ partial("Modules/ModuleUsersUI/Index/tabLdap") }}
 </div>
