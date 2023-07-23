@@ -4,6 +4,6 @@
   "support_email": "help@miko.ru",
   "version": "%ModuleVersion%",
   "min_pbx_version": "2023.2.126",
-  "lic_product_id": 96,
-  "lic_feature_id": 127
+  "lic_product_id": 127,
+  "lic_feature_id": 51
 }
