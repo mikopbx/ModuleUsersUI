@@ -5,5 +5,9 @@
   "version": "%ModuleVersion%",
   "min_pbx_version": "2023.2.126",
   "lic_product_id": 127,
-  "lic_feature_id": 51
+  "lic_feature_id": 51,
+  "wiki_links": {
+    "ru": {"https://wiki.mikopbx.ru/module-users-u-i": "https://docs.mikopbx.com/mikopbx/modules/miko/upravlenie-dostupom-v-sistemu"},
+    "en": {"https://wiki.mikopbx.ru/module-users-u-i": "https://docs.mikopbx.com/mikopbx/v/english/additional-modules/miko/access-control-management"}
+  }
 }
