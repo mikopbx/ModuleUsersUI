@@ -18,9 +18,9 @@ return [
  * If not, see <https://www.gnu.org/licenses/>.
  */
     'repModuleUsersUI' => 'Řízení přístupu k systému – %repesent%',
-    'mo_ModuleModuleUsersUI' => 'Řízení přístupu do systému',
-    'BreadcrumbModuleUsersUI' => 'Řízení přístupu do systému',
-    'SubHeaderModuleUsersUI' => 'Umožňuje vytvářet přístupové skupiny a přiřazovat je uživatelům',
+    'mo_ModuleModuleUsersUI' => 'Řízení přístupu do systému ',
+    'BreadcrumbModuleUsersUI' => 'Řízení přístupu do systému ',
+    'SubHeaderModuleUsersUI' => 'Vytvoření přístupových skupin, změna práv pro uživatele, vícenásobná autorizace, autorizace LDAP',
     'BreadcrumbAccessGroups' => 'Nastavení přístupové skupiny',
     'SubHeaderAccessGroups' => 'Podrobné nastavení práv pro prvky rozhraní a REST API',
     'module_usersui_GeneralSettings' => 'Základní nastavení skupiny',
@@ -79,7 +79,7 @@ return [
     'module_usersui_CheckBox_AdminCabinet_DialplanApplications_delete' => 'smazat aplikaci',
     'module_usersui_CheckBox_AdminCabinet_Extensions_index' => 'přístup do sekce',
     'module_usersui_CheckBox_AdminCabinet_Extensions_modify' => 'zobrazit kartu zaměstnance',
-    'module_usersui_CheckBox_AdminCabinet_Extensions_save' => 'změnit nastavení',
+    'module_usersui_CheckBox_AdminCabinet_Extensions_save' => 'změnit nebo vytvořit nový',
     'module_usersui_CheckBox_AdminCabinet_Extensions_delete' => 'odstranění',
     'module_usersui_CheckBox_AdminCabinet_IncomingRoutes_index' => 'přístup do sekce',
     'module_usersui_CheckBox_AdminCabinet_IncomingRoutes_modify' => 'otevřít detaily',
