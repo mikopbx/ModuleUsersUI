@@ -95,6 +95,12 @@ const moduleUsersUIModifyAG = {
     $cdrFilterMode: $('div.cdr-filter-radio'),
 
     /**
+     * jQuery object with all tabs in access-group-rights tab.
+     * @type {jQuery}
+     */
+    $groupRightModulesTabs: $('#access-group-rights .ui.tab'),
+
+    /**
      * Default extension.
      * @type {string}
      */
@@ -343,9 +349,20 @@ const moduleUsersUIModifyAG = {
         const accessToCdr = moduleUsersUIModifyAG.$formObj.form('get value','MikoPBX\\AdminCabinet\\Controllers\\CallDetailRecordsController_main');
         if (accessToCdr==='on') {
             moduleUsersUIModifyAG.$cdrFilterTab.show();
+            moduleUsersUIModifyAG.cbAfterChangeCDRFilterMode();
         } else {
             moduleUsersUIModifyAG.$cdrFilterTab.hide();
         }
+
+        // Show hide check icon close to module name
+        moduleUsersUIModifyAG.$groupRightModulesTabs.each((index, obj) => {
+            const moduleTab = $(obj).attr('data-tab');
+            if ($(`div[data-tab="${moduleTab}"]  .access-group-checkbox`).parent('.checked').length>0){
+                $(`a[data-tab='${moduleTab}'] i.icon`).addClass('angle right');
+            } else {
+                $(`a[data-tab='${moduleTab}'] i.icon`).removeClass('angle right');
+            }
+        });
     },
 
     /**

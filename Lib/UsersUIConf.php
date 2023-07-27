@@ -24,10 +24,15 @@ use MikoPBX\AdminCabinet\Controllers\SessionController;
 use MikoPBX\AdminCabinet\Forms\ExtensionEditForm;
 use MikoPBX\AdminCabinet\Providers\AssetProvider;
 use MikoPBX\AdminCabinet\Providers\SecurityPluginProvider;
+use MikoPBX\Common\Providers\AclProvider;
 use MikoPBX\Common\Providers\SessionProvider;
+use MikoPBX\Core\System\System;
 use MikoPBX\Modules\Config\ConfigClass;
+use Modules\ModuleBackup\Models\BackupRules;
 use Modules\ModuleUsersUI\App\Controllers\UsersCredentialsController;
 use Modules\ModuleUsersUI\App\Forms\ExtensionEditAdditionalForm;
+use Modules\ModuleUsersUI\Models\AccessGroups;
+use Modules\ModuleUsersUI\Models\AccessGroupsRights;
 use Phalcon\Acl\Adapter\Memory as AclList;
 use Phalcon\Assets\Manager;
 use Phalcon\Forms\Form;
@@ -37,7 +42,39 @@ use Phalcon\Mvc\View;
 
 class UsersUIConf extends ConfigClass
 {
+    /**
+     * Clears the ACL cache after the module is disabled.
+     */
+    public function onAfterModuleDisable():void{
+        AclProvider::clearCache();
+    }
 
+    /**
+     * Clears the ACL cache after the module is enabled.
+     */
+    public function onAfterModuleEnable():void
+    {
+        AclProvider::clearCache();
+    }
+
+    /**
+     * Handles the event when data in certain models is changed and clears the ACL cache accordingly.
+     *
+     * @param array $data The data related to the event.
+     */
+    public function modelsEventChangeData($data): void
+    {
+        // Define models that are interfere on ACL cache.
+        $cacheInterfereModels = [
+            AccessGroups::class,
+            AccessGroupsRights::class,
+        ];
+
+        // Check if the changed model is in the cache-interfere models array.
+        if (in_array($data['model'],  $cacheInterfereModels)) {
+            AclProvider::clearCache();
+        }
+    }
     /**
      * Prepares list of additional ACL roles and rules
      *

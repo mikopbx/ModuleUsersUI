@@ -73,8 +73,10 @@ class UsersUIACL extends \Phalcon\Di\Injectable
         $previousRole = null;
         $actionsArray = [];
         $linkedRestAPIActions = self::getLinkedRESTAPI();
-        foreach ($aclFromModule as $acl) {
+        foreach ($aclFromModule as $index => $acl) {
             $role = Constants::MODULE_ROLE_PREFIX . $acl->accessGroupId;
+            $isLastAcl = $index === count($aclFromModule) - 1;
+
             if ($previousRole !== $role) {
                 // Add components and allow access for previous role
                 if ($previousRole !== null) {
@@ -127,6 +129,18 @@ class UsersUIACL extends \Phalcon\Di\Injectable
                         }
                     }
                 }
+            }
+
+            if ($isLastAcl) {
+                // Add components and allow access for the last role
+                if ($previousRole !== null) {
+                    foreach ($actionsArray as $controller => $actions) {
+                        $aclList->addComponent(new Component($controller), $actions);
+                        $aclList->allow($previousRole, $controller, $actions);
+                    }
+                }
+                // Add a new role to the ACL list
+                $aclList->addRole(new AclRole($role, $acl->name));
             }
         }
     }
@@ -204,9 +218,6 @@ class UsersUIACL extends \Phalcon\Di\Injectable
             '/pbxcore/api/license' => [
                 '/sendPBXMetrics'
             ],
-            '/pbxcore/api/advices' => [
-                '/getList',
-            ],
         ];
     }
 
@@ -257,6 +268,9 @@ class UsersUIACL extends \Phalcon\Di\Injectable
             '/pbxcore/api/syslog'=> '*',
             '/pbxcore/api/sysinfo'=>'*',
             '/pbxcore/api/storage'=>'*',
+            '/pbxcore/api/advices' => [
+                '/getList',
+            ],
 
             // Module UsersUI
             AccessGroupsController::class=> '*',

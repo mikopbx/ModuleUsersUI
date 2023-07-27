@@ -3,10 +3,11 @@
         <div class="ui vertical fluid tabular menu" id="access-settings-tab-menu">
             {% for module, types in groupRights %}
                 {% if loop.first %}
-                    <a class="active item" data-tab="{{ module }}Tab">{{ t._('Breadcrumb'~module) }}</a>
+                    <a class="active item"
                 {% else %}
-                    <a class="item" data-tab="{{ module }}Tab">{{ t._('Breadcrumb'~module) }}</a>
+                    <a class="item"
                 {% endif %}
+                                    data-tab="{{ module }}Tab"><i class="icon"></i> {{ t._('Breadcrumb'~module) }}</a>
             {% endfor %}
         </div>
     </div>
