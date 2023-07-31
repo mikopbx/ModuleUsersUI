@@ -1,6 +1,6 @@
 # MikoPBX users right management module
 
-*Read this in other languages: [English](README.md), [Русский](README.ru.md).*
+*Read this in other languages: [English](README.md), [Русский](readme.ru.md).*
 
 ## Module description ##
 
