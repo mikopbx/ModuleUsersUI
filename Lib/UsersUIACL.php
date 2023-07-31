@@ -30,6 +30,7 @@ use MikoPBX\AdminCabinet\Controllers\Fail2BanController;
 use MikoPBX\AdminCabinet\Controllers\FirewallController;
 use MikoPBX\AdminCabinet\Controllers\GeneralSettingsController;
 use MikoPBX\AdminCabinet\Controllers\IvrMenuController;
+use MikoPBX\AdminCabinet\Controllers\LanguageController;
 use MikoPBX\AdminCabinet\Controllers\LicensingController;
 use MikoPBX\AdminCabinet\Controllers\LocalizationController;
 use MikoPBX\AdminCabinet\Controllers\MailSettingsController;
@@ -201,6 +202,7 @@ class UsersUIACL extends \Phalcon\Di\Injectable
                 'getForSelect'
             ],
             LocalizationController::class => '*',
+            LanguageController::class=> '*',
             SessionController::class => '*',
             SoundFilesController::class=>[
                 'getPathById',
