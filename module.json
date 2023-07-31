@@ -7,7 +7,7 @@
   "lic_product_id": 127,
   "lic_feature_id": 51,
   "wiki_links": {
-    "ru": {"https://wiki.mikopbx.com/module-users-u-i": "https://docs.mikopbx.com/mikopbx/modules/miko/upravlenie-dostupom-v-sistemu"},
-    "en": {"https://wiki.mikopbx.com/module-users-u-i": "https://docs.mikopbx.com/mikopbx/v/english/additional-modules/miko/access-control-management"}
+    "ru": {"https://wiki.mikopbx.com/module-users-u-i": "https://docs.mikopbx.com/mikopbx/modules/miko/module-users-u-i"},
+    "en": {"https://wiki.mikopbx.com/module-users-u-i": "https://docs.mikopbx.com/mikopbx/v/english/modules/miko/module-users-u-i"}
   }
 }
