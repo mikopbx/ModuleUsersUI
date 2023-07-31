@@ -2,7 +2,7 @@
 
 _Read this in other languages:_ [_English_](./)_,_ [_Русский_](readme.ru.md)_._
 
-## Описание модуля расширения
+## Описание модуля расширения ##
 
 <figure><img src="https://github.com/mikopbx/docs.mikopbx.com/blob/russian/.gitbook/assets/All-groups-index.png" alt=""><figcaption><p>Страница модуля с настройкой групп доступа</p></figcaption></figure>
 
@@ -12,9 +12,11 @@ _Read this in other languages:_ [_English_](./)_,_ [_Русский_](readme.ru.
 Для страницы с историей разговоров реализован дополнительный фильтр по сотрудникам. 
 Это позволяет запретить доступ к записям разговоров отдельных сотрудников для отдельных групп пользователей.
 
-Полная документация к модулю доступна по ссылке [the link](https://docs.mikopbx.com/mikopbx/modules/miko/module-users-u-i)
+## Документация ##
 
-### Вопросы
+Полная документация к модулю доступна [по ссылке](https://docs.mikopbx.com/mikopbx/modules/miko/module-users-u-i)
+
+### Вопросы ##
 
 Подключайтесь к каналу для разработчиков в telegram [@mikopbx\_dev](https://t.me/joinchat/AAPn5xSqZIpQnNnCAa3bBw)
 

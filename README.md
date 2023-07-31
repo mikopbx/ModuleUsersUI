@@ -9,6 +9,8 @@ The module helps to organize access to the UI with different rights.
 It makes possible to make multi-login access to the MikoPBX with separate permissions for each users group.
 The module also includes LDAP/AD login feature.
 
+## Instructions ##
+ 
 The full module documentation you can find by [the link](https://docs.mikopbx.com/mikopbx/v/english/modules/miko/module-users-u-i).
 
 ### Questions ###
