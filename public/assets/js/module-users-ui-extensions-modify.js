@@ -1,0 +1,155 @@
+/*
+ * MikoPBX - free phone system for small business
+ * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
+"use strict";
+
+/*
+ * MikoPBX - free phone system for small business
+ * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * ExtensionCredentialsTab module for managing extension credentials tab.
+ * @module ExtensionCredentialsTab
+ */
+var ExtensionCredentialsTab = {
+  /**
+   * Hidden field for LDAP enabled status.
+   * @type {jQuery}
+   * @private
+   */
+  $ldapEnabledHiddenField: $('#module_users_ui_ldap_enabled'),
+
+  /**
+   * Checkbox for LDAP authentication.
+   * @type {jQuery}
+   * @private
+   */
+  $useLdapCheckbox: $('#module_users_ui_use_ldap_auth'),
+
+  /**
+   * Login input field.
+   * @type {jQuery}
+   * @private
+   */
+  $loginField: $('#module_users_ui_login'),
+
+  /**
+   * Password input field.
+   * @type {jQuery}
+   * @private
+   */
+  $passwordField: $('#module_users_ui_password'),
+
+  /**
+   * Access group dropdown.
+   * @type {jQuery}
+   * @private
+   */
+  $accessGroupDropdown: $('#module_users_ui_access_group'),
+
+  /**
+   * Fields, which we need to disable if selected access group is 'No access'.
+   * @type {jQuery}
+   * @private
+   */
+  $disableIfNoAccess: $('.disable-if-no-access'),
+
+  /**
+   * Initializes the ExtensionCredentialsTab module.
+   */
+  initialize: function initialize() {
+    ExtensionCredentialsTab.showHideAuthFields();
+    ExtensionCredentialsTab.showHideUseLdapCheckbox();
+    ExtensionCredentialsTab.showHidePasswordInput();
+    ExtensionCredentialsTab.$useLdapCheckbox.parent('.checkbox').checkbox({
+      onChange: ExtensionCredentialsTab.showHidePasswordInput
+    });
+    ExtensionCredentialsTab.$accessGroupDropdown.parent('.dropdown').dropdown({
+      onChange: ExtensionCredentialsTab.showHideAuthFields
+    });
+  },
+
+  /**
+   * Shows or hides the authentication fields based on the selected access group.
+   */
+  showHideAuthFields: function showHideAuthFields() {
+    if (ExtensionCredentialsTab.$accessGroupDropdown.val() === 'No access') {
+      ExtensionCredentialsTab.$disableIfNoAccess.addClass('disabled');
+    } else {
+      ExtensionCredentialsTab.$disableIfNoAccess.removeClass('disabled');
+    }
+  },
+
+  /**
+   * Shows or hides the LDAP checkbox based on the LDAP enabled status.
+   */
+  showHideUseLdapCheckbox: function showHideUseLdapCheckbox() {
+    if (ExtensionCredentialsTab.$ldapEnabledHiddenField.val() === '1') {
+      ExtensionCredentialsTab.$useLdapCheckbox.parent('.field').show();
+    } else {
+      ExtensionCredentialsTab.$useLdapCheckbox.parent('.field').hide();
+      ExtensionCredentialsTab.$useLdapCheckbox.parent('.checkbox').checkbox('set unchecked');
+    }
+  },
+
+  /**
+   * Shows or hides the password input based on the LDAP checkbox status.
+   */
+  showHidePasswordInput: function showHidePasswordInput() {
+    if (ExtensionCredentialsTab.$useLdapCheckbox.parent('.checkbox').checkbox('is checked')) {
+      ExtensionCredentialsTab.$passwordField.parent('.field').hide();
+    } else {
+      ExtensionCredentialsTab.$passwordField.parent('.field').show();
+    }
+
+    ExtensionCredentialsTab.activateLdapLoginSearch();
+  },
+
+  /**
+   * Activate or disactivate ldap search feature
+   */
+  activateLdapLoginSearch: function activateLdapLoginSearch() {
+    if (ExtensionCredentialsTab.$useLdapCheckbox.parent('.checkbox').checkbox('is checked')) {
+      ExtensionCredentialsTab.$loginField.parent('.ui.search').search({
+        apiSettings: {
+          url: "".concat(globalRootUrl, "module-users-u-i/ldap-config/search-ldap-user/{query}")
+        }
+      });
+    } else {
+      ExtensionCredentialsTab.$loginField.parent('.ui.search').search('hide results').search('destroy');
+    }
+  }
+};
+$(document).ready(function () {
+  ExtensionCredentialsTab.initialize();
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInNyYy9tb2R1bGUtdXNlcnMtdWktZXh0ZW5zaW9ucy1tb2RpZnkuanMiXSwibmFtZXMiOlsiRXh0ZW5zaW9uQ3JlZGVudGlhbHNUYWIiLCIkbGRhcEVuYWJsZWRIaWRkZW5GaWVsZCIsIiQiLCIkdXNlTGRhcENoZWNrYm94IiwiJGxvZ2luRmllbGQiLCIkcGFzc3dvcmRGaWVsZCIsIiRhY2Nlc3NHcm91cERyb3Bkb3duIiwiJGRpc2FibGVJZk5vQWNjZXNzIiwiaW5pdGlhbGl6ZSIsInNob3dIaWRlQXV0aEZpZWxkcyIsInNob3dIaWRlVXNlTGRhcENoZWNrYm94Iiwic2hvd0hpZGVQYXNzd29yZElucHV0IiwicGFyZW50IiwiY2hlY2tib3giLCJvbkNoYW5nZSIsImRyb3Bkb3duIiwidmFsIiwiYWRkQ2xhc3MiLCJyZW1vdmVDbGFzcyIsInNob3ciLCJoaWRlIiwiYWN0aXZhdGVMZGFwTG9naW5TZWFyY2giLCJzZWFyY2giLCJhcGlTZXR0aW5ncyIsInVybCIsImdsb2JhbFJvb3RVcmwiLCJkb2N1bWVudCIsInJlYWR5Il0sIm1hcHBpbmdzIjoiOztBQUFBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7O0FBRUE7QUFDQTtBQUNBO0FBQ0E7QUFDQSxJQUFNQSx1QkFBdUIsR0FBRztBQUM1QjtBQUNKO0FBQ0E7QUFDQTtBQUNBO0FBQ0lDLEVBQUFBLHVCQUF1QixFQUFFQyxDQUFDLENBQUMsK0JBQUQsQ0FORTs7QUFRNUI7QUFDSjtBQUNBO0FBQ0E7QUFDQTtBQUNJQyxFQUFBQSxnQkFBZ0IsRUFBRUQsQ0FBQyxDQUFDLGdDQUFELENBYlM7O0FBZTVCO0FBQ0o7QUFDQTtBQUNBO0FBQ0E7QUFDSUUsRUFBQUEsV0FBVyxFQUFFRixDQUFDLENBQUMsd0JBQUQsQ0FwQmM7O0FBc0I1QjtBQUNKO0FBQ0E7QUFDQTtBQUNBO0FBQ0lHLEVBQUFBLGNBQWMsRUFBRUgs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LEdBQUcsWUFBS0MsYUFBTDtBQURNO0FBRCtDLE9BQWhFO0FBS0gsS0FORCxNQU1PO0FBQ0h6QixNQUFBQSx1QkFBdUIsQ0FBQ0ksV0FBeEIsQ0FBb0NRLE1BQXBDLENBQTJDLFlBQTNDLEVBQXlEVSxNQUF6RCxDQUFnRSxjQUFoRSxFQUFnRkEsTUFBaEYsQ0FBdUYsU0FBdkY7QUFDSDtBQUVKO0FBMUcyQixDQUFoQztBQTRHQXBCLENBQUMsQ0FBQ3dCLFFBQUQsQ0FBRCxDQUFZQyxLQUFaLENBQWtCLFlBQU07QUFDcEIzQixFQUFBQSx1QkFBdUIsQ0FBQ1EsVUFBeEI7QUFDSCxDQUZEIiwic291cmNlc0NvbnRlbnQiOlsiLypcbiAqIE1pa29QQlggLSBmcmVlIHBob25lIHN5c3RlbSBmb3Igc21hbGwgYnVzaW5lc3NcbiAqIENvcHlyaWdodCDCqSAyMDE3LTIwMjMgQWxleGV5IFBvcnRub3YgYW5kIE5pa29sYXkgQmVrZXRvdlxuICpcbiAqIFRoaXMgcHJvZ3JhbSBpcyBmcmVlIHNvZnR3YXJlOiB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBhbmQvb3IgbW9kaWZ5XG4gKiBpdCB1bmRlciB0aGUgdGVybXMgb2YgdGhlIEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlIGFzIHB1Ymxpc2hlZCBieVxuICogdGhlIEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbjsgZWl0aGVyIHZlcnNpb24gMyBvZiB0aGUgTGljZW5zZSwgb3JcbiAqIChhdCB5b3VyIG9wdGlvbikgYW55IGxhdGVyIHZlcnNpb24uXG4gKlxuICogVGhpcyBwcm9ncmFtIGlzIGRpc3RyaWJ1dGVkIGluIHRoZSBob3BlIHRoYXQgaXQgd2lsbCBiZSB1c2VmdWwsXG4gKiBidXQgV0lUSE9VVCBBTlkgV0FSUkFOVFk7IHdpdGhvdXQgZXZlbiB0aGUgaW1wbGllZCB3YXJyYW50eSBvZlxuICogTUVSQ0hBTlRBQklMSVRZIG9yIEZJVE5FU1MgRk9SIEEgUEFSVElDVUxBUiBQVVJQT1NFLiAgU2VlIHRoZVxuICogR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgZm9yIG1vcmUgZGV0YWlscy5cbiAqXG4gKiBZb3Ugc2hvdWxkIGhhdmUgcmVjZWl2ZWQgYSBjb3B5IG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBhbG9uZyB3aXRoIHRoaXMgcHJvZ3JhbS5cbiAqIElmIG5vdCwgc2VlIDxodHRwczovL3d3dy5nbnUub3JnL2xpY2Vuc2VzLz4uXG4gKi9cblxuLyoqXG4gKiBFeHRlbnNpb25DcmVkZW50aWFsc1RhYiBtb2R1bGUgZm9yIG1hbmFnaW5nIGV4dGVuc2lvbiBjcmVkZW50aWFscyB0YWIuXG4gKiBAbW9kdWxlIEV4dGVuc2lvbkNyZWRlbnRpYWxzVGFiXG4gKi9cbmNvbnN0IEV4dGVuc2lvbkNyZWRlbnRpYWxzVGFiID0ge1xuICAgIC8qKlxuICAgICAqIEhpZGRlbiBmaWVsZCBmb3IgTERBUCBlbmFibGVkIHN0YXR1cy5cbiAgICAgKiBAdHlwZSB7alF1ZXJ5fVxuICAgICAqIEBwcml2YXRlXG4gICAgICovXG4gICAgJGxkYXBFbmFibGVkSGlkZGVuRmllbGQ6ICQoJyNtb2R1bGVfdXNlcnNfdWlfbGRhcF9lbmFibGVkJyksXG5cbiAgICAvKipcbiAgICAgKiBDaGVja2JveCBmb3IgTERBUCBhdXRoZW50aWNhdGlvbi5cbiAgICAgKiBAdHlwZSB7alF1ZXJ5fVxuICAgICAqIEBwcml2YXRlXG4gICAgICovXG4gICAgJHVzZUxkYXBDaGVja2JveDogJCgnI21vZHVsZV91c2Vyc191aV91c2VfbGRhcF9hdXRoJyksXG5cbiAgICAvKipcbiAgICAgKiBMb2dpbiBpbnB1dCBmaWVsZC5cbiAgICAgKiBAdHlwZSB7alF1ZXJ5fVxuICAgICAqIEBwcml2YXRlXG4gICAgICovXG4gICAgJGxvZ2luRmllbGQ6ICQoJyNtb2R1bGVfdXNlcnNfdWlfbG9naW4nKSxcblxuICAgIC8qKlxuICAgICAqIFBhc3N3b3JkIGlucHV0IGZpZWxkLlxuICAgICAqIEB0eXBlIHtqUXVlcnl9XG4gICAgICogQHByaXZhdGVcbiAgICAgKi9cbiAgICAkcGFzc3dvcmRGaWVsZDogJCgnI21vZHVsZV91c2Vyc191aV9wYXNzd29yZCcpLFxuXG4gICAgLyoqXG4gICAgICogQWNjZXNzIGdyb3VwIGRyb3Bkb3duLlxuICAgICAqIEB0eXBlIHtqUXVlcnl9XG4gICAgICogQHByaXZhdGVcbiAgICAgKi9cbiAgICAkYWNjZXNzR3JvdXBEcm9wZG93bjogJCgnI21vZHVsZV91c2Vyc191aV9hY2Nlc3NfZ3JvdXAnKSxcblxuICAgIC8qKlxuICAgICAqIEZpZWxkcywgd2hpY2ggd2UgbmVlZCB0byBkaXNhYmxlIGlmIHNlbGVjdGVkIGFjY2VzcyBncm91cCBpcyAnTm8gYWNjZXNzJy5cbiAgICAgKiBAdHlwZSB7alF1ZXJ5fVxuICAgICAqIEBwcml2YXRlXG4gICAgICovXG4gICAgJGRpc2FibGVJZk5vQWNjZXNzOiAkKCcuZGlzYWJsZS1pZi1uby1hY2Nlc3MnKSxcblxuICAgIC8qKlxuICAgICAqIEluaXRpYWxpemVzIHRoZSBFeHRlbnNpb25DcmVkZW50aWFsc1RhYiBtb2R1bGUuXG4gICAgICovXG4gICAgaW5pdGlhbGl6ZTogZnVuY3Rpb24gKCkge1xuICAgICAgICBFeHRlbnNpb25DcmVkZW50aWFsc1RhYi5zaG93SGlkZUF1dGhGaWVsZHMoKTtcbiAgICAgICAgRXh0ZW5zaW9uQ3JlZGVudGlhbHNUYWIuc2hvd0hpZGVVc2VMZGFwQ2hlY2tib3goKTtcbiAgICAgICAgRXh0ZW5zaW9uQ3JlZGVudGlhbHNUYWIuc2hvd0hpZGVQYXNzd29yZElucHV0KCk7XG4gICAgICAgIEV4dGVuc2lvbkNyZWRlbnRpYWxzVGFiLiR1c2VMZGFwQ2hlY2tib3gucGFyZW50KCcuY2hlY2tib3gnKS5jaGVja2JveCh7XG4gICAgICAgICAgICBvbkNoYW5nZTogRXh0ZW5zaW9uQ3JlZGVudGlhbHNUYWIuc2hvd0hpZGVQYXNzd29yZElucHV0LFxuICAgICAgICB9KTtcbiAgICAgICAgRXh0ZW5zaW9uQ3JlZGVudGlhbHNUYWIuJGFjY2Vzc0dyb3VwRHJvcGRvd24ucGFyZW50KCcuZHJvcGRvd24nKS5kcm9wZG93bih7XG4gICAgICAgICAgICBvbkNoYW5nZTogRXh0ZW5zaW9uQ3JlZGVudGlhbHNUYWIuc2hvd0hpZGVBdXRoRmllbGRzLFxuICAgICAgICB9KTtcbiAgICB9LFxuXG4gICAgLyoqXG4gICAgICogU2hvd3Mgb3IgaGlkZXMgdGhlIGF1dGhlbnRpY2F0aW9uIGZpZWxkcyBiYXNlZCBvbiB0aGUgc2VsZWN0ZWQgYWNjZXNzIGdyb3VwLlxuICAgICAqL1xuICAgIHNob3dIaWRlQXV0aEZpZWxkcygpe1xuICAgICAgICBpZiAoRXh0ZW5zaW9uQ3JlZGVudGlhbHNUYWIuJGFjY2Vzc0dyb3VwRHJvcGRvd24udmFsKCkgPT09ICdObyBhY2Nlc3MnKXtcbiAgICAgICAgICAgIEV4dGVuc2lvbkNyZWRlbnRpYWxzVGFiLiRkaXNhYmxlSWZOb0FjY2Vzcy5hZGRDbGFzcygnZGlzYWJsZWQnKTtcbiAgICAgICAgfSBlbHNlIHtcbiAgICAgICAgICAgIEV4dGVuc2lvbkNyZWRlbnRpYWxzVGFiLiRkaXNhYmxlSWZOb0FjY2Vzcy5yZW1vdmVDbGFzcygnZGlzYWJsZWQnKTtcbiAgICAgICAgfVxuICAgIH0sXG5cbiAgICAvKipcbiAgICAgKiBTaG93cyBvciBoaWRlcyB0aGUgTERBUCBjaGVja2JveCBiYXNlZCBvbiB0aGUgTERBUCBlbmFibGVkIHN0YXR1cy5cbiAgICAgKi9cbiAgICBzaG93SGlkZVVzZUxkYXBDaGVja2JveDogZnVuY3Rpb24gKCkge1xuICAgICAgICBpZiAoRXh0ZW5zaW9uQ3JlZGVudGlhbHNUYWIuJGxkYXBFbmFibGVkSGlkZGVuRmllbGQudmFsKCkgPT09ICcxJykge1xuICAgICAgICAgICAgRXh0ZW5zaW9uQ3JlZGVudGlhbHNUYWIuJHVzZUxkYXBDaGVja2JveC5wYXJlbnQoJy5maWVsZCcpLnNob3coKTtcbiAgICAgICAgfSBlbHNlIHtcbiAgICAgICAgICAgIEV4dGVuc2lvbkNyZWRlbnRpYWxzVGFiLiR1c2VMZGFwQ2hlY2tib3gucGFyZW50KCcuZmllbGQnKS5oaWRlKCk7XG4gICAgICAgICAgICBFeHRlbnNpb25DcmVkZW50aWFsc1RhYi4kdXNlTGRhcENoZWNrYm94LnBhcmVudCgnLmNoZWNrYm94JykuY2hlY2tib3goJ3NldCB1bmNoZWNrZWQnKTtcbiAgICAgICAgfVxuICAgIH0sXG5cbiAgICAvKipcbiAgICAgKiBTaG93cyBvciBoaWRlcyB0aGUgcGFzc3dvcmQgaW5wdXQgYmFzZWQgb24gdGhlIExEQVAgY2hlY2tib3ggc3RhdHVzLlxuICAgICAqL1xuICAgIHNob3dIaWRlUGFzc3dvcmRJbnB1dDogZnVuY3Rpb24gKCl7XG4gICAgICAgIGlmIChFeHRlbnNpb25DcmVkZW50aWFsc1RhYi4kdXNlTGRhcENoZWNrYm94LnBhcmVudCgnLmNoZWNrYm94JykuY2hlY2tib3goJ2lzIGNoZWNrZWQnKSkge1xuICAgICAgICAgICAgRXh0ZW5zaW9uQ3JlZGVudGlhbHNUYWIuJHBhc3N3b3JkRmllbGQucGFyZW50KCcuZmllbGQnKS5oaWRlKCk7XG4gICAgICAgIH0gZWxzZSB7XG4gICAgICAgICAgICBFeHRlbnNpb25DcmVkZW50aWFsc1RhYi4kcGFzc3dvcmRGaWVsZC5wYXJlbnQoJy5maWVsZCcpLnNob3coKTtcbiAgICAgICAgfVxuICAgICAgICBFeHRlbnNpb25DcmVkZW50aWFsc1RhYi5hY3RpdmF0ZUxkYXBMb2dpblNlYXJjaCgpO1xuICAgIH0sXG4gICAgLyoqXG4gICAgICogQWN0aXZhdGUgb3IgZGlzYWN0aXZhdGUgbGRhcCBzZWFyY2ggZmVhdHVyZVxuICAgICAqL1xuICAgIGFjdGl2YXRlTGRhcExvZ2luU2VhcmNoKCl7XG4gICAgICAgIGlmIChFeHRlbnNpb25DcmVkZW50aWFsc1RhYi4kdXNlTGRhcENoZWNrYm94LnBhcmVudCgnLmNoZWNrYm94JykuY2hlY2tib3goJ2lzIGNoZWNrZWQnKSl7XG4gICAgICAgICAgICBFeHRlbnNpb25DcmVkZW50aWFsc1RhYi4kbG9naW5GaWVsZC5wYXJlbnQoJy51aS5zZWFyY2gnKS5zZWFyY2goe1xuICAgICAgICAgICAgICAgIGFwaVNldHRpbmdzOiB7XG4gICAgICAgICAgICAgICAgICAgIHVybDogYCR7Z2xvYmFsUm9vdFVybH1tb2R1bGUtdXNlcnMtdS1pL2xkYXAtY29uZmlnL3NlYXJjaC1sZGFwLXVzZXIve3F1ZXJ5fWBcbiAgICAgICAgICAgICAgICB9LFxuICAgICAgICAgICAgfSk7XG4gICAgICAgIH0gZWxzZSB7XG4gICAgICAgICAgICBFeHRlbnNpb25DcmVkZW50aWFsc1RhYi4kbG9naW5GaWVsZC5wYXJlbnQoJy51aS5zZWFyY2gnKS5zZWFyY2goJ2hpZGUgcmVzdWx0cycpLnNlYXJjaCgnZGVzdHJveScpO1xuICAgICAgICB9XG5cbiAgICB9LFxufVxuJChkb2N1bWVudCkucmVhZHkoKCkgPT4ge1xuICAgIEV4dGVuc2lvbkNyZWRlbnRpYWxzVGFiLmluaXRpYWxpemUoKTtcbn0pO1xuIl19

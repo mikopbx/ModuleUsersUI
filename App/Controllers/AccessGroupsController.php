@@ -16,45 +16,53 @@
  * You should have received a copy of the GNU General Public License along with this program.
  * If not, see <https://www.gnu.org/licenses/>.
  */
+
 namespace Modules\ModuleUsersUI\App\Controllers;
-use MikoPBX\AdminCabinet\Controllers\BaseController;
-use MikoPBX\Modules\PbxExtensionUtils;
+use MikoPBX\AdminCabinet\Providers\AssetProvider;
 use Modules\ModuleUsersUI\App\Forms\AccessGroupForm;
+use Modules\ModuleUsersUI\Lib\Constants;
 use Modules\ModuleUsersUI\Models\AccessGroups;
-use Modules\ModuleUsersUI\Models\AccessGroupsRights;
 
-class AccessGroupsController extends BaseController
+class AccessGroupsController extends ModuleUsersUIBaseController
 {
-    private $moduleUniqueID = 'ModuleUsersUI';
-    private $moduleDir;
-
-    public bool $showModuleStatusToggle = false;
 
     /**
-     * Basic initial class
-     */
-    public function initialize(): void
-    {
-        $this->moduleDir = PbxExtensionUtils::getModuleDir($this->moduleUniqueID);
-        $this->view->logoImagePath = "{$this->url->get()}assets/img/cache/{$this->moduleUniqueID}/logo.svg";
-        $this->view->submitMode = null;
-        parent::initialize();
-    }
-
-    /**
-     * Modify access group page controller
+     * The modify action for creating or editing access group.
      *
-     * @param string|null $id The ID of the access group being modified.
+     * @param string|null $id The ID of the user group (optional)
+     *
+     * @return void
      */
     public function modifyAction(string $id = null): void
     {
-        $accessGroupEntity = AccessGroups::findFirst("id={$id}");
-        if ($accessGroupEntity===null) {
-            $accessGroupEntity=new AccessGroups();
-        }
+        $headerCssCollection = $this->assets->collection(AssetProvider::HEADER_CSS);
+        $headerCssCollection
+            ->addCss('css/vendor/datatable/dataTables.semanticui.min.css', true)
+            ->addCss('css/vendor/semantic/list.min.css', true);
 
-        $this->view->pick("{$this->moduleDir}/App/Views/AccessGroups/modify");
-        $this->view->setVar('form', new AccessGroupForm($accessGroupEntity));
+        $footerCollection = $this->assets->collection('footerJS');
+        $footerCollection
+            ->addJs('js/pbx/main/form.js', true)
+            ->addJs('js/vendor/datatable/dataTables.semanticui.js', true)
+            ->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-modify-ag.js", true);
+
+        $record = AccessGroups::findFirstById($id);
+        if ($record === null) {
+            $record = new AccessGroups();
+            $record->cdrFilterMode = Constants::CDR_FILTER_DISABLED;
+            $record->name = '';
+            $record->description = '';
+        } else {
+            $this->view->members = $this->getTheListOfUsersForDisplayInTheFilter($record->id??'');
+            $cdrFilterController = new AccessGroupCDRFilterController();
+            $this->view->cdrFilterMembers = $cdrFilterController->getTheListOfUsersForCDRFilter($record->id);
+        }
+        $groupRightsController = new AccessGroupsRightsController();
+        $groupRights = $groupRightsController->getGroupRights($record->id??'');
+        $this->view->form = new AccessGroupForm($record,['groupRights'=>$groupRights]);
+        $this->view->represent = $record->getRepresent();
+        $this->view->id = $id;
+        $this->view->groupRights = $groupRights;
     }
 
     /**
@@ -73,29 +81,60 @@ class AccessGroupsController extends BaseController
 
         $accessGroupEntity = null;
         if (array_key_exists('id', $data)) {
-            $accessGroupEntity = AccessGroups::findFirstByUniqid($data['id']);
+            $accessGroupEntity = AccessGroups::findFirstById($data['id']);
         }
         if ($accessGroupEntity===null) {
             $accessGroupEntity=new AccessGroups();
             $accessGroupEntity->id = $data['id'];
         }
-        $accessGroupEntity->name = $data['name'];
-        $accessGroupEntity->description = $data['description'];
-        $accessGroupEntity->save();
-
-        // Access group rights
-        $accessGroupRights = AccessGroupsRights::find("group_id={$accessGroupEntity->id}");
-        foreach ($accessGroupRights as $accessGroupRight){
-            $accessGroupRight->delete();
+        if (empty($data['cdrFilterMode'])){
+            $accessGroupEntity->cdrFilterMode = Constants::CDR_FILTER_DISABLED;
+        } else {
+            $accessGroupEntity->cdrFilterMode = $data['cdrFilterMode'];
         }
 
-        $accessGroupRightsFromPost = json_decode($data['access_group_rights'],true);
-        foreach ($accessGroupRightsFromPost as $accessGroupRightFromPost) {
-            $accessGroupRight = new AccessGroupsRights();
-            $accessGroupRight->group_id = $accessGroupEntity->id;
-            $accessGroupRight->controller = $accessGroupRightFromPost['controller'];
-            $accessGroupRight->actions = json_encode($accessGroupRightFromPost['actions']);
-            $accessGroupRight->save();
+        if (empty($data['homePage'])){
+            $accessGroupEntity->homePage = $this->url->get('session/end');
+        } else {
+            $accessGroupEntity->homePage = $data['homePage'];
+        }
+
+        $accessGroupEntity->name = $data['name'];
+        $accessGroupEntity->description = $data['description'];
+        $accessGroupEntity->fullAccess = $data['fullAccess'];
+
+        // Save the access group object
+        if ($this->saveEntity($accessGroupEntity)===false){
+            // If there are validation errors, display them and return false
+            $this->db->rollback();
+            return;
+        }
+
+        // Save access group rights
+        $accessGroupController = new AccessGroupsRightsController();
+        // Parse access group rights from the posted JSON string
+        $accessGroupRightsFromPost = json_decode($data['access_group_rights'], true);
+        if ($accessGroupController->saveAccessGroupRights($accessGroupEntity->id, $accessGroupRightsFromPost)===false){
+            $this->db->rollback();
+            return;
+        }
+
+        // Save users credentials
+        $usersCredentialsController = new UsersCredentialsController();
+        // Parse group members from the posted JSON string
+        $membersOfTheGroup = json_decode($data['members'], true);
+        if ($usersCredentialsController->saveUsersCredentials($accessGroupEntity->id, $membersOfTheGroup)===false){
+            $this->db->rollback();
+            return;
+        }
+
+        // Save CDR filter
+        $cdrFilterController = new AccessGroupCDRFilterController();
+        // Parse cdr filter from the posted JSON string
+        $cdrFilterUsers = json_decode($data['cdrFilter'], true);
+        if ($cdrFilterController->saveCdrFilter($accessGroupEntity->id, $cdrFilterUsers)===false){
+            $this->db->rollback();
+            return;
         }
 
         $this->flash->success($this->translation->_('ms_SuccessfulSaved'));
@@ -104,8 +143,28 @@ class AccessGroupsController extends BaseController
 
         // If it was creating a new card, reload the page with the specified ID
         if (empty($data['id'])) {
-            $this->view->reload = "module-users-u-i/module-users-u-i/access-groups/modify/{$data['id']}";
+            $this->view->reload = "module-users-u-i/access-groups/modify/{$accessGroupEntity->id}";
         }
 
     }
+
+    /**
+     * Delete a group.
+     *
+     * @param string $groupId The ID of the group to be deleted.
+     */
+    public function deleteAction(string $groupId): void
+    {
+        $group = AccessGroups::findFirstById($groupId);
+        if ($group !== null && ! $group->delete()) {
+            $errors = $group->getMessages();
+            $this->flash->error(implode('<br>', $errors));
+            $this->view->success = false;
+        } else {
+            $this->view->success = true;
+        }
+
+        $this->forward('module-users-u-i/index');
+    }
+
 }

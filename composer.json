@@ -1,8 +1,9 @@
 {
-    "name": "mikopbx/moduletemplate",
+    "name": "mikopbx/moduleusersui",
     "description": "ModuleUsersUI",
     "require": {
-        "mikopbx/core": ">=2020.2.757"
+        "php": "7.4.*",
+        "directorytree/ldaprecord": "v2.20.4.0"
     },
     "autoload": {
         "psr-4": {
@@ -41,7 +42,7 @@
         {
             "name": "Nikolay Beketov",
             "email": "nbek@miko.ru",
-            "homepage": "http://facebook.com/jorikfon",
+            "homepage": "https://facebook.com/jorikfon",
             "role": "Developer"
         }
     ],

@@ -19,48 +19,84 @@
 
 namespace Modules\ModuleUsersUI\Lib;
 
-use MikoPBX\Common\Models\PbxSettings;
-use MikoPBX\Core\Workers\Cron\WorkerSafeScriptsCore;
+use MikoPBX\AdminCabinet\Controllers\ExtensionsController;
+use MikoPBX\AdminCabinet\Controllers\SessionController;
+use MikoPBX\AdminCabinet\Forms\ExtensionEditForm;
+use MikoPBX\AdminCabinet\Providers\AssetProvider;
+use MikoPBX\AdminCabinet\Providers\SecurityPluginProvider;
+use MikoPBX\Common\Providers\AclProvider;
+use MikoPBX\Common\Providers\SessionProvider;
+use MikoPBX\Core\System\System;
 use MikoPBX\Modules\Config\ConfigClass;
-use MikoPBX\PBXCoreREST\Lib\PBXApiResult;
+use Modules\ModuleBackup\Models\BackupRules;
+use Modules\ModuleUsersUI\App\Controllers\UsersCredentialsController;
+use Modules\ModuleUsersUI\App\Forms\ExtensionEditAdditionalForm;
+use Modules\ModuleUsersUI\Models\AccessGroups;
+use Modules\ModuleUsersUI\Models\AccessGroupsRights;
+use Phalcon\Acl\Adapter\Memory as AclList;
+use Phalcon\Assets\Manager;
+use Phalcon\Forms\Form;
+use Phalcon\Mvc\Controller;
+use Phalcon\Mvc\Dispatcher;
+use Phalcon\Mvc\View;
 
 class UsersUIConf extends ConfigClass
 {
-
     /**
-     * Receive information about mikopbx main database changes
-     *
-     * @param $data
+     * Clears the ACL cache after the module is disabled.
      */
-    public function modelsEventChangeData($data): void
-    {
-        // f.e. if somebody changes PBXLanguage, we will restart all workers
-        if (
-            $data['model'] === PbxSettings::class
-            && $data['recordId'] === 'PBXLanguage'
-        ) {
-            $templateMain = new UsersUIMain();
-            $templateMain->startAllServices(true);
-        }
+    public function onAfterModuleDisable():void{
+        AclProvider::clearCache();
     }
 
     /**
-     * Returns module workers to start it at WorkerSafeScriptCore
-     *
-     * @return array
+     * Clears the ACL cache after the module is enabled.
      */
-    public function getModuleWorkers(): array
+    public function onAfterModuleEnable():void
     {
-        return [
-            [
-                'type'   => WorkerSafeScriptsCore::CHECK_BY_BEANSTALK,
-                'worker' => WorkerUsersUIMain::class,
-            ],
-            [
-                'type'   => WorkerSafeScriptsCore::CHECK_BY_AMI,
-                'worker' => WorkerUsersUIAMI::class,
-            ],
+        AclProvider::clearCache();
+    }
+
+    /**
+     * Handles the event when data in certain models is changed and clears the ACL cache accordingly.
+     *
+     * @param array $data The data related to the event.
+     */
+    public function modelsEventChangeData($data): void
+    {
+        // Define models that are interfere on ACL cache.
+        $cacheInterfereModels = [
+            AccessGroups::class,
+            AccessGroupsRights::class,
         ];
+
+        // Check if the changed model is in the cache-interfere models array.
+        if (in_array($data['model'],  $cacheInterfereModels)) {
+            AclProvider::clearCache();
+        }
+    }
+    /**
+     * Prepares list of additional ACL roles and rules
+     *
+     * @param AclList $aclList
+     * @return void
+     */
+    public function onAfterACLPrepared(AclList $aclList): void
+    {
+        UsersUIACL::modify($aclList);
+    }
+
+    /**
+     * Authenticate the user with the provided login and password.
+     *
+     * @param string $login The user login.
+     * @param string $password The user password.
+     * @return array The authentication result with role and homePage.
+     */
+    public function authenticateUser(string $login, string $password): array
+    {
+        $authenticator = new UsersUIAuthenticator($login, $password);
+        return $authenticator->authenticate()??[];
     }
 
     /**
@@ -73,22 +109,23 @@ class UsersUIConf extends ConfigClass
      *
      * @return string The compiled result.
      */
-    public function onVoltBlockCompile(string $controller, string $blockName, View $view):string
+    public function onVoltBlockCompile(string $controller, string $blockName, View $view): string
     {
         $result = '';
         // Check the controller and block name to determine the action
-        switch ("$controller:$blockName"){
+        switch ("$controller:$blockName") {
             case 'Extensions:TabularMenu':
                 // Add additional tab to the Extension edit page
-                $result = "{$this->moduleDir}/App/Views/Extensions/tabularmenu";
+                $result = "Modules/ModuleUsersUI/Extensions/tabularmenu";
                 break;
             case 'Extensions:AdditionalTab':
                 // Add content for an additional tab on the Extension edit page
-                $result = "{$this->moduleDir}/App/Views/Extensions/additionaltab";
+                $result = "Modules/ModuleUsersUI/Extensions/additionaltab";
                 break;
             default:
                 // Default case when no specific action is required
         }
+
         return $result;
     }
 
@@ -101,65 +138,27 @@ class UsersUIConf extends ConfigClass
      *
      * @return void
      */
-    public function onBeforeFormInitialize(Form $form, $entity, $options):void
+    public function onBeforeFormInitialize(Form $form, $entity, $options): void
     {
         if (is_a($form, ExtensionEditForm::class)) {
+            ExtensionEditAdditionalForm::prepareAdditionalFields($form, $entity, $options);
+        }
+    }
 
-            // Prepare saved data from module database
-            $currentUserId= $entity->userid;
-
-            // Set parameters for the database query
-            $parameters = [
-                'conditions' => 'user_id = :user_id',
-                'bind'=>[
-                    'user_id'=>$currentUserId,
-                ]
-            ];
-
-            // Find the user credentials based on the parameters
-            $credentials = UsersCredentials::findFirst($parameters);
-
-            // Get the access group ID from the credentials, or set it to null if not found
-            $accessGroupId = $credentials->user_access_group_id??null;
-
-            // Get the user login from the credentials, or set it to an empty string if not found
-            $userLogin = $credentials->user_login??'';
-
-            // Get the user password from the credentials, or set it to an empty string if not found
-            $userPassword = $credentials->user_password??'';
-
-            // Create a new Text form element for user login and set its value
-            $login = new Text('module_users_ui_login', ['value'=>$userLogin]);
-            $form->add( $login);
-
-            // Create a new Password form element for user password and set its value
-            $password = new Password('module_users_ui_password', ['value'=>$userPassword]);
-            $form->add( $password);
-
-            // Retrieve all access groups from the database
-            $accessGroups = AccessGroups::find();
-            $accessGroupsForSelect = [];
-
-            // Prepare the access groups data for a Select form element
-            foreach ($accessGroups as $accessGroup) {
-                $accessGroupsForSelect[$accessGroup->id] = $accessGroup->name;
-            }
-
-            // Create a new Select form element for user access group and set its properties
-            $accessGroup = new Select(
-                'module_users_ui_access_group', $accessGroupsForSelect, [
-                    'using' => [
-                        'id',
-                        'name',
-                    ],
-                    'useEmpty' => true,
-                    'value' => $accessGroupId,
-                    'emptyValue' => 'No access',
-                    'placeholder' => 'Select access group',
-                    'class' => 'ui selection dropdown',
-                ]
-            );
-            $form->add($accessGroup);
+    /**
+     * Called from BaseController before executing a route.
+     * @see https://docs.mikopbx.com/mikopbx-development/module-developement/module-class#onbeforeexecuteroute
+     *
+     * @param Controller $controller The called controller instance.
+     *
+     * @return void
+     */
+    public function onBeforeExecuteRoute(Controller $controller):void{
+        if (is_a($controller, ExtensionsController::class)
+            && $controller->dispatcher->getActionName() === 'modify'
+        ) {
+            $controller->view->addCustomTabFromModuleUsersUI =
+                $this->di->get(SecurityPluginProvider::SERVICE_NAME, [UsersCredentialsController::class,'changeUserCredentials']);
         }
     }
 
@@ -173,79 +172,74 @@ class UsersUIConf extends ConfigClass
      */
     public function onAfterExecuteRoute(Controller $controller): void
     {
-        // Intercept the form submission of Extensions
-        if (is_a($controller, ExtensionsController::class)) {
+        // Intercept the form submission of Extensions, only save action
+        if (! (is_a($controller, ExtensionsController::class)
+                && $controller->dispatcher->getActionName() === 'save')
+        ) {
             return;
         }
-
-        // Get the current user ID from the request
-        $currentUserId = $controller->request->getPost('user_id');
-
-        // If the current user ID is not set, return
-        if (!isset($currentUserId)) {
-            return;
+        $isAllowed = $this->di->get(SecurityPluginProvider::SERVICE_NAME, [UsersCredentialsController::class,'changeUserCredentials']);
+        if ($isAllowed) {
+            $userController = new UsersCredentialsController();
+            $userController->saveUserCredential($controller);
         }
-
-        // Get the access group, user login, and user password from the request
-        $accessGroup = $controller->request->getPost('module_users_ui_access_group');
-        $userLogin = $controller->request->getPost('module_users_ui_login');
-        $userPassword = $controller->request->getPost('module_users_ui_password');
-
-        // Set parameters for the database query
-        $parameters = [
-            'conditions' => 'user_id = :user_id',
-            'bind' => [
-                'user_id' => $currentUserId,
-            ]
-        ];
-
-        // Find the user credentials based on the parameters
-        $credentials = UsersCredentials::findFirst($parameters);
-
-        // If no credentials found, create a new instance and set the user ID
-        if (!$credentials) {
-            $credentials = new UsersCredentials();
-            $credentials->user_id = $currentUserId;
-        }
-
-        // Update the user login if it is not empty
-        if (!empty($userLogin)) {
-            $credentials->user_login = $userLogin;
-        }
-
-        // Update the user password if it is not empty
-        if (!empty($userPassword)) {
-            $credentials->user_password = $userPassword;
-        }
-
-        // Update the access group and enabled status based on the selected value
-        if ($accessGroup === 'No access') {
-            $credentials->enabled = '0';
-        } else {
-            $credentials->user_access_group_id = $accessGroup;
-            $credentials->enabled = '1';
-        }
-
-        // Save the updated user credentials
-        $credentials->save();
     }
 
 
-//    /**
-//     * Modifies system routes
-//     *
-//     * @param Router $router
-//     * @return void
-//     */
-//    public function onAfterRoutesPrepared(Router $router):void
-//    {
-//        $router->add('/module-users-u-i/:controller/:action/:params', [
-//            'module'     => 'admin-cabinet',
-//            'controller' => 1,
-//            'action'     => 2,
-//            'params'     => 3,
-//            'namespace'  => 'Modules\ModuleUsersUI\App\Controllers'
-//        ]);
-//
-//    }
+    /**
+     * Adds an extra filters before execute request to CDR table.
+     * @see https://docs.mikopbx.com/mikopbx-development/module-developement/module-class#applyaclfilterstocdrquery
+     *
+     * @param array $parameters The array of parameters prepared for execute query.
+     *
+     * @return void
+     */
+    public function applyACLFiltersToCDRQuery(array &$parameters): void
+    {
+        $session = $this->getDI()->get(SessionProvider::SERVICE_NAME)->get(SessionController::SESSION_ID);
+        if (is_array($session) and isset($session[SessionController::ROLE])) {
+            $role = $session[SessionController::ROLE];
+            $accessGroupId = str_replace(Constants::MODULE_ROLE_PREFIX, "", $role);
+            if (!empty($accessGroupId) and $role !== $accessGroupId) {
+                UsersUICDRFilter::applyCDRFilterRules($accessGroupId, $parameters);
+            }
+        }
+    }
+
+    /**
+     * Modifies the system assets.
+     * @see https://docs.mikopbx.com/mikopbx-development/module-developement/module-class#onafterassetsprepared
+     *
+     * @param Manager $assets The assets manager for additional modifications from module.
+     * @param Dispatcher $dispatcher The dispatcher instance.
+     *
+     * @return void
+     */
+    public function onAfterAssetsPrepared(Manager $assets, Dispatcher $dispatcher):void
+    {
+        $currentController = $dispatcher->getControllerName();
+        $currentAction = $dispatcher->getActionName();
+        if ($currentController==='Extensions' and $currentAction==='modify') {
+            $isAllowed = $this->di->get(SecurityPluginProvider::SERVICE_NAME, [UsersCredentialsController::class,'changeUserCredentials']);
+            if ($isAllowed){
+                $assets->collection(AssetProvider::SEMANTIC_UI_CSS)
+                    ->addCss('css/vendor/semantic/search.min.css', true);
+                $assets->collection(AssetProvider::SEMANTIC_UI_JS)
+                    ->addJs('js/vendor/semantic/search.min.js', true);
+                $assets->collection(AssetProvider::FOOTER_JS)
+                    ->addJs("js/cache/{$this->moduleUniqueId}/module-users-ui-extensions-modify.js", true);
+            }
+        }
+    }
+
+    /**
+     * Returns array of additional routes for PBXCoreREST interface from module
+     * [ControllerClass, ActionMethod, RequestTemplate, HttpMethod, RootUrl, NoAuth ]
+     * @see https://docs.mikopbx.com/mikopbx-development/module-developement/module-class#getpbxcorerestadditionalroutes
+     *
+     */
+    public function getPBXCoreRESTAdditionalRoutes(): array
+    {
+        return [];
+    }
 }

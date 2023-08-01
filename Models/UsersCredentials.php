@@ -22,6 +22,8 @@ namespace Modules\ModuleUsersUI\Models;
 use MikoPBX\Common\Models\Users;
 use MikoPBX\Modules\Models\ModulesModelsBase;
 use Phalcon\Mvc\Model\Relation;
+use Phalcon\Validation;
+use Phalcon\Validation\Validator\Uniqueness as UniquenessValidator;
 
 /**
  * Class ModuleUsers
@@ -45,11 +47,18 @@ class UsersCredentials extends ModulesModelsBase
     public $user_id;
 
     /**
-     * Link to the Users group table
+     * Link to the AccessGroups table
      *
-     * @Column(type="integer", nullable=false, default='0')
+     * @Column(type="string", nullable=false, default='No access')
      */
     public $user_access_group_id;
+
+    /**
+     * User use ldap auth
+     *
+     *  @Column(type="string", length=1, default='0')
+     */
+    public $use_ldap_auth;
 
     /**
      * User login
@@ -61,14 +70,14 @@ class UsersCredentials extends ModulesModelsBase
     /**
      * User password
      *
-     * @Column(type="string", nullable=false)
+     * @Column(type="string", nullable=true)
      */
     public $user_password;
 
     /**
      * Allows to enter the web interface
      *
-     * @Column(type="integer", nullable=false, default='0')
+     * @Column(type="string", nullable=false, default='0')
      */
     public $enabled;
 
@@ -95,11 +104,7 @@ class UsersCredentials extends ModulesModelsBase
             AccessGroups::class,
             'id',
             [
-                'alias' => 'UsersGroups',
-                'foreignKey' => [
-                    'allowNulls' => false,
-                    'action' => Relation::NO_ACTION,
-                ],
+                'alias' => 'AccessGroups',
             ]
         );
     }
@@ -119,7 +124,7 @@ class UsersCredentials extends ModulesModelsBase
     public static function getDynamicRelations(&$calledModelObject): void
     {
         if (is_a($calledModelObject, Users::class)) {
-            $calledModelObject->belongsTo(
+            $calledModelObject->hasOne(
                 'id',
                 UsersCredentials::class,
                 'user_id',
@@ -134,5 +139,27 @@ class UsersCredentials extends ModulesModelsBase
             );
         }
     }
+
+
+    /**
+     * Perform validation on the model.
+     *
+     * @return bool Whether the validation was successful or not.
+     */
+    public function validation(): bool
+    {
+        $validation = new Validation();
+        $validation->add(
+            'user_login',
+            new UniquenessValidator(
+                [
+                    'message' => $this->t('module_usersui_LoginNameNotUnique'),
+                ]
+            )
+        );
+
+        return $this->validate($validation);
+    }
+
 
 }

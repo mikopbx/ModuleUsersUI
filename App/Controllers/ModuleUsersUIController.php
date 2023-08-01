@@ -17,297 +17,72 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 namespace Modules\ModuleUsersUI\App\Controllers;
-use MikoPBX\AdminCabinet\Controllers\BaseController;
-use MikoPBX\Common\Models\CallQueues;
-use MikoPBX\Common\Models\Extensions;
-use MikoPBX\Modules\PbxExtensionUtils;
-use Modules\ModuleUsersUI\App\Forms\ModuleUsersUIForm;
-use Modules\ModuleUsersUI\Models\ModuleUsersUI;
-use MikoPBX\Common\Models\Providers;
-use Modules\ModuleUsersUI\Models\PhoneBook;
+use MikoPBX\AdminCabinet\Providers\AssetProvider;
+use Modules\ModuleUsersUI\App\Forms\LdapConfigForm;
+use Modules\ModuleUsersUI\Models\AccessGroups;
+use Modules\ModuleUsersUI\Models\LdapConfig;
+use Modules\ModuleUsersUI\Models\UsersCredentials;
 
-class ModuleUsersUIController extends BaseController
+class ModuleUsersUIController extends ModuleUsersUIBaseController
 {
-    private $moduleUniqueID = 'ModuleUsersUI';
-    private $moduleDir;
-
     /**
-     * Basic initial class
-     */
-    public function initialize(): void
-    {
-        $this->moduleDir = PbxExtensionUtils::getModuleDir($this->moduleUniqueID);
-        $this->view->logoImagePath = "{$this->url->get()}assets/img/cache/{$this->moduleUniqueID}/logo.svg";
-        $this->view->submitMode = null;
-        parent::initialize();
-    }
-
-    public function getTablesDescriptionAction(): void
-    {
-        $this->view->data = $this->getTablesDescription();
-    }
-
-    public function getNewRecordsAction(): void
-    {
-        $currentPage                 = $this->request->getPost('draw');
-        $table                       = $this->request->get('table');
-        $this->view->draw            = $currentPage;
-        $this->view->recordsTotal    = 0;
-        $this->view->recordsFiltered = 0;
-        $this->view->data            = [];
-
-        $descriptions = $this->getTablesDescription();
-        if(!isset($descriptions[$table])){
-            return;
-        }
-        $className = $this->getClassName($table);
-        if(!empty($className)){
-            $filter = [];
-            if(isset($descriptions[$table]['cols']['priority'])){
-                $filter = ['order' => 'priority'];
-            }
-            $allRecords = $className::find($filter)->toArray();
-            $records    = [];
-            $emptyRow   = [
-                'rowIcon'  =>  $descriptions[$table]['cols']['rowIcon']['icon']??'',
-                'DT_RowId' => 'TEMPLATE'
-            ];
-            foreach ($descriptions[$table]['cols'] as $key => $metadata) {
-                if('rowIcon' !== $key){
-                    $emptyRow[$key] = '';
-                }
-            }
-            $records[] = $emptyRow;
-            foreach ($allRecords as $rowData){
-                $tmpData = [];
-                $tmpData['DT_RowId'] =  $rowData['id'];
-                foreach ($descriptions[$table]['cols'] as $key => $metadata){
-                    if('rowIcon' === $key){
-                        $tmpData[$key] = $metadata['icon']??'';
-                    }elseif('delButton' === $key){
-                        $tmpData[$key] = '';
-                    }elseif(isset($rowData[$key])){
-                        $tmpData[$key] =  $rowData[$key];
-                    }
-                }
-                $records[] = $tmpData;
-            }
-            $this->view->data      = $records;
-        }
-    }
-
-    /**
-     * Index page controller
+     * The index action for displaying the users groups page.
+     *
+     * @return void
      */
     public function indexAction(): void
     {
-        $footerCollection = $this->assets->collection('footerJS');
-        $footerCollection->addJs('js/pbx/main/form.js', true);
+        $this->showModuleStatusToggle = true;
+
+        $semanticCollection = $this->assets->collection(AssetProvider::SEMANTIC_UI_JS);
+        $semanticCollection->addJs('js/vendor/semantic/search.min.js', true);
+
+        $semanticCSSCollection = $this->assets->collection(AssetProvider::SEMANTIC_UI_CSS);
+        $semanticCSSCollection->addCss('css/vendor/semantic/search.min.css', true);
+
+        $footerCollection = $this->assets->collection(AssetProvider::FOOTER_JS);
         $footerCollection->addJs('js/vendor/datatable/dataTables.semanticui.js', true);
-        $footerCollection->addJs("js/cache/{$this->moduleUniqueID}/module-usersui-index.js", true);
-        $footerCollection->addJs('js/vendor/jquery.tablednd.min.js', true);
+        $footerCollection->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-index.js", true);
+        $footerCollection->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-index-users.js", true);
+        $footerCollection->addJs('js/pbx/main/form.js', true);
+        $footerCollection->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-index-ldap.js", true);
 
-        $headerCollectionCSS = $this->assets->collection('headerCSS');
-        $headerCollectionCSS->addCss("css/cache/{$this->moduleUniqueID}/module-usersui.css", true);
-        $headerCollectionCSS->addCss('css/vendor/datatable/dataTables.semanticui.min.css', true);
+        $headerCollectionCSS = $this->assets->collection(AssetProvider::HEADER_CSS);
+        $headerCollectionCSS
+            ->addCss('css/vendor/datatable/dataTables.semanticui.min.css', true)
+            ->addCss("css/cache/{$this->moduleUniqueID}/module-users-ui.css", true);
 
-        $settings = ModuleUsersUI::findFirst();
-        if ($settings === null) {
-            $settings = new ModuleUsersUI();
-        }
+        $parameters = [
+            'models'     => [
+                'AccessGroups' => AccessGroups::class,
+            ],
+            'columns'    => [
+                'id' => 'AccessGroups.id',
+                'name' => 'AccessGroups.name',
+                'fullAccess' => 'AccessGroups.fullAccess=1',
+                'description' => 'AccessGroups.description',
+                'countUsers'=> 'COUNT(UsersCredentials.id)',
+            ],
+            'joins'      => [
+                'UsersCredentials' => [
+                    0 => UsersCredentials::class,
+                    1 => 'UsersCredentials.user_access_group_id = AccessGroups.id and UsersCredentials.enabled = 1',
+                    2 => 'UsersCredentials',
+                    3 => 'LEFT',
+                ],
+            ],
+            'group'      => 'AccessGroups.id',
+        ];
+        $groups      = $this->di->get('modelsManager')->createBuilder($parameters)->getQuery()->execute()->toArray();
+        $this->view->groups = $groups;
 
-        // For example we add providers list on the form
-        $providers = Providers::find();
-        $providersList = [];
-        foreach ($providers as $provider){
-            $providersList[ $provider->uniqid ] = $provider->getRepresent();
-        }
-        $options['providers']=$providersList;
-
-        $this->view->form = new ModuleUsersUIForm($settings, $options);
         $this->view->pick("{$this->moduleDir}/App/Views/index");
 
-        // Список выбора очередей.
-        $this->view->queues = CallQueues::find(['columns' => ['id', 'name']]);
-        $this->view->users  = Extensions::find(["type = 'SIP'", 'columns' => ['number', 'callerid']]);
+        $this->view->members = $this->getTheListOfUsersForDisplayInTheFilter();
+
+        $ldapConfig = LdapConfig::findFirst();
+        $this->view->ldapForm = new LdapConfigForm($ldapConfig);
+        $this->view->submitMode    = null;
     }
 
-    /**
-     * Save settings AJAX action
-     */
-    public function saveAction() :void
-    {
-        $data       = $this->request->getPost();
-        $record = ModuleUsersUI::findFirst();
-        if ($record === null) {
-            $record = new ModuleUsersUI();
-        }
-        $this->db->begin();
-        foreach ($record as $key => $value) {
-            switch ($key) {
-                case 'id':
-                    break;
-                case 'checkbox_field':
-                case 'toggle_field':
-                    if (array_key_exists($key, $data)) {
-                        $record->$key = ($data[$key] === 'on') ? '1' : '0';
-                    } else {
-                        $record->$key = '0';
-                    }
-                    break;
-                default:
-                    if (array_key_exists($key, $data)) {
-                        $record->$key = $data[$key];
-                    } else {
-                        $record->$key = '';
-                    }
-            }
-        }
-
-        if ($record->save() === FALSE) {
-            $errors = $record->getMessages();
-            $this->flash->error(implode('<br>', $errors));
-            $this->view->success = false;
-            $this->db->rollback();
-            return;
-        }
-
-        $this->flash->success($this->translation->_('ms_SuccessfulSaved'));
-        $this->view->success = true;
-        $this->db->commit();
-    }
-
-    /**
-     * Delete phonebook record
-     */
-    public function deleteAction(): void
-    {
-        $table     = $this->request->get('table');
-        $className = $this->getClassName($table);
-        if(empty($className)) {
-            $this->view->success = false;
-            return;
-        }
-        $id     = $this->request->get('id');
-        $record = $className::findFirstById($id);
-        if ($record !== null && ! $record->delete()) {
-            $this->flash->error(implode('<br>', $record->getMessages()));
-            $this->view->success = false;
-            return;
-        }
-        $this->view->success = true;
-    }
-
-    /**
-     * Возвращает метаданные таблицы.
-     * @return array
-     */
-    private function getTablesDescription():array
-    {
-        $description['PhoneBook'] = [
-            'cols' => [
-                'rowIcon'    => ['header' => '',                        'class' => 'collapsing', 'icon' => 'user'],
-                'priority'   => ['header' => '',                        'class' => 'collapsing'],
-                'call_id'    => ['header' => 'Представление абонента',  'class' => 'ten wide'],
-                'number_rep' => ['header' => 'Номер телефона',          'class' => 'four wide'],
-                'queueId'    => ['header' => 'Номер числом',            'class' => 'collapsing', 'select' => 'queues-list'],
-                'delButton'  => ['header' => '',                        'class' => 'collapsing']
-            ],
-            'ajaxUrl' => '/getNewRecords',
-            'icon' => 'user',
-            'needDelButton' => true
-        ];
-        return $description;
-    }
-
-    /**
-     * Обновление данных в таблице.
-     */
-    public function saveTableDataAction():void
-    {
-        $data       = $this->request->getPost();
-        $tableName  = $data['pbx-table-id']??'';
-
-        $className = $this->getClassName($tableName);
-        if(empty($className)){
-            return;
-        }
-        $rowId      = $data['pbx-row-id']??'';
-        if(empty($rowId)){
-            $this->view->success = false;
-            return;
-        }
-        $this->db->begin();
-        /** @var PhoneBook $rowData */
-        $rowData = $className::findFirst('id="'.$rowId.'"');
-        if(!$rowData){
-            $rowData = new $className();
-        }
-        foreach ($rowData as $key => $value) {
-            if($key === 'id'){
-                continue;
-            }
-            if (array_key_exists($key, $data)) {
-                $rowData->writeAttribute($key, $data[$key]);
-            }
-        }
-        // save action
-        if ($rowData->save() === FALSE) {
-            $errors = $rowData->getMessages();
-            $this->flash->error(implode('<br>', $errors));
-            $this->view->success = false;
-            $this->db->rollback();
-            return;
-        }
-        $this->view->data = ['pbx-row-id'=>$rowId, 'newId'=>$rowData->id, 'pbx-table-id' => $data['pbx-table-id']];
-        $this->view->success = true;
-        $this->db->commit();
-
-    }
-
-    /**
-     * Получение имени класса по имени таблицы
-     * @param $tableName
-     * @return string
-     */
-    private function getClassName($tableName):string
-    {
-        if(empty($tableName)){
-            return '';
-        }
-        $className = "Modules\ModuleUsersUI\Models\\$tableName";
-        if(!class_exists($className)){
-            $className = '';
-        }
-        return $className;
-    }
-
-    /**
-     * Changes rules priority
-     *
-     */
-    public function changePriorityAction(): void
-    {
-        $this->view->disable();
-        $result = true;
-
-        if ( ! $this->request->isPost()) {
-            return;
-        }
-        $priorityTable = $this->request->getPost();
-        $tableName     = $this->request->get('table');
-        $className = $this->getClassName($tableName);
-        if(empty($className)){
-            echo "table not found -- ы$tableName --";
-            return;
-        }
-        $rules = $className::find();
-        foreach ($rules as $rule){
-            if (array_key_exists ( $rule->id, $priorityTable)){
-                $rule->priority = $priorityTable[$rule->id];
-                $result         .= $rule->update();
-            }
-        }
-        echo json_encode($result);
-    }
 }

@@ -1,4 +1,3 @@
-<?php
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
@@ -17,28 +16,7 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
-
-
-namespace Modules\ModuleUsersUI\Models;
-
-use MikoPBX\Common\Models\Providers;
-use MikoPBX\Modules\Models\ModulesModelsBase;
-use Phalcon\Mvc\Model\Relation;
-
-class ModuleUsersUI extends ModulesModelsBase
-{
-    /**
-     * @Primary
-     * @Identity
-     * @Column(type="integer", nullable=false)
-     */
-    public $id;
-
-
-    public function initialize(): void
-    {
-        $this->setSource('m_ModuleUsersUI');
-        parent::initialize();
-    }
-
+#users-table .ui.input.inline-edit>input {
+    cursor: text!important;
+    border-radius: 0.5rem!important;
 }

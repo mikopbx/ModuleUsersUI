@@ -19,7 +19,6 @@
 
 namespace Modules\ModuleUsersUI\Models;
 
-use MikoPBX\Common\Models\Users;
 use MikoPBX\Modules\Models\ModulesModelsBase;
 use Phalcon\Mvc\Model\Relation;
 
@@ -34,11 +33,18 @@ class AccessGroupsRights extends ModulesModelsBase
     public $id;
 
     /**
-     * Link to the groups table
+     * Link to the AccessGroups table
      *
      * @Column(type="integer", nullable=false)
      */
     public $group_id;
+
+    /**
+     * Module id [AdminCabinet, REST API, ModuleID]
+     *
+     * @Column(type="string", nullable=false)
+     */
+    public $module_id;
 
     /**
      * Controller name
@@ -57,7 +63,20 @@ class AccessGroupsRights extends ModulesModelsBase
 
     public function initialize(): void
     {
-        $this->setSource('m_ModuleUsersUI_GroupRights');
+        $this->setSource('m_ModuleUsersUI_AccessGroupsRights');
         parent::initialize();
+
+        $this->belongsTo(
+            'group_id',
+            AccessGroups::class,
+            'id',
+            [
+                'alias' => 'AccessGroups',
+                'foreignKey' => [
+                    'allowNulls' => false,
+                    'action' => Relation::NO_ACTION,
+                ],
+            ]
+        );
     }
 }

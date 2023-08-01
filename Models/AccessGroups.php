@@ -20,11 +20,11 @@
 namespace Modules\ModuleUsersUI\Models;
 
 use MikoPBX\Modules\Models\ModulesModelsBase;
+use Modules\ModuleUsersUI\Lib\Constants;
 use Phalcon\Mvc\Model\Relation;
 
 class AccessGroups extends ModulesModelsBase
 {
-
     /**
      * @Primary
      * @Identity
@@ -49,21 +49,58 @@ class AccessGroups extends ModulesModelsBase
     /**
      * Home page after user logs in
      *
-     * @Column(type="string", nullable=true, default='session/end')
+     * @Column(type="string", nullable=true, default='/admin-cabinet/session/end')
      */
-    public $home_page;
+    public $homePage;
+
+    /**
+     * CDR filter mode
+     *
+     * If is set to 'all' the group can see and listen all users, the CDR filter is disabled
+     * If is set to 'selected' the group can see and listen only users from the AccessGroupCDRFilter list
+     * If is set to 'not-selected' the group can see and listen all users except users from the AccessGroupCDRFilter list
+     *
+     * @Column(type="string", default='all')
+     */
+    public  $cdrFilterMode;
+
+    /**
+     * If it is set to '1' the group has full access
+     *
+     * @Column(type="string", nullable=false, default='0')
+     */
+    public $fullAccess;
 
 
+    /**
+     * Initialize the AccessGroups model.
+     *
+     * @return void
+     */
     public function initialize(): void
     {
-        $this->setSource('m_ModuleUsersUI_UsersGroups');
+        $this->setSource('m_ModuleUsersUI_AccessGroups');
         parent::initialize();
         $this->hasMany(
             'id',
             AccessGroupsRights::class,
             'group_id',
             [
-                'alias'      => 'UsersGroupsRights',
+                'alias'      => 'AccessGroupsRights',
+                'foreignKey' => [
+                    'allowNulls' => true,
+                    'action'     => Relation::ACTION_CASCADE,
+                    // When a group is deleted, delete the associated user-group mappings
+                ],
+            ]
+        );
+
+        $this->hasMany(
+            'id',
+            AccessGroupCDRFilter::class,
+            'group_id',
+            [
+                'alias'      => 'AccessGroupCDRFilter',
                 'foreignKey' => [
                     'allowNulls' => true,
                     'action'     => Relation::ACTION_CASCADE,
@@ -78,13 +115,23 @@ class AccessGroups extends ModulesModelsBase
             'user_access_group_id',
             [
                 'alias'      => 'UsersCredentials',
-                'foreignKey' => [
-                    'allowNulls' => true,
-                    'action'     => Relation::ACTION_RESTRICT,
-                    // When a group is deleted, prevent to delete the associated users
-                ],
             ]
         );
+    }
+
+    public function beforeDelete(): bool
+    {
+        $parameters = [
+            'conditions' => 'user_access_group_id = :group_id:',
+            'bind' => [
+                'group_id' => $this->id
+            ]
+        ];
+        foreach (UsersCredentials::find($parameters) as $userCredential){
+            $userCredential->user_access_group_id = null;
+            $userCredential->save();
+        }
+        return parent::beforeDelete();
     }
 
 }
