@@ -136,17 +136,17 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
         $excludedActions = [];
         $arrayOfExclusions = [];
 
-        // Get the list of REST API controllers and actions which we hide from settings because they are linked
-        foreach (UsersUIACL::getLinkedRESTAPI() as $controllerClass=>$actions) {
-            // Iterate through the AdminCabinet controllers actions
-            foreach ($actions as $action=>$restApiControllers) {
-                // Iterate through the linked REST API controllers
-                foreach ($restApiControllers as $restApiController=>$restApiActions) {
-                    if (array_key_exists($restApiController, $arrayOfExclusions)) {
-                        $arrayOfExclusions[$restApiController] = array_merge($arrayOfExclusions[$restApiController], $restApiActions);
-                        $arrayOfExclusions[$restApiController] = array_unique($arrayOfExclusions[$restApiController]);
+        // Get the list of linked controllers and actions which we hide from settings
+        foreach (UsersUIACL::getLinkedControllersActions() as $controllerClass=> $actions) {
+            // Iterate through the main controllers actions
+            foreach ($actions as $action=>$linkedControllers) {
+                // Iterate through the linked controllers actions
+                foreach ($linkedControllers as $linkedController=>$linkedActions) {
+                    if (array_key_exists($linkedController, $arrayOfExclusions)) {
+                        $arrayOfExclusions[$linkedController] = array_merge($arrayOfExclusions[$linkedController], $linkedActions);
+                        $arrayOfExclusions[$linkedController] = array_unique($arrayOfExclusions[$linkedController]);
                     } else {
-                        $arrayOfExclusions[$restApiController] = $restApiActions;
+                        $arrayOfExclusions[$linkedController] = $linkedActions;
                     }
                 }
             }
@@ -355,7 +355,7 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
                     continue;
                 }
                 $currentContext = &$controllers[$configObject->moduleUniqueId]['REST'][$controllerName];
-                $currentContext = array_merge_recursive($currentContext ?? [], $actions);
+                $currentContext = array_merge($currentContext ?? [], $actions);
             }
 
             // Parse custom REST API endpoints described in modules
@@ -399,7 +399,7 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
                         $actions['*'] = false;
                     }
                     $currentContext = &$controllers[$configObject->moduleUniqueId]['REST'][$controllerName];
-                    $currentContext = array_merge_recursive($currentContext ?? [], $actions);
+                    $currentContext = array_merge($currentContext ?? [], $actions);
                 }
             }
 

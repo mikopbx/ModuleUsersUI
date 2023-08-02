@@ -29,12 +29,14 @@ use MikoPBX\AdminCabinet\Controllers\ExtensionsController;
 use MikoPBX\AdminCabinet\Controllers\Fail2BanController;
 use MikoPBX\AdminCabinet\Controllers\FirewallController;
 use MikoPBX\AdminCabinet\Controllers\GeneralSettingsController;
+use MikoPBX\AdminCabinet\Controllers\IncomingRoutesController;
 use MikoPBX\AdminCabinet\Controllers\IvrMenuController;
 use MikoPBX\AdminCabinet\Controllers\LanguageController;
 use MikoPBX\AdminCabinet\Controllers\LicensingController;
 use MikoPBX\AdminCabinet\Controllers\LocalizationController;
 use MikoPBX\AdminCabinet\Controllers\MailSettingsController;
 use MikoPBX\AdminCabinet\Controllers\NetworkController;
+use MikoPBX\AdminCabinet\Controllers\OutboundRoutesController;
 use MikoPBX\AdminCabinet\Controllers\PbxExtensionModulesController;
 use MikoPBX\AdminCabinet\Controllers\ProvidersController;
 use MikoPBX\AdminCabinet\Controllers\RestartController;
@@ -46,6 +48,7 @@ use MikoPBX\AdminCabinet\Controllers\TopMenuSearchController;
 use MikoPBX\AdminCabinet\Controllers\UpdateController;
 use MikoPBX\AdminCabinet\Controllers\UsersController;
 use MikoPBX\AdminCabinet\Controllers\WikiLinksController;
+use MikoPBX\Common\Models\Users;
 use Modules\ModuleUsersUI\App\Controllers\AccessGroupsController;
 use Modules\ModuleUsersUI\App\Controllers\LdapConfigController;
 use Modules\ModuleUsersUI\App\Controllers\ModuleUsersUIController;
@@ -69,14 +72,14 @@ class UsersUIACL extends \Phalcon\Di\Injectable
     public static function modify(AclList $aclList): void
     {
         $query = self::buildAclQuery();
-        $aclFromModule = $query->execute();
+        $aclSettings = $query->execute();
 
         $previousRole = null;
         $actionsArray = [];
-        $linkedRestAPIActions = self::getLinkedRESTAPI();
-        foreach ($aclFromModule as $index => $acl) {
-            $role = Constants::MODULE_ROLE_PREFIX . $acl->accessGroupId;
-            $isLastAcl = $index === count($aclFromModule) - 1;
+        $linkedControllersActions = self::getLinkedControllersActions();
+        foreach ($aclSettings as $index => $aclFromModule) {
+            $role = Constants::MODULE_ROLE_PREFIX . $aclFromModule->accessGroupId;
+            $isLastAcl = $index === count($aclSettings) - 1;
 
             if ($previousRole !== $role) {
                 // Add components and allow access for previous role
@@ -89,42 +92,42 @@ class UsersUIACL extends \Phalcon\Di\Injectable
                 $previousRole = $role;
 
                 // Add a new role to the ACL list
-                $aclList->addRole(new AclRole($role, $acl->name));
+                $aclList->addRole(new AclRole($role, $aclFromModule->name));
 
-                if ($acl->fullAccess) {
+                if ($aclFromModule->fullAccess) {
                     // If full access is granted, allow all actions
                     $aclList->allow($role, '*', '*');
                     continue;
                 }
                 $actionsArray = self::getAlwaysAllowed();
             }
-            if (!$acl->fullAccess && isset($acl->actions)) {
-                $allowedActions = json_decode($acl->actions, true);
+            if (!$aclFromModule->fullAccess && isset($aclFromModule->actions)) {
+                $allowedActions = json_decode($aclFromModule->actions, true);
 
-                if (in_array($acl->controller, $actionsArray)
-                    && is_array($actionsArray[$acl->controller])) {
+                if (array_key_exists($aclFromModule->controller, $actionsArray)
+                    && is_array($actionsArray[$aclFromModule->controller])) {
                     // Merge allowed actions with existing actions for the controller
-                    $actionsArray[$acl->controller] = array_merge($actionsArray[$acl->controller], $allowedActions);
-                    $actionsArray[$acl->controller] = array_unique($actionsArray[$acl->controller]);
+                    $actionsArray[$aclFromModule->controller] = array_merge($actionsArray[$aclFromModule->controller], $allowedActions);
+                    $actionsArray[$aclFromModule->controller] = array_unique($actionsArray[$aclFromModule->controller]);
                 } else {
                     // Set allowed actions for the controller
-                    $actionsArray[$acl->controller] = $allowedActions;
+                    $actionsArray[$aclFromModule->controller] = $allowedActions;
                 }
 
-                // Process linked REST API actions
-                if (array_key_exists($acl->controller, $linkedRestAPIActions)){
-                    foreach ($linkedRestAPIActions[$acl->controller] as $mainAction=>$restApiControllers){
+                // Process linked controllers and their actions
+                if (array_key_exists($aclFromModule->controller, $linkedControllersActions)){
+                    foreach ($linkedControllersActions[$aclFromModule->controller] as $mainAction=>$linkedControllers){
                         if ($allowedActions==='*'
                             || is_array($allowedActions) && in_array($mainAction, $allowedActions)){
-                            foreach ($restApiControllers as $restApiController=>$restApiActions){
-                                if (array_key_exists($restApiController, $actionsArray)
-                                    && is_array($actionsArray[$restApiController])) {
-                                    // Merge linked actions with existing actions for the rest controller
-                                    $actionsArray[$restApiController] = array_merge($actionsArray[$restApiController], $restApiActions);
-                                    $actionsArray[$restApiController] = array_unique($actionsArray[$restApiController]);
+                            foreach ($linkedControllers as $linkedController=>$linkedActions){
+                                if (array_key_exists($linkedController, $actionsArray)
+                                    && is_array($actionsArray[$linkedController])) {
+                                    // Merge linked actions with existing actions for the linked actions
+                                    $actionsArray[$linkedController] = array_merge($actionsArray[$linkedController], $linkedActions);
+                                    $actionsArray[$linkedController] = array_unique($actionsArray[$linkedController]);
                                 } else {
-                                    // Set linked actions for the rest controller
-                                    $actionsArray[$restApiController] = $restApiActions;
+                                    // Set linked actions for the controller
+                                    $actionsArray[$linkedController] = $linkedActions;
                                 }
                             }
                         }
@@ -141,7 +144,7 @@ class UsersUIACL extends \Phalcon\Di\Injectable
                     }
                 }
                 // Add a new role to the ACL list
-                $aclList->addRole(new AclRole($role, $acl->name));
+                $aclList->addRole(new AclRole($role, $aclFromModule->name));
             }
         }
     }
@@ -210,6 +213,9 @@ class UsersUIACL extends \Phalcon\Di\Injectable
             ],
             TopMenuSearchController::class => '*',
             WikiLinksController::class => '*',
+            UsersController::class=>[
+                'available'
+            ],
             '/pbxcore/api/files'=>[
                 '/statusUpload',
             ],
@@ -285,10 +291,11 @@ class UsersUIACL extends \Phalcon\Di\Injectable
     }
 
     /**
-     * Prepares list of linked REST API controllers to AdminCabinet controllers to hide it from UI
+     * Prepares list of linked controllers to other controllers to hide it from UI
+     * and allow or disallow with the main one.
      * @return array[]
      */
-    public static function getLinkedRESTAPI(): array
+    public static function getLinkedControllersActions(): array
     {
         return [
             RestartController::class => [
@@ -300,7 +307,10 @@ class UsersUIACL extends \Phalcon\Di\Injectable
                 ]
             ],
             CallDetailRecordsController::class=>[
-                'getNewRecords'=>[
+                'index'=>[
+                    CallDetailRecordsController::class=>[
+                        'getNewRecords',
+                    ],
                     '/pbxcore/api/cdr'=>[
                         '/v2/playback',
                         '/playback',
@@ -365,6 +375,12 @@ class UsersUIACL extends \Phalcon\Di\Injectable
                     '/pbxcore/api/sip'=>[
                         '/getRegistry'
                     ]
+                ],
+                'save'=>[
+                    ProvidersController::class=>[
+                        'enable',
+                        'disable'
+                    ]
                 ]
             ],
             ExtensionsController::class=>
@@ -379,8 +395,21 @@ class UsersUIACL extends \Phalcon\Di\Injectable
                         '/getSipPeer'
                     ]
                 ],
+            ],
+            IncomingRoutesController::class=>[
+                'save'=>[
+                    IncomingRoutesController::class=>[
+                        'changePriority'
+                    ]
+                ]
+            ],
+            OutboundRoutesController::class=>[
+                'save'=>[
+                    OutboundRoutesController::class=>[
+                        'changePriority'
+                    ]
+                ]
             ]
-
         ];
     }
 }
