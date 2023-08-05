@@ -1,5 +1,5 @@
 <div class="ui grid">
-    <div class="four wide column">
+    <div class="seven wide column">
         <div class="ui vertical fluid tabular menu" id="access-settings-tab-menu">
             {% for module, types in groupRights %}
                 {% if loop.first %}
@@ -11,7 +11,7 @@
             {% endfor %}
         </div>
     </div>
-    <div class="twelve wide column" id="access-group-rights">
+    <div class="nine wide column" id="access-group-rights">
         {% for module, types in groupRights %}
         <!-- Begin {{ module }} -->
                 <div class="ui tab  {% if loop.first %}active{% endif %} segment" data-tab="{{ module }}Tab">
