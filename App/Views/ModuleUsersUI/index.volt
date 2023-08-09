@@ -5,11 +5,11 @@
 </div>
 
 <div class="ui bottom attached tab segment active disability" data-tab="groups">
-    {{ partial("Modules/ModuleUsersUI/Index/tabGroups") }}
+    {{ partial("Modules/ModuleUsersUI/ModuleUsersUI/IndexTabs/tabGroups") }}
 </div>
 <div class="ui bottom attached tab segment disability" data-tab="users">
-    {{ partial("Modules/ModuleUsersUI/Index/tabUsers") }}
+    {{ partial("Modules/ModuleUsersUI/ModuleUsersUI/IndexTabs/tabUsers") }}
 </div>
 <div class="ui bottom attached tab segment disability" data-tab="ldap">
-    {{ partial("Modules/ModuleUsersUI/Index/tabLdap") }}
+    {{ partial("Modules/ModuleUsersUI/ModuleUsersUI/IndexTabs/tabLdap") }}
 </div>

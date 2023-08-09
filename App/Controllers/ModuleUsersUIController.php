@@ -75,9 +75,6 @@ class ModuleUsersUIController extends ModuleUsersUIBaseController
         ];
         $groups      = $this->di->get('modelsManager')->createBuilder($parameters)->getQuery()->execute()->toArray();
         $this->view->groups = $groups;
-
-        $this->view->pick("{$this->moduleDir}/App/Views/index");
-
         $this->view->members = $this->getTheListOfUsersForDisplayInTheFilter();
 
         $ldapConfig = LdapConfig::findFirst();
