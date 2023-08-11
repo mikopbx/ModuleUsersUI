@@ -164,7 +164,7 @@ class AccessGroupsController extends ModuleUsersUIBaseController
             $this->view->success = true;
         }
 
-        $this->forward('module-users-u-i/index');
+        $this->forward('module-users-u-i/access-groups/index');
     }
 
 }
