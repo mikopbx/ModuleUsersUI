@@ -56,11 +56,11 @@ class AccessGroupForm extends BaseForm
         $this->add(new Text('name'));
 
         // FullAccess checkbox
-        $cheskArr = [];
+        $checkArr = [];
         if ($entity->fullAccess === '1') {
-            $cheskArr['checked'] = 'checked';
+            $checkArr['checked'] = 'checked';
         }
-        $this->add(new Check('fullAccess', $cheskArr));
+        $this->add(new Check('fullAccess', $checkArr));
 
         // Add textarea for Description
         $this->addTextArea('description', $entity->description ?? '', 80);

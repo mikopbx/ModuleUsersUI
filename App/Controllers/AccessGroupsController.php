@@ -40,11 +40,11 @@ class AccessGroupsController extends ModuleUsersUIBaseController
             ->addCss('css/vendor/datatable/dataTables.semanticui.min.css', true)
             ->addCss('css/vendor/semantic/list.min.css', true);
 
-        $footerCollection = $this->assets->collection('footerJS');
+        $footerCollection = $this->assets->collection(AssetProvider::FOOTER_JS);
         $footerCollection
             ->addJs('js/pbx/main/form.js', true)
             ->addJs('js/vendor/datatable/dataTables.semanticui.js', true)
-            ->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-modify-ag.js", true);
+            ->addJs('js/cache/'.$this->moduleUniqueID.'/module-users-ui-modify-ag.js', true);
 
         $record = AccessGroups::findFirstById($id);
         if ($record === null) {

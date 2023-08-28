@@ -41,16 +41,17 @@ class ModuleUsersUIController extends ModuleUsersUIBaseController
         $semanticCSSCollection->addCss('css/vendor/semantic/search.min.css', true);
 
         $footerCollection = $this->assets->collection(AssetProvider::FOOTER_JS);
-        $footerCollection->addJs('js/vendor/datatable/dataTables.semanticui.js', true);
-        $footerCollection->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-index.js", true);
-        $footerCollection->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-index-users.js", true);
-        $footerCollection->addJs('js/pbx/main/form.js', true);
-        $footerCollection->addJs("js/cache/{$this->moduleUniqueID}/module-users-ui-index-ldap.js", true);
+        $footerCollection
+            ->addJs('js/vendor/datatable/dataTables.semanticui.js', true)
+            ->addJs('js/cache/'.$this->moduleUniqueID.'/module-users-ui-index.js', true)
+            ->addJs('js/cache/'.$this->moduleUniqueID.'/module-users-ui-index-users.js', true)
+            ->addJs('js/pbx/main/form.js', true)
+            ->addJs('js/cache/'.$this->moduleUniqueID.'/module-users-ui-index-ldap.js', true);
 
         $headerCollectionCSS = $this->assets->collection(AssetProvider::HEADER_CSS);
         $headerCollectionCSS
             ->addCss('css/vendor/datatable/dataTables.semanticui.min.css', true)
-            ->addCss("css/cache/{$this->moduleUniqueID}/module-users-ui.css", true);
+            ->addCss('css/cache/'.$this->moduleUniqueID.'/module-users-ui.css', true);
 
         $parameters = [
             'models'     => [
