@@ -119,19 +119,19 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
     }
 
     /**
-     * This method is called from BaseController's onAfterExecuteRoute function and the next
+     * This method is called from RouterProvider's onAfterExecuteRoute function and the next
      * on UsersUIConf method onAfterExecuteRoute
      *
      * It handles the parent form submission and updates the user credentials.
      *
-     * @param ExtensionsController $controller The controller object.
+     * @param array $postData The post data
      *
      * @return void
      */
-    public function saveUserCredential(ExtensionsController $controller)
+    public function saveUserCredential(array $postData)
     {
         // Get the current user ID from the request
-        $currentUserId = $controller->request->getPost('user_id');
+        $currentUserId = $postData['user_id'];
 
         // If the current user ID is not set, return
         if (!isset($currentUserId)) {
@@ -139,10 +139,10 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
         }
 
         // Get the access group, user login, and user password from the request
-        $accessGroup = $controller->request->getPost('module_users_ui_access_group');
-        $userLogin = $controller->request->getPost('module_users_ui_login');
-        $userUseLdapAuth = $controller->request->getPost('module_users_ui_use_ldap_auth');
-        $userPassword = $controller->request->getPost('module_users_ui_password');
+        $accessGroup = $postData['module_users_ui_access_group']??'';
+        $userLogin = $postData['module_users_ui_login']??'';
+        $userUseLdapAuth = $postData['module_users_ui_use_ldap_auth']??'';
+        $userPassword = $postData['module_users_ui_password']??'';
 
         // Find the user credentials based on the parameters
         $groupMember = $this->findCreateNewUserCredential($currentUserId);
