@@ -179,8 +179,8 @@ class UsersUIConf extends ConfigClass
         if ($calledUrl!=='/api/extensions/saveRecord') {
             return;
         }
-        $isAllowed = $this->di->get(SecurityPluginProvider::SERVICE_NAME, [UsersCredentialsController::class,'changeUserCredentials']);
-        if ($isAllowed) {
+        $response = json_decode($app->response->getContent());
+        if (!empty($response->result) and $response->result===true){
             $userController = new UsersCredentialsController();
             $postData = $app->request->getPost();
             $userController->saveUserCredential($postData);
