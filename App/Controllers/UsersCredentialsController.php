@@ -174,7 +174,7 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
         }
 
         // Save the updated user credentials
-        $this->saveEntity($groupMember);
+        $groupMember->save();
     }
 
     /**
