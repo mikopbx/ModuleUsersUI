@@ -21,8 +21,8 @@ namespace Modules\ModuleUsersUI\Lib;
 
 use LdapRecord\Auth\Events\Failed;
 use LdapRecord\Container;
+use MikoPBX\Common\Handlers\CriticalErrorsHandler;
 use MikoPBX\Common\Providers\LoggerAuthProvider;
-use MikoPBX\Core\System\Util;
 
 include_once __DIR__.'/../vendor/autoload.php';
 
@@ -112,9 +112,7 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
                 }
             }
         } catch (\Throwable $e) {
-            global $errorLogger;
-            $errorLogger->captureException($e);
-            Util::sysLogMsg("UsersUILdapAuth_EXCEPTION", $e->getMessage(), LOG_ERR);
+            CriticalErrorsHandler::handleExceptionWithSyslog($e);
             $message = $e->getMessage();
         }
 
@@ -185,9 +183,7 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
             });
 
         } catch (\Throwable $e) {
-            global $errorLogger;
-            $errorLogger->captureException($e);
-            Util::sysLogMsg("UsersUILdapAuth_EXCEPTION", $e->getMessage(), LOG_ERR);
+            CriticalErrorsHandler::handleExceptionWithSyslog($e);
             $message = $e->getMessage();
         }
 

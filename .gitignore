@@ -1,1 +1,4 @@
 vendor/
+db/module.db
+.DS_Store
+db/module.db

@@ -32,11 +32,11 @@ class LdapConfigForm extends BaseForm
     {
 
         // UseLdapAuthMethod
-        $cheskArr = [];
+        $checkArr = [];
         if ($entity->useLdapAuthMethod === '1') {
-            $cheskArr['checked'] = 'checked';
+            $checkArr['checked'] = 'checked';
         }
-        $this->add(new Check('useLdapAuthMethod', $cheskArr));
+        $this->add(new Check('useLdapAuthMethod', $checkArr));
 
         // ServerHost
         $this->add(new Text('serverName', ['placeholder' =>'dc1.domain.com']));

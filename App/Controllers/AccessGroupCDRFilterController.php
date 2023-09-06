@@ -99,13 +99,13 @@ class AccessGroupCDRFilterController extends ModuleUsersUIBaseController
                         $extensionTable[$extension->userid]['mobile'] = '';
                     }
 
-                    $extensionTable[$extension->userid]['avatar'] = "{$this->url->get()}assets/img/unknownPerson.jpg";
+                    $extensionTable[$extension->userid]['avatar'] = $this->url->get().'assets/img/unknownPerson.jpg';
                     if ($extension->avatar) {
                         $filename = md5($extension->avatar);
                         $imgCacheDir = appPath('sites/admin-cabinet/assets/img/cache');
                         $imgFile = "{$imgCacheDir}/{$filename}.jpg";
                         if (file_exists($imgFile)) {
-                            $extensionTable[$extension->userid]['avatar'] = "{$this->url->get()}assets/img/cache/{$filename}.jpg";
+                            $extensionTable[$extension->userid]['avatar'] = $this->url->get()."assets/img/cache/{$filename}.jpg";
                         }
                     }
                     break;

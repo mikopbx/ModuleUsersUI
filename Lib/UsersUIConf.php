@@ -26,9 +26,7 @@ use MikoPBX\AdminCabinet\Providers\AssetProvider;
 use MikoPBX\AdminCabinet\Providers\SecurityPluginProvider;
 use MikoPBX\Common\Providers\AclProvider;
 use MikoPBX\Common\Providers\SessionProvider;
-use MikoPBX\Core\System\System;
 use MikoPBX\Modules\Config\ConfigClass;
-use Modules\ModuleBackup\Models\BackupRules;
 use Modules\ModuleUsersUI\App\Controllers\UsersCredentialsController;
 use Modules\ModuleUsersUI\App\Forms\ExtensionEditAdditionalForm;
 use Modules\ModuleUsersUI\Models\AccessGroups;
@@ -36,8 +34,8 @@ use Modules\ModuleUsersUI\Models\AccessGroupsRights;
 use Phalcon\Acl\Adapter\Memory as AclList;
 use Phalcon\Assets\Manager;
 use Phalcon\Forms\Form;
-use Phalcon\Mvc\Controller;
 use Phalcon\Mvc\Dispatcher;
+use Phalcon\Mvc\Micro;
 use Phalcon\Mvc\View;
 
 class UsersUIConf extends ConfigClass
@@ -149,13 +147,14 @@ class UsersUIConf extends ConfigClass
      * Called from BaseController before executing a route.
      * @see https://docs.mikopbx.com/mikopbx-development/module-developement/module-class#onbeforeexecuteroute
      *
-     * @param Controller $controller The called controller instance.
+     * @param Dispatcher $dispatcher The dispatcher instance.
      *
      * @return void
      */
-    public function onBeforeExecuteRoute(Controller $controller):void{
+    public function onBeforeExecuteRoute(Dispatcher $dispatcher):void{
+        $controller = $dispatcher->getActiveController();
         if (is_a($controller, ExtensionsController::class)
-            && $controller->dispatcher->getActionName() === 'modify'
+            && $dispatcher->getActionName() === 'modify'
         ) {
             $controller->view->addCustomTabFromModuleUsersUI =
                 $this->di->get(SecurityPluginProvider::SERVICE_NAME, [UsersCredentialsController::class,'changeUserCredentials']);
@@ -163,25 +162,25 @@ class UsersUIConf extends ConfigClass
     }
 
     /**
-     * This method is called from BaseController's onAfterExecuteRoute function.
+     * This method is called from RouterProvider's onAfterExecuteRoute function.
      * It handles the form submission and updates the user credentials.
      *
-     * @param Controller $controller The controller object.
+     * @param Micro $app The micro application instance.
      *
      * @return void
      */
-    public function onAfterExecuteRoute(Controller $controller): void
+    public function onAfterExecuteRestAPIRoute(Micro $app): void
     {
         // Intercept the form submission of Extensions, only save action
-        if (! (is_a($controller, ExtensionsController::class)
-                && $controller->dispatcher->getActionName() === 'save')
-        ) {
+        $calledUrl = $app->request->get('_url');
+        if ($calledUrl!=='/api/extensions/saveRecord') {
             return;
         }
-        $isAllowed = $this->di->get(SecurityPluginProvider::SERVICE_NAME, [UsersCredentialsController::class,'changeUserCredentials']);
-        if ($isAllowed) {
+        $response = json_decode($app->response->getContent());
+        if (!empty($response->result) and $response->result===true){
             $userController = new UsersCredentialsController();
-            $userController->saveUserCredential($controller);
+            $postData = $app->request->getPost();
+            $userController->saveUserCredential($postData);
         }
     }
 

@@ -35,15 +35,12 @@ use Phalcon\Forms\Element\Text;
 
 class ExtensionEditAdditionalForm extends BaseForm
 {
-  public static function prepareAdditionalFields(ExtensionEditForm $form, Extensions $entity, array $options = []){
-      // Prepare saved data from module database
-      $currentUserId = $entity->userid;
-
+  public static function prepareAdditionalFields(ExtensionEditForm $form, \stdClass $entity, array $options = []){
       // Set parameters for the database query
       $parameters = [
           'conditions' => 'user_id = :user_id:',
           'bind' => [
-              'user_id' => $currentUserId,
+              'user_id' => $entity->user_id,
           ]
       ];
 

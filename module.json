@@ -3,7 +3,7 @@
   "moduleUniqueID":"ModuleUsersUI",
   "support_email": "help@miko.ru",
   "version": "%ModuleVersion%",
-  "min_pbx_version": "2023.2.126",
+  "min_pbx_version": "2023.2.168",
   "lic_product_id": 127,
   "lic_feature_id": 51,
   "wiki_links": {

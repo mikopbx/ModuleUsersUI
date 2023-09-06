@@ -46,9 +46,7 @@ use MikoPBX\AdminCabinet\Controllers\SystemDiagnosticController;
 use MikoPBX\AdminCabinet\Controllers\TimeSettingsController;
 use MikoPBX\AdminCabinet\Controllers\TopMenuSearchController;
 use MikoPBX\AdminCabinet\Controllers\UpdateController;
-use MikoPBX\AdminCabinet\Controllers\UsersController;
 use MikoPBX\AdminCabinet\Controllers\WikiLinksController;
-use MikoPBX\Common\Models\Users;
 use Modules\ModuleUsersUI\App\Controllers\AccessGroupsController;
 use Modules\ModuleUsersUI\App\Controllers\LdapConfigController;
 use Modules\ModuleUsersUI\App\Controllers\ModuleUsersUIController;
@@ -115,11 +113,11 @@ class UsersUIACL extends \Phalcon\Di\Injectable
                 }
 
                 // Process linked controllers and their actions
-                if (array_key_exists($aclFromModule->controller, $linkedControllersActions)){
-                    foreach ($linkedControllersActions[$aclFromModule->controller] as $mainAction=>$linkedControllers){
-                        if ($allowedActions==='*'
-                            || is_array($allowedActions) && in_array($mainAction, $allowedActions)){
-                            foreach ($linkedControllers as $linkedController=>$linkedActions){
+                if (array_key_exists($aclFromModule->controller, $linkedControllersActions)) {
+                    foreach ($linkedControllersActions[$aclFromModule->controller] as $mainAction => $linkedControllers) {
+                        if ($allowedActions === '*'
+                            || is_array($allowedActions) && in_array($mainAction, $allowedActions)) {
+                            foreach ($linkedControllers as $linkedController => $linkedActions) {
                                 if (array_key_exists($linkedController, $actionsArray)
                                     && is_array($actionsArray[$linkedController])) {
                                     // Merge linked actions with existing actions for the linked actions
@@ -186,6 +184,134 @@ class UsersUIACL extends \Phalcon\Di\Injectable
     }
 
     /**
+     * Prepares list of linked controllers to other controllers to hide it from UI
+     * and allow or disallow with the main one.
+     * @return array[]
+     */
+    public static function getLinkedControllersActions(): array
+    {
+        return [
+            RestartController::class => [
+                'index' => [
+                    '/pbxcore/api/cdr' => [
+                        '/getActiveChannels',
+                        '/getActiveCalls'
+                    ]
+                ]
+            ],
+            CallDetailRecordsController::class => [
+                'index' => [
+                    CallDetailRecordsController::class => [
+                        'getNewRecords',
+                    ],
+                    '/pbxcore/api/cdr' => [
+                        '/v2/playback',
+                        '/playback',
+                        '/v2/getRecordFile'
+                    ]
+                ]
+            ],
+            SoundFilesController::class => [
+                'index' => [
+                    '/pbxcore/api/cdr' => [
+                        '/v2/playback',
+                        '/v2/getRecordFile'
+                    ]
+                ],
+                'save' => [
+                    '/pbxcore/api/files' => [
+                        '/uploadFile'
+                    ]
+                ],
+                'delete' => [
+                    '/pbxcore/api/files' => [
+                        '/removeAudioFile'
+                    ]
+                ]
+            ],
+            IvrMenuController::class => [
+                'modify' => [
+                    '/pbxcore/api/cdr' => [
+                        '/v2/playback',
+                        '/v2/getRecordFile'
+                    ]
+                ]
+            ],
+            CallQueuesController::class => [
+                'modify' => [
+                    '/pbxcore/api/cdr' => [
+                        '/v2/playback',
+                        '/v2/getRecordFile'
+                    ]
+                ]
+            ],
+            GeneralSettingsController::class => [
+                'modify' => [
+                    '/pbxcore/api/cdr' => [
+                        '/v2/playback',
+                        '/v2/getRecordFile'
+                    ]
+                ]
+            ],
+            ProvidersController::class => [
+                'index' => [
+                    '/pbxcore/api/iax' => [
+                        '/getRegistry'
+                    ]
+                ],
+                'modifyiax' => [
+                    '/pbxcore/api/iax' => [
+                        '/getRegistry'
+                    ]
+                ],
+                'modifysip' => [
+                    '/pbxcore/api/sip' => [
+                        '/getRegistry'
+                    ]
+                ],
+                'save' => [
+                    ProvidersController::class => [
+                        'enable',
+                        'disable'
+                    ]
+                ]
+            ],
+            ExtensionsController::class =>
+                [
+                    'index' => [
+                        '/pbxcore/api/sip' => [
+                            '/getPeersStatuses'
+                        ]
+                    ],
+                    'modify' => [
+                        '/pbxcore/api/sip' => [
+                            '/getSipPeer'
+                        ],
+                        '/pbxcore/api/extensions' => [
+                            '/getRecord',
+                            '/saveRecord',
+                            '/deleteRecord'
+                        ]
+                    ],
+                ],
+            IncomingRoutesController::class => [
+                'save' => [
+                    IncomingRoutesController::class => [
+                        'changePriority'
+                    ]
+                ]
+            ],
+            OutboundRoutesController::class => [
+                'save' => [
+                    OutboundRoutesController::class => [
+                        'changePriority'
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    /**
      * Returns list of controllers that are always allowed
      * @return array
      */
@@ -196,30 +322,28 @@ class UsersUIACL extends \Phalcon\Di\Injectable
                 'available',
             ],
             ErrorsController::class => '*',
-            ExtensionsController::class => [
-                'GetPhoneRepresent',
-                'GetPhonesRepresent',
-                'available',
-                'disable',
-                'enable',
-                'getForSelect'
-            ],
             LocalizationController::class => '*',
-            LanguageController::class=> '*',
+            LanguageController::class => '*',
             SessionController::class => '*',
-            SoundFilesController::class=>[
+            SoundFilesController::class => [
                 'getPathById',
                 'getSoundFiles'
             ],
             TopMenuSearchController::class => '*',
             WikiLinksController::class => '*',
-            UsersController::class=>[
-                'available'
+            '/pbxcore/api/extensions' => [
+                '/getForSelect',
+                '/available',
+                '/getPhoneRepresent',
+                '/getPhonesRepresent'
             ],
-            '/pbxcore/api/files'=>[
+            '/pbxcore/api/users' => [
+                '/available',
+            ],
+            '/pbxcore/api/files' => [
                 '/statusUpload',
             ],
-            '/pbxcore/api/system'=>[
+            '/pbxcore/api/system' => [
                 '/convertAudioFile',
                 '/ping',
             ],
@@ -239,31 +363,30 @@ class UsersUIACL extends \Phalcon\Di\Injectable
         return [
             // AdminCabinet controllers
             ConsoleController::class => '*',
-            CustomFilesController::class=>'*',
-            Fail2BanController::class=>'*',
-            FirewallController::class=>'*',
-            GeneralSettingsController::class=>'*',
+            CustomFilesController::class => '*',
+            Fail2BanController::class => '*',
+            FirewallController::class => '*',
+            GeneralSettingsController::class => '*',
             LicensingController::class => '*',
-            MailSettingsController::class=>'*',
-            NetworkController::class=>'*',
-            PbxExtensionModulesController::class=> '*',
-            RestartController::class  => '*',
-            SystemDiagnosticController::class=> '*',
-            TimeSettingsController::class=>'*',
+            MailSettingsController::class => '*',
+            NetworkController::class => '*',
+            PbxExtensionModulesController::class => '*',
+            RestartController::class => '*',
+            SystemDiagnosticController::class => '*',
+            TimeSettingsController::class => '*',
             UpdateController::class => '*',
-            UsersController::class => '*',
 
             // CORE REST API
-            '/pbxcore/api/someendpoint'=>'*',
-            '/pbxcore/api/files'=>[
+            '/pbxcore/api/someendpoint' => '*',
+            '/pbxcore/api/files' => [
                 '/firmwareDownloadStatus',
                 '/downloadNewFirmware',
                 '/getFileContent'
             ],
-            '/pbxcore/api/firewall'=>'*',
+            '/pbxcore/api/firewall' => '*',
             '/pbxcore/api/license' => '*',
-            '/pbxcore/api/modules/core'=>'*',
-            '/pbxcore/api/system'=>[
+            '/pbxcore/api/modules/core' => '*',
+            '/pbxcore/api/system' => [
                 '/upgrade',
                 '/setDate',
                 '/reboot',
@@ -273,143 +396,20 @@ class UsersUIACL extends \Phalcon\Di\Injectable
                 '/restoreDefault',
                 '/sendMail'
             ],
-            '/pbxcore/api/syslog'=> '*',
-            '/pbxcore/api/sysinfo'=>'*',
-            '/pbxcore/api/storage'=>'*',
+            '/pbxcore/api/syslog' => '*',
+            '/pbxcore/api/sysinfo' => '*',
+            '/pbxcore/api/storage' => '*',
             '/pbxcore/api/advices' => [
                 '/getList',
             ],
 
             // Module UsersUI
-            AccessGroupsController::class=> '*',
-            LdapConfigController::class=> '*',
-            ModuleUsersUIController::class=>'*',
-            UsersCredentialsController::class=>'*',
-            '/pbxcore/api/modules/module-users-u-i'=>'*',
+            AccessGroupsController::class => '*',
+            LdapConfigController::class => '*',
+            ModuleUsersUIController::class => '*',
+            UsersCredentialsController::class => '*',
+            '/pbxcore/api/modules/module-users-u-i' => '*',
 
-        ];
-    }
-
-    /**
-     * Prepares list of linked controllers to other controllers to hide it from UI
-     * and allow or disallow with the main one.
-     * @return array[]
-     */
-    public static function getLinkedControllersActions(): array
-    {
-        return [
-            RestartController::class => [
-                'index'=>[
-                    '/pbxcore/api/cdr'=>[
-                        '/getActiveChannels',
-                        '/getActiveCalls'
-                    ]
-                ]
-            ],
-            CallDetailRecordsController::class=>[
-                'index'=>[
-                    CallDetailRecordsController::class=>[
-                        'getNewRecords',
-                    ],
-                    '/pbxcore/api/cdr'=>[
-                        '/v2/playback',
-                        '/playback',
-                        '/v2/getRecordFile'
-                    ]
-                ]
-            ],
-            SoundFilesController::class=>[
-                'index'=>[
-                    '/pbxcore/api/cdr'=>[
-                        '/v2/playback',
-                        '/v2/getRecordFile'
-                    ]
-                ],
-                'save' =>[
-                    '/pbxcore/api/files'=>[
-                        '/uploadFile'
-                    ]
-                ],
-                'delete' =>[
-                    '/pbxcore/api/files'=>[
-                        '/removeAudioFile'
-                    ]
-                ]
-            ],
-            IvrMenuController::class=>[
-                'modify'=>[
-                    '/pbxcore/api/cdr'=>[
-                        '/v2/playback',
-                        '/v2/getRecordFile'
-                    ]
-                ]
-            ],
-            CallQueuesController::class=>[
-                'modify'=>[
-                    '/pbxcore/api/cdr'=>[
-                        '/v2/playback',
-                        '/v2/getRecordFile'
-                    ]
-                ]
-            ],
-            GeneralSettingsController::class=>[
-                'modify'=>[
-                    '/pbxcore/api/cdr'=>[
-                        '/v2/playback',
-                        '/v2/getRecordFile'
-                    ]
-                ]
-            ],
-            ProvidersController::class=>[
-                'index'=>[
-                    '/pbxcore/api/iax'=>[
-                        '/getRegistry'
-                     ]
-                ],
-                'modifyiax'=>[
-                    '/pbxcore/api/iax'=>[
-                        '/getRegistry'
-                    ]
-                ],
-                'modifysip'=>[
-                    '/pbxcore/api/sip'=>[
-                        '/getRegistry'
-                    ]
-                ],
-                'save'=>[
-                    ProvidersController::class=>[
-                        'enable',
-                        'disable'
-                    ]
-                ]
-            ],
-            ExtensionsController::class=>
-            [
-                'index'=>[
-                    '/pbxcore/api/sip'=>[
-                        '/getPeersStatuses'
-                    ]
-                ],
-                'modify'=>[
-                    '/pbxcore/api/sip'=>[
-                        '/getSipPeer'
-                    ]
-                ],
-            ],
-            IncomingRoutesController::class=>[
-                'save'=>[
-                    IncomingRoutesController::class=>[
-                        'changePriority'
-                    ]
-                ]
-            ],
-            OutboundRoutesController::class=>[
-                'save'=>[
-                    OutboundRoutesController::class=>[
-                        'changePriority'
-                    ]
-                ]
-            ]
         ];
     }
 }
