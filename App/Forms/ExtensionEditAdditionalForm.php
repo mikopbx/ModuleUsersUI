@@ -35,7 +35,7 @@ use Phalcon\Forms\Element\Text;
 
 class ExtensionEditAdditionalForm extends BaseForm
 {
-  public static function prepareAdditionalFields(ExtensionEditForm $form, \stdClass $entity, array $options = []){
+  public static function prepareAdditionalFields(ExtensionEditForm $form, \stdClass $entity, /** @scrutinizer ignore-unused */ array $options = []){
       // Set parameters for the database query
       $parameters = [
           'conditions' => 'user_id = :user_id:',
@@ -83,6 +83,7 @@ class ExtensionEditAdditionalForm extends BaseForm
 
       // Retrieve all access groups from the database
       $accessGroups = AccessGroups::find();
+      $accessGroupsForSelect = [];
       $accessGroupsForSelect[Constants::NO_ACCESS_GROUP_ID] = $form->translation->_('module_usersui_NoAccessGroupName');
 
       // Prepare the access groups data for a Select form element

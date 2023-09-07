@@ -31,6 +31,9 @@ use Phalcon\Forms\Element\Hidden;
 use Phalcon\Forms\Element\Select;
 
 
+/**
+ * @property \MikoPBX\Common\Providers\TranslationProvider translation
+ */
 class AccessGroupForm extends BaseForm
 {
 

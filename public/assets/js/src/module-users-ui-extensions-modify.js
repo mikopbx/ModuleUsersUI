@@ -16,6 +16,8 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
+/** global: globalRootUrl */
+
 /**
  * ExtensionCredentialsTab module for managing extension credentials tab.
  * @module ExtensionCredentialsTab

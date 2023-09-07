@@ -26,6 +26,9 @@ use MikoPBX\Common\Providers\LoggerAuthProvider;
 
 include_once __DIR__.'/../vendor/autoload.php';
 
+/**
+ * @property \MikoPBX\Common\Providers\TranslationProvider translation
+ */
 class UsersUILdapAuth extends \Phalcon\Di\Injectable
 {
     private string $serverName;

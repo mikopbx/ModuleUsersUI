@@ -462,7 +462,7 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
             foreach ($modules['controllers'] as $controller) {
                 // Create a new access group right object
                 $accessGroupRight = new AccessGroupsRights();
-                $accessGroupRight->group_id = $accessGroupId;
+                $accessGroupRight->group_id = intval($accessGroupId);
                 $accessGroupRight->module_id = $modules['module'];
                 $accessGroupRight->controller = $controller['controller'];
                 $accessGroupRight->actions = json_encode($controller['actions']);

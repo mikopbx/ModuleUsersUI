@@ -145,7 +145,7 @@ class AccessGroupCDRFilterController extends ModuleUsersUIBaseController
         // Save new group filter
         foreach ($cdrFilterUsers as $user) {
             $record = new AccessGroupCDRFilter();
-            $record->group_id = $accessGroupId;
+            $record->group_id = intval($accessGroupId);
             $record->user_id = $user;
             if (!$this->saveEntity($record)) {
                 return false;
@@ -154,5 +154,3 @@ class AccessGroupCDRFilterController extends ModuleUsersUIBaseController
         return true;
     }
 }
-
-

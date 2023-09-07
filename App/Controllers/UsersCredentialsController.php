@@ -216,7 +216,7 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
         $groupMember = UsersCredentials::findFirst($parameters);
         if ($groupMember === null) {
             $groupMember = new UsersCredentials();
-            $groupMember->user_id = $userId;
+            $groupMember->user_id = intval($userId);
             $groupMember->user_login = "User{$userId}";
         }
         return $groupMember;

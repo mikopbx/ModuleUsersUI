@@ -16,7 +16,7 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* global SemanticLocalization, globalRootUrl */
+/* global SemanticLocalization, globalRootUrl, moduleUsersUiIndexLdap, UserMessage */
 
 const ModuleUsersUIUsersTab = {
 
