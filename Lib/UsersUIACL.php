@@ -22,6 +22,7 @@ namespace Modules\ModuleUsersUI\Lib;
 use MikoPBX\AdminCabinet\Controllers\AsteriskManagersController;
 use MikoPBX\AdminCabinet\Controllers\CallDetailRecordsController;
 use MikoPBX\AdminCabinet\Controllers\CallQueuesController;
+use MikoPBX\AdminCabinet\Controllers\ConferenceRoomsController;
 use MikoPBX\AdminCabinet\Controllers\ConsoleController;
 use MikoPBX\AdminCabinet\Controllers\CustomFilesController;
 use MikoPBX\AdminCabinet\Controllers\ErrorsController;
@@ -47,6 +48,7 @@ use MikoPBX\AdminCabinet\Controllers\TimeSettingsController;
 use MikoPBX\AdminCabinet\Controllers\TopMenuSearchController;
 use MikoPBX\AdminCabinet\Controllers\UpdateController;
 use MikoPBX\AdminCabinet\Controllers\WikiLinksController;
+use MikoPBX\Common\Models\DialplanApplications;
 use Modules\ModuleUsersUI\App\Controllers\AccessGroupsController;
 use Modules\ModuleUsersUI\App\Controllers\LdapConfigController;
 use Modules\ModuleUsersUI\App\Controllers\ModuleUsersUIController;
@@ -186,16 +188,17 @@ class UsersUIACL extends \Phalcon\Di\Injectable
     /**
      * Prepares list of linked controllers to other controllers to hide it from UI
      * and allow or disallow with the main one.
+     *
      * @return array[]
      */
     public static function getLinkedControllersActions(): array
     {
         return [
             RestartController::class => [
-                'index' => [
+                'index' => [ // if index allowed
                     '/pbxcore/api/cdr' => [
-                        '/getActiveChannels',
-                        '/getActiveCalls'
+                        '/getActiveChannels', // Then this action allowed as well
+                        '/getActiveCalls' // And this action allowed as well
                     ]
                 ]
             ],
@@ -234,6 +237,9 @@ class UsersUIACL extends \Phalcon\Di\Injectable
                     '/pbxcore/api/cdr' => [
                         '/v2/playback',
                         '/v2/getRecordFile'
+                    ],
+                    '/pbxcore/api/ivr-menu'=>[
+                        '/deleteRecord'
                     ]
                 ]
             ],
@@ -242,6 +248,9 @@ class UsersUIACL extends \Phalcon\Di\Injectable
                     '/pbxcore/api/cdr' => [
                         '/v2/playback',
                         '/v2/getRecordFile'
+                    ],
+                    '/pbxcore/api/call-queues'=>[
+                        '/deleteRecord'
                     ]
                 ]
             ],
@@ -307,6 +316,20 @@ class UsersUIACL extends \Phalcon\Di\Injectable
                         'changePriority'
                     ]
                 ]
+            ],
+            ConferenceRoomsController::class => [
+                'modify' => [
+                    '/pbxcore/api/conference-rooms' => [
+                        '/deleteRecord'
+                    ],
+                ],
+            ],
+            DialplanApplications::class => [
+                'modify' => [
+                    '/pbxcore/api/dialplan-applications' => [
+                        '/deleteRecord'
+                    ],
+                ],
             ]
         ];
     }
