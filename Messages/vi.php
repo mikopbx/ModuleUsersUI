@@ -110,7 +110,6 @@ return [
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_modify' => 'mở thẻ tập tin',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_save' => 'thay đổi hoặc thêm tệp âm thanh',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_delete' => 'xóa bỏ',
-    'module_usersui_CheckBox_enable' => 'bao hàm',
     'module_usersui_AppTypeREST' => 'Truy cập API REST',
     'module_usersui_AppTypeAPP' => 'Truy cập vào các phần giao diện',
     'module_usersui_ldap_user_not_found' => 'Không tìm thấy người dùng',
