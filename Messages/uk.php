@@ -142,4 +142,5 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'У модулі ще не створено жодної групи доступу',
     'module_usersui_AddNewAccessGroupShort' => 'Створити',
     'module_usersui_LoginNameNotUnique' => 'Не унікальне ім\'я користувача',
+    'module_usersui_SelectMemberToAddToGroup' => 'Виберіть співробітника, щоб додати до поточної групи',
 ];
