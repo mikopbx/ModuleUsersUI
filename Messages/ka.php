@@ -142,4 +142,5 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'მოდულში წვდომის ჯგუფები ჯერ არ შექმნილა',
     'module_usersui_AddNewAccessGroupShort' => 'Შექმნა',
     'module_usersui_LoginNameNotUnique' => 'არ არის უნიკალური მომხმარებლის სახელი',
+    'module_usersui_SelectMemberToAddToGroup' => 'აირჩიეთ თანამშრომელი მიმდინარე ჯგუფში დასამატებლად',
 ];
