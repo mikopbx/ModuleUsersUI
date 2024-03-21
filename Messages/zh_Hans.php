@@ -142,4 +142,5 @@ return [
     'module_usersui_NoAnyAccessGroup' => '模块中尚未创建访问组',
     'module_usersui_AddNewAccessGroupShort' => '创造',
     'module_usersui_LoginNameNotUnique' => '不是唯一的用户名',
+    'module_usersui_SelectMemberToAddToGroup' => '选择要添加到当前组的员工',
 ];
