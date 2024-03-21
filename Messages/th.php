@@ -159,4 +159,5 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'ยังไม่มีการสร้างกลุ่มการเข้าถึงในโมดูล',
     'module_usersui_AddNewAccessGroupShort' => 'สร้าง',
     'module_usersui_LoginNameNotUnique' => 'ไม่ใช่ชื่อผู้ใช้ที่ไม่ซ้ำใคร',
+    'module_usersui_SelectMemberToAddToGroup' => 'เลือกพนักงานที่จะเพิ่มเข้าในกลุ่มปัจจุบัน',
 ];
