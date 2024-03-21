@@ -110,7 +110,6 @@ return [
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_modify' => 'tarjeta de archivo abierto',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_save' => 'cambiar o agregar archivo de audio',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_delete' => 'borrar',
-    'module_usersui_CheckBox_enable' => 'inclusión',
     'module_usersui_AppTypeREST' => 'Acceso a la API REST',
     'module_usersui_AppTypeAPP' => 'Acceso a las secciones de la interfaz',
     'module_usersui_ldap_user_not_found' => 'No se encuentra el usuario',

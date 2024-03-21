@@ -110,7 +110,6 @@ return [
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_modify' => 'ファイルカードを開く',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_save' => '音声ファイルを変更または追加する',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_delete' => '消去',
-    'module_usersui_CheckBox_enable' => '包含',
     'module_usersui_AppTypeREST' => 'REST APIアクセス',
     'module_usersui_AppTypeAPP' => 'インターフェースセクションへのアクセス',
     'module_usersui_ldap_user_not_found' => 'ユーザーが見つかりません',

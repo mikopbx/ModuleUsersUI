@@ -110,7 +110,6 @@ return [
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_modify' => 'ανοιχτή κάρτα αρχείου',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_save' => 'αλλαγή ή προσθήκη αρχείου ήχου',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_delete' => 'διαγράφω',
-    'module_usersui_CheckBox_enable' => 'συμπερίληψη',
     'module_usersui_AppTypeREST' => 'Πρόσβαση στο API REST',
     'module_usersui_AppTypeAPP' => 'Πρόσβαση σε ενότητες διεπαφής',
     'module_usersui_ldap_user_not_found' => 'Ο χρήστης δεν βρέθηκε',

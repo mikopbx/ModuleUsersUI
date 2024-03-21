@@ -110,7 +110,6 @@ return [
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_modify' => 'Karteikarte öffnen',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_save' => 'Audiodatei ändern oder hinzufügen',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_delete' => 'löschen',
-    'module_usersui_CheckBox_enable' => 'Aufnahme',
     'module_usersui_AppTypeREST' => 'REST-API-Zugriff',
     'module_usersui_AppTypeAPP' => 'Zugriff auf Schnittstellenabschnitte',
     'module_usersui_ldap_user_not_found' => 'Benutzer wurde nicht gefunden',

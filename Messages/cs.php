@@ -110,7 +110,6 @@ return [
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_modify' => 'otevřít kartotéku',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_save' => 'změnit nebo přidat zvukový soubor',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_delete' => 'vymazat',
-    'module_usersui_CheckBox_enable' => 'zařazení',
     'module_usersui_AppTypeREST' => 'Přístup k REST API',
     'module_usersui_AppTypeAPP' => 'Přístup k sekcím rozhraní',
     'module_usersui_ldap_user_not_found' => 'Uživatel nebyl nalezen',
