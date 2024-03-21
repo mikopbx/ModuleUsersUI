@@ -142,4 +142,5 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'Modülde henüz erişim grubu oluşturulmadı',
     'module_usersui_AddNewAccessGroupShort' => 'Yaratmak',
     'module_usersui_LoginNameNotUnique' => 'Benzersiz bir kullanıcı adı değil',
+    'module_usersui_SelectMemberToAddToGroup' => 'Mevcut gruba eklenecek bir çalışan seçin',
 ];
