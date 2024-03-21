@@ -142,4 +142,5 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'V modulu zatím nebyly vytvořeny žádné přístupové skupiny',
     'module_usersui_AddNewAccessGroupShort' => 'Vytvořit',
     'module_usersui_LoginNameNotUnique' => 'Nejedná se o jedinečné uživatelské jméno',
+    'module_usersui_SelectMemberToAddToGroup' => 'Vyberte zaměstnance, kterého chcete přidat do aktuální skupiny',
 ];
