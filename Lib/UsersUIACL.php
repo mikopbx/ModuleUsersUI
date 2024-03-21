@@ -19,6 +19,7 @@
 
 namespace Modules\ModuleUsersUI\Lib;
 
+use MikoPBX\Common\Handlers\CriticalErrorsHandler;
 use MikoPBX\Common\Models\PbxExtensionModules;
 use MikoPBX\Common\Providers\PBXConfModulesProvider;
 use Modules\ModuleUsersUI\Lib\ACL\CoreACL;
@@ -204,7 +205,15 @@ class UsersUIACL extends \Phalcon\Di\Injectable
         foreach ($modules as $module) {
             $className =  "Modules\\ModuleUsersUI\\Lib\ACL\\{$module['uniqid']}ACL";
             if (class_exists($className) and method_exists($className, $methodName)) {
-                $rules = array_merge($rules, $className::$methodName());
+                try{
+                    $rulesFromModule = $className::$methodName();
+                } catch (\Throwable $e) {
+                    CriticalErrorsHandler::handleException($e);
+                    continue; // skip if module is not installed or has no ACL class.
+                }
+                if (is_array($rulesFromModule)) {
+                    $rules = array_merge($rules, $rulesFromModule);
+                }
             }
         }
         return $rules;
