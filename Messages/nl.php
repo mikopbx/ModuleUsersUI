@@ -142,4 +142,5 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'Er zijn nog geen toegangsgroepen aangemaakt in de module',
     'module_usersui_AddNewAccessGroupShort' => 'Creëren',
     'module_usersui_LoginNameNotUnique' => 'Geen unieke gebruikersnaam',
+    'module_usersui_SelectMemberToAddToGroup' => 'Selecteer een medewerker om toe te voegen aan de huidige groep',
 ];
