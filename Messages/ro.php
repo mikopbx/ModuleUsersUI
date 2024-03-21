@@ -142,4 +142,5 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'Nu au fost create încă grupuri de acces în modul',
     'module_usersui_AddNewAccessGroupShort' => 'Crea',
     'module_usersui_LoginNameNotUnique' => 'Nu este un nume de utilizator unic',
+    'module_usersui_SelectMemberToAddToGroup' => 'Selectați un angajat pe care să îl adăugați la grupul curent',
 ];
