@@ -142,4 +142,5 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'Modulda hələ heç bir giriş qrupu yaradılmayıb',
     'module_usersui_AddNewAccessGroupShort' => 'Yaradın',
     'module_usersui_LoginNameNotUnique' => 'Unikal istifadəçi adı deyil',
+    'module_usersui_SelectMemberToAddToGroup' => 'Cari qrupa əlavə etmək üçün işçi seçin',
 ];
