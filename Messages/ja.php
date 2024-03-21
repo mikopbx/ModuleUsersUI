@@ -142,4 +142,5 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'モジュール内にアクセス グループがまだ作成されていません',
     'module_usersui_AddNewAccessGroupShort' => '作成',
     'module_usersui_LoginNameNotUnique' => '一意のユーザー名ではない',
+    'module_usersui_SelectMemberToAddToGroup' => '現在のグループに追加する従業員を選択してください',
 ];
