@@ -142,4 +142,5 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'Chưa có nhóm truy cập nào được tạo trong mô-đun',
     'module_usersui_AddNewAccessGroupShort' => 'Tạo nên',
     'module_usersui_LoginNameNotUnique' => 'Không phải tên người dùng duy nhất',
+    'module_usersui_SelectMemberToAddToGroup' => 'Chọn một nhân viên để thêm vào nhóm hiện tại',
 ];
