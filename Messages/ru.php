@@ -161,4 +161,7 @@ return [
     'module_usersui_AddNewAccessGroupShort' => 'Создать',
     'module_usersui_LoginNameNotUnique' => 'Не уникальное имя пользователя',
     'module_usersui_SelectMemberToAddToGroup'=>'Выберите сотрудника для добавления в текущую группу',
+    'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' =>'настройка Zabbix агента',
+    'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index'=>'настройка модуля',
+    'module_usersui_CheckBox_CTIClient_ModuleCTIClient_index'=>'настройка модуля',
 ];

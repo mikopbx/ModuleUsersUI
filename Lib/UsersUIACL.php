@@ -19,41 +19,9 @@
 
 namespace Modules\ModuleUsersUI\Lib;
 
-use MikoPBX\AdminCabinet\Controllers\AsteriskManagersController;
-use MikoPBX\AdminCabinet\Controllers\CallDetailRecordsController;
-use MikoPBX\AdminCabinet\Controllers\CallQueuesController;
-use MikoPBX\AdminCabinet\Controllers\ConferenceRoomsController;
-use MikoPBX\AdminCabinet\Controllers\ConsoleController;
-use MikoPBX\AdminCabinet\Controllers\CustomFilesController;
-use MikoPBX\AdminCabinet\Controllers\ErrorsController;
-use MikoPBX\AdminCabinet\Controllers\ExtensionsController;
-use MikoPBX\AdminCabinet\Controllers\Fail2BanController;
-use MikoPBX\AdminCabinet\Controllers\FirewallController;
-use MikoPBX\AdminCabinet\Controllers\GeneralSettingsController;
-use MikoPBX\AdminCabinet\Controllers\IncomingRoutesController;
-use MikoPBX\AdminCabinet\Controllers\IvrMenuController;
-use MikoPBX\AdminCabinet\Controllers\LanguageController;
-use MikoPBX\AdminCabinet\Controllers\LicensingController;
-use MikoPBX\AdminCabinet\Controllers\LocalizationController;
-use MikoPBX\AdminCabinet\Controllers\MailSettingsController;
-use MikoPBX\AdminCabinet\Controllers\NetworkController;
-use MikoPBX\AdminCabinet\Controllers\OutboundRoutesController;
-use MikoPBX\AdminCabinet\Controllers\OutOffWorkTimeController;
-use MikoPBX\AdminCabinet\Controllers\PbxExtensionModulesController;
-use MikoPBX\AdminCabinet\Controllers\ProvidersController;
-use MikoPBX\AdminCabinet\Controllers\RestartController;
-use MikoPBX\AdminCabinet\Controllers\SessionController;
-use MikoPBX\AdminCabinet\Controllers\SoundFilesController;
-use MikoPBX\AdminCabinet\Controllers\SystemDiagnosticController;
-use MikoPBX\AdminCabinet\Controllers\TimeSettingsController;
-use MikoPBX\AdminCabinet\Controllers\TopMenuSearchController;
-use MikoPBX\AdminCabinet\Controllers\UpdateController;
-use MikoPBX\AdminCabinet\Controllers\WikiLinksController;
-use MikoPBX\Common\Models\DialplanApplications;
-use Modules\ModuleUsersUI\App\Controllers\AccessGroupsController;
-use Modules\ModuleUsersUI\App\Controllers\LdapConfigController;
-use Modules\ModuleUsersUI\App\Controllers\ModuleUsersUIController;
-use Modules\ModuleUsersUI\App\Controllers\UsersCredentialsController;
+use MikoPBX\Common\Models\PbxExtensionModules;
+use MikoPBX\Common\Providers\PBXConfModulesProvider;
+use Modules\ModuleUsersUI\Lib\ACL\CoreACL;
 use Modules\ModuleUsersUI\Models\AccessGroups;
 use Modules\ModuleUsersUI\Models\AccessGroupsRights;
 use Phalcon\Acl\Adapter\Memory as AclList;
@@ -77,7 +45,7 @@ class UsersUIACL extends \Phalcon\Di\Injectable
 
         $previousRole = null;
         $actionsArray = [];
-        $linkedControllersActions = self::getLinkedControllersActions();
+        $linkedControllerActions = self::getLinkedControllerActions();
         foreach ($aclSettings as $index => $aclFromModule) {
             $role = Constants::MODULE_ROLE_PREFIX . $aclFromModule->accessGroupId;
             $isLastAcl = $index === count($aclSettings) - 1;
@@ -116,8 +84,8 @@ class UsersUIACL extends \Phalcon\Di\Injectable
                 }
 
                 // Process linked controllers and their actions
-                if (array_key_exists($aclFromModule->controller, $linkedControllersActions)) {
-                    foreach ($linkedControllersActions[$aclFromModule->controller] as $mainAction => $linkedControllers) {
+                if (array_key_exists($aclFromModule->controller, $linkedControllerActions)) {
+                    foreach ($linkedControllerActions[$aclFromModule->controller] as $mainAction => $linkedControllers) {
                         if ($allowedActions === '*'
                             || is_array($allowedActions) && in_array($mainAction, $allowedActions)) {
                             foreach ($linkedControllers as $linkedController => $linkedActions) {
@@ -192,158 +160,12 @@ class UsersUIACL extends \Phalcon\Di\Injectable
      *
      * @return array[]
      */
-    public static function getLinkedControllersActions(): array
+    public static function getLinkedControllerActions(): array
     {
-        return [
-            RestartController::class => [
-                'index' => [ // if index allowed
-                    '/pbxcore/api/cdr' => [
-                        '/getActiveChannels', // Then this action allowed as well
-                        '/getActiveCalls' // And this action allowed as well
-                    ]
-                ]
-            ],
-            CallDetailRecordsController::class => [
-                'index' => [
-                    CallDetailRecordsController::class => [
-                        'getNewRecords',
-                    ],
-                    '/pbxcore/api/cdr' => [
-                        '/v2/playback',
-                        '/playback',
-                        '/v2/getRecordFile'
-                    ]
-                ]
-            ],
-            SoundFilesController::class => [
-                'index' => [
-                    '/pbxcore/api/cdr' => [
-                        '/v2/playback',
-                        '/v2/getRecordFile'
-                    ]
-                ],
-                'save' => [
-                    '/pbxcore/api/files' => [
-                        '/uploadFile'
-                    ]
-                ],
-                'delete' => [
-                    '/pbxcore/api/files' => [
-                        '/removeAudioFile'
-                    ]
-                ]
-            ],
-            IvrMenuController::class => [
-                'modify' => [
-                    '/pbxcore/api/cdr' => [
-                        '/v2/playback',
-                        '/v2/getRecordFile'
-                    ],
-                    '/pbxcore/api/ivr-menu'=>[
-                        '/deleteRecord'
-                    ]
-                ]
-            ],
-            CallQueuesController::class => [
-                'modify' => [
-                    '/pbxcore/api/cdr' => [
-                        '/v2/playback',
-                        '/v2/getRecordFile'
-                    ],
-                    '/pbxcore/api/call-queues'=>[
-                        '/deleteRecord'
-                    ]
-                ]
-            ],
-            GeneralSettingsController::class => [
-                'modify' => [
-                    '/pbxcore/api/cdr' => [
-                        '/v2/playback',
-                        '/v2/getRecordFile'
-                    ]
-                ]
-            ],
-            ProvidersController::class => [
-                'index' => [
-                    '/pbxcore/api/iax' => [
-                        '/getRegistry'
-                    ]
-                ],
-                'modifyiax' => [
-                    '/pbxcore/api/iax' => [
-                        '/getRegistry'
-                    ]
-                ],
-                'modifysip' => [
-                    '/pbxcore/api/sip' => [
-                        '/getRegistry'
-                    ]
-                ],
-                'save' => [
-                    ProvidersController::class => [
-                        'enable',
-                        'disable'
-                    ]
-                ]
-            ],
-            ExtensionsController::class =>
-                [
-                    'index' => [
-                        ExtensionsController::class => [
-                            'getNewRecords',
-                        ],
-                        '/pbxcore/api/sip' => [
-                            '/getPeersStatuses'
-                        ]
-                    ],
-                    'modify' => [
-                        '/pbxcore/api/sip' => [
-                            '/getSipPeer',
-                            '/getSecret'
-                        ],
-                        '/pbxcore/api/extensions' => [
-                            '/getRecord',
-                            '/saveRecord',
-                            '/deleteRecord',
-                        ]
-                    ],
-                ],
-            IncomingRoutesController::class => [
-                'save' => [
-                    IncomingRoutesController::class => [
-                        'changePriority'
-                    ]
-                ]
-            ],
-            OutboundRoutesController::class => [
-                'save' => [
-                    OutboundRoutesController::class => [
-                        'changePriority'
-                    ]
-                ]
-            ],
-            ConferenceRoomsController::class => [
-                'modify' => [
-                    '/pbxcore/api/conference-rooms' => [
-                        '/deleteRecord'
-                    ],
-                ],
-            ],
-            DialplanApplications::class => [
-                'modify' => [
-                    '/pbxcore/api/dialplan-applications' => [
-                        '/deleteRecord'
-                    ],
-                ],
-            ],
-            OutOffWorkTimeController::class => [
-                'save' => [
-                    OutOffWorkTimeController::class => [
-                        'changePriority'
-                    ]
-                ]
-            ],
-        ];
+        $linkedActions = CoreACL::getLinkedControllerActions();
+        $linkedActionsModules = self::addRulesFromModules('getLinkedControllerActions');
+        return array_merge($linkedActions, $linkedActionsModules);
+
     }
 
     /**
@@ -352,41 +174,9 @@ class UsersUIACL extends \Phalcon\Di\Injectable
      */
     public static function getAlwaysAllowed(): array
     {
-        return [
-            AsteriskManagersController::class => [
-                'available',
-            ],
-            ErrorsController::class => '*',
-            LocalizationController::class => '*',
-            LanguageController::class => '*',
-            SessionController::class => '*',
-            SoundFilesController::class => [
-                'getPathById',
-                'getSoundFiles'
-            ],
-            TopMenuSearchController::class => '*',
-            WikiLinksController::class => '*',
-            '/pbxcore/api/extensions' => [
-                '/getForSelect',
-                '/available',
-                '/getPhoneRepresent',
-                '/getPhonesRepresent'
-            ],
-            '/pbxcore/api/users' => [
-                '/available',
-            ],
-            '/pbxcore/api/files' => [
-                '/statusUpload',
-            ],
-            '/pbxcore/api/system' => [
-                '/convertAudioFile',
-                '/ping',
-            ],
-            '/pbxcore/api/license' => [
-                '/sendPBXMetrics'
-            ],
-            '/pbxcore/api/nchan' => '*',
-        ];
+        $alwaysAllowed = CoreACL::getAlwaysAllowed();
+        $alwaysAllowedModules = self::addRulesFromModules('getAlwaysAllowed');
+        return array_merge($alwaysAllowed, $alwaysAllowedModules);
     }
 
     /**
@@ -396,56 +186,27 @@ class UsersUIACL extends \Phalcon\Di\Injectable
      */
     public static function getAlwaysDenied(): array
     {
-        return [
-            // AdminCabinet controllers
-            ConsoleController::class => '*',
-            CustomFilesController::class => '*',
-            Fail2BanController::class => '*',
-            FirewallController::class => '*',
-            GeneralSettingsController::class => '*',
-            LicensingController::class => '*',
-            MailSettingsController::class => '*',
-            NetworkController::class => '*',
-            PbxExtensionModulesController::class => '*',
-            RestartController::class => '*',
-            SystemDiagnosticController::class => '*',
-            TimeSettingsController::class => '*',
-            UpdateController::class => '*',
+        $alwaysDenied = CoreACL::getAlwaysDenied();
+        $alwaysDeniedFromModules = self::addRulesFromModules('getAlwaysDenied');
+        return array_merge($alwaysDenied, $alwaysDeniedFromModules);
+    }
 
-            // CORE REST API
-            '/pbxcore/api/someendpoint' => '*',
-            '/pbxcore/api/files' => [
-                '/firmwareDownloadStatus',
-                '/downloadNewFirmware',
-                '/getFileContent'
-            ],
-            '/pbxcore/api/firewall' => '*',
-            '/pbxcore/api/license' => '*',
-            '/pbxcore/api/modules/core' => '*',
-            '/pbxcore/api/system' => [
-                '/upgrade',
-                '/setDate',
-                '/reboot',
-                '/shutdown',
-                '/getDate',
-                '/updateMailSettings',
-                '/restoreDefault',
-                '/sendMail'
-            ],
-            '/pbxcore/api/syslog' => '*',
-            '/pbxcore/api/sysinfo' => '*',
-            '/pbxcore/api/storage' => '*',
-            '/pbxcore/api/advices' => [
-                '/getList',
-            ],
-
-            // Module UsersUI
-            AccessGroupsController::class => '*',
-            LdapConfigController::class => '*',
-            ModuleUsersUIController::class => '*',
-            UsersCredentialsController::class => '*',
-            '/pbxcore/api/modules/module-users-u-i' => '*',
-
-        ];
+    /**
+     * Returns ACL methods from modules.
+     *
+     * @param $methodName string The name of the ACL method.
+     * @return array
+     */
+    private static function addRulesFromModules(string $methodName):array
+    {
+        $rules = [];
+        $modules = PbxExtensionModules::getEnabledModulesArray();
+        foreach ($modules as $module) {
+            $className =  "Modules\\ModuleUsersUI\\Lib\ACL\\{$module['uniqid']}ACL";
+            if (class_exists($className) and method_exists($className, $methodName)) {
+                $rules = array_merge($rules, $className::$methodName());
+            }
+        }
+        return $rules;
     }
 }
