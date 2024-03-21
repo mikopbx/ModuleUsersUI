@@ -142,4 +142,5 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'Nenhum grupo de acesso foi criado no módulo ainda',
     'module_usersui_AddNewAccessGroupShort' => 'Criar',
     'module_usersui_LoginNameNotUnique' => 'Não é um nome de usuário exclusivo',
+    'module_usersui_SelectMemberToAddToGroup' => 'Selecione um funcionário para adicionar ao grupo atual',
 ];
