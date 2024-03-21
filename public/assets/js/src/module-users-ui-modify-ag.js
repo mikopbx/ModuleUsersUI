@@ -16,7 +16,7 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* global globalRootUrl, globalTranslate, Form, Extensions */
+/* global globalRootUrl, globalTranslate, Form, Extensions, Datatable */
 
 
 const moduleUsersUIModifyAG = {
@@ -81,6 +81,12 @@ const moduleUsersUIModifyAG = {
      * @type {jQuery}
      */
     $cdrFilterUsersTable: $('#cdr-filter-users-table'),
+
+    /**
+     * Users data table for CDR filter.
+     * @type {Datatable}
+     */
+    cdrFilterUsersDataTable: null,
 
     /**
      * jQuery object for the CDR filter toggles.
@@ -211,6 +217,10 @@ const moduleUsersUIModifyAG = {
             $('#cdr-filter-users-table_wrapper').hide();
         } else {
             $('#cdr-filter-users-table_wrapper').show();
+            if (moduleUsersUIModifyAG.cdrFilterUsersDataTable){
+                const newPageLength = moduleUsersUIModifyAG.calculatePageLength();
+                moduleUsersUIModifyAG.cdrFilterUsersDataTable.page.len(newPageLength).draw(false);
+            }
         }
     },
 
@@ -453,8 +463,13 @@ const moduleUsersUIModifyAG = {
      */
     cbBeforeSendForm(settings) {
         const result = settings;
-        result.data = moduleUsersUIModifyAG.$formObj.form('get values');
-
+        const formValues = moduleUsersUIModifyAG.$formObj.form('get values');
+        result.data = {
+            id: formValues.id,
+            name: formValues.name,
+            description: formValues.description,
+            cdrFilterMode:  formValues.cdrFilterMode,
+        };
         // Group members
         const arrMembers = [];
         $('tr.selected-member').each((index, obj) => {
@@ -493,7 +508,7 @@ const moduleUsersUIModifyAG = {
             }
         });
 
-        result.data.access_group_rights = JSON.stringify(arrGroupRights);
+        result.data.access_group_rights = JSON.stringify(arrGroupRights); 
 
         // CDR Filter
         const arrCDRFilter = [];
@@ -535,15 +550,28 @@ const moduleUsersUIModifyAG = {
      * Initializes the users table DataTable.
      */
     initializeCDRFilterTable() {
-        moduleUsersUIModifyAG.$cdrFilterUsersTable.DataTable({
+
+        moduleUsersUIModifyAG.$mainTabMenu.tab({
+            onVisible(){
+                if ($(this).data('tab')==='cdr-filter' && moduleUsersUIModifyAG.cdrFilterUsersDataTable!==null){
+                    const newPageLength = moduleUsersUIModifyAG.calculatePageLength();
+                    moduleUsersUIModifyAG.cdrFilterUsersDataTable.page.len(newPageLength).draw(false);
+                }
+            }
+        });
+
+        moduleUsersUIModifyAG.cdrFilterUsersDataTable = moduleUsersUIModifyAG.$cdrFilterUsersTable.DataTable({
             // destroy: true,
             lengthChange: false,
-            paging: false,
+            paging: true,
+            pageLength: moduleUsersUIModifyAG.calculatePageLength(),
+            scrollCollapse: true,
             columns: [
                 // CheckBox
                 {
-                    orderable: false,  // This column is not orderable
-                    searchable: false  // This column is not searchable
+                    orderable: true,  // This column is not orderable
+                    searchable: false,  // This column is not searchable
+                    orderDataType: 'dom-checkbox'  // Use the custom sorting
                 },
                 // Username
                 {
@@ -557,8 +585,8 @@ const moduleUsersUIModifyAG = {
                 },
                 // Mobile
                 {
-                    orderable: false,  // This column is not orderable
-                    searchable: false  // This column is not searchable
+                    orderable: true,  // This column is not orderable
+                    searchable: true  // This column is not searchable
                 },
                 // Email
                 {
@@ -566,9 +594,19 @@ const moduleUsersUIModifyAG = {
                     searchable: true  // This column is searchable
                 },
             ],
-            order: [0, 'asc'],
+            order: [0, 'desc'],
             language: SemanticLocalization.dataTableLocalisation,
         });
+    },
+    calculatePageLength() {
+        // Calculate row height
+        let rowHeight = moduleUsersUIModifyAG.$cdrFilterUsersTable.find('tr').first().outerHeight();
+        // Calculate window height and available space for table
+        const windowHeight = window.innerHeight;
+        const headerFooterHeight = 580; // Estimate height for header, footer, and other elements
+
+        // Calculate new page length
+        return Math.max(Math.floor((windowHeight - headerFooterHeight) / rowHeight), 10);
     },
     /**
      * Callback function after sending the form.
@@ -591,5 +629,13 @@ const moduleUsersUIModifyAG = {
 };
 
 $(document).ready(() => {
+    // Custom sorting for checkbox states
+    $.fn.dataTable.ext.order['dom-checkbox'] = function  ( settings, col )
+    {
+        return this.api().column( col, {order:'index'} ).nodes().map( function ( td, i ) {
+            return $('input', td).prop('checked') ? '1' : '0';
+        } );
+    };
+
     moduleUsersUIModifyAG.initialize();
 });

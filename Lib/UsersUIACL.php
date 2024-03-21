@@ -38,6 +38,7 @@ use MikoPBX\AdminCabinet\Controllers\LocalizationController;
 use MikoPBX\AdminCabinet\Controllers\MailSettingsController;
 use MikoPBX\AdminCabinet\Controllers\NetworkController;
 use MikoPBX\AdminCabinet\Controllers\OutboundRoutesController;
+use MikoPBX\AdminCabinet\Controllers\OutOffWorkTimeController;
 use MikoPBX\AdminCabinet\Controllers\PbxExtensionModulesController;
 use MikoPBX\AdminCabinet\Controllers\ProvidersController;
 use MikoPBX\AdminCabinet\Controllers\RestartController;
@@ -288,18 +289,22 @@ class UsersUIACL extends \Phalcon\Di\Injectable
             ExtensionsController::class =>
                 [
                     'index' => [
+                        ExtensionsController::class => [
+                            'getNewRecords',
+                        ],
                         '/pbxcore/api/sip' => [
                             '/getPeersStatuses'
                         ]
                     ],
                     'modify' => [
                         '/pbxcore/api/sip' => [
-                            '/getSipPeer'
+                            '/getSipPeer',
+                            '/getSecret'
                         ],
                         '/pbxcore/api/extensions' => [
                             '/getRecord',
                             '/saveRecord',
-                            '/deleteRecord'
+                            '/deleteRecord',
                         ]
                     ],
                 ],
@@ -330,7 +335,14 @@ class UsersUIACL extends \Phalcon\Di\Injectable
                         '/deleteRecord'
                     ],
                 ],
-            ]
+            ],
+            OutOffWorkTimeController::class => [
+                'save' => [
+                    OutOffWorkTimeController::class => [
+                        'changePriority'
+                    ]
+                ]
+            ],
         ];
     }
 
@@ -373,6 +385,7 @@ class UsersUIACL extends \Phalcon\Di\Injectable
             '/pbxcore/api/license' => [
                 '/sendPBXMetrics'
             ],
+            '/pbxcore/api/nchan' => '*',
         ];
     }
 
