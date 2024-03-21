@@ -142,4 +142,5 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'Der er endnu ikke oprettet adgangsgrupper i modulet',
     'module_usersui_AddNewAccessGroupShort' => 'skab',
     'module_usersui_LoginNameNotUnique' => 'Ikke et unikt brugernavn',
+    'module_usersui_SelectMemberToAddToGroup' => 'Vælg en medarbejder, der skal føjes til den aktuelle gruppe',
 ];
