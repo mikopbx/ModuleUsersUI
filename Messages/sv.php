@@ -142,4 +142,5 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'Inga åtkomstgrupper har skapats i modulen ännu',
     'module_usersui_AddNewAccessGroupShort' => 'Skapa',
     'module_usersui_LoginNameNotUnique' => 'Inte ett unikt användarnamn',
+    'module_usersui_SelectMemberToAddToGroup' => 'Välj en anställd att lägga till i den aktuella gruppen',
 ];
