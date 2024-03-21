@@ -142,4 +142,5 @@ return [
     'SubHeaderAccessGroups' => 'Detailed setting of rights for interface elements and REST API',
     'module_usersui_UsersFilter' => 'Access group users',
     'module_usersui_ValidateNameIsEmpty' => 'Check the group name, it\'s empty',
+    'module_usersui_SelectMemberToAddToGroup' => 'Select an employee to add to the current group',
 ];
