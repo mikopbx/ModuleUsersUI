@@ -142,4 +142,5 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'Δεν έχουν δημιουργηθεί ακόμη ομάδες πρόσβασης στη λειτουργική μονάδα',
     'module_usersui_AddNewAccessGroupShort' => 'Δημιουργώ',
     'module_usersui_LoginNameNotUnique' => 'Δεν είναι μοναδικό όνομα χρήστη',
+    'module_usersui_SelectMemberToAddToGroup' => 'Επιλέξτε έναν υπάλληλο για προσθήκη στην τρέχουσα ομάδα',
 ];
