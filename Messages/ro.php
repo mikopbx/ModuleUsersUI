@@ -110,7 +110,6 @@ return [
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_modify' => 'deschideți cardul de fișier',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_save' => 'modificați sau adăugați fișierul audio',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_delete' => 'șterge',
-    'module_usersui_CheckBox_enable' => 'includere',
     'module_usersui_AppTypeREST' => 'Acces API REST',
     'module_usersui_AppTypeAPP' => 'Acces la secțiunile interfeței',
     'module_usersui_ldap_user_not_found' => 'Utilizatorul nu este găsit',

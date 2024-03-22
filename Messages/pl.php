@@ -110,7 +110,6 @@ return [
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_modify' => 'otwórz kartę pliku',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_save' => 'zmienić lub dodać plik audio',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_delete' => 'usuwać',
-    'module_usersui_CheckBox_enable' => 'włączenie',
     'module_usersui_AppTypeREST' => 'Dostęp do API REST',
     'module_usersui_AppTypeAPP' => 'Dostęp do sekcji interfejsu',
     'module_usersui_ldap_user_not_found' => 'Nie znaleziono użytkownika',

@@ -110,7 +110,6 @@ return [
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_modify' => 'ღია ფაილის ბარათი',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_save' => 'აუდიო ფაილის შეცვლა ან დამატება',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_delete' => 'წაშლა',
-    'module_usersui_CheckBox_enable' => 'ჩართვა',
     'module_usersui_AppTypeREST' => 'REST API წვდომა',
     'module_usersui_AppTypeAPP' => 'ინტერფეისის სექციებზე წვდომა',
     'module_usersui_ldap_user_not_found' => 'მომხმარებელი ვერ მოიძებნა',

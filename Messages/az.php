@@ -110,7 +110,6 @@ return [
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_modify' => 'fayl kartını açın',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_save' => 'audio faylı dəyişdirin və ya əlavə edin',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_delete' => 'silin',
-    'module_usersui_CheckBox_enable' => 'daxil edilməsi',
     'module_usersui_AppTypeREST' => 'REST API girişi',
     'module_usersui_AppTypeAPP' => 'İnterfeys bölmələrinə giriş',
     'module_usersui_ldap_user_not_found' => 'İstifadəçi tapılmadı',

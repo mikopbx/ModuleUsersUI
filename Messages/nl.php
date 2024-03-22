@@ -110,7 +110,6 @@ return [
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_modify' => 'dossierkaart openen',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_save' => 'audiobestand wijzigen of toevoegen',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_delete' => 'verwijderen',
-    'module_usersui_CheckBox_enable' => 'opname',
     'module_usersui_AppTypeREST' => 'REST API-toegang',
     'module_usersui_AppTypeAPP' => 'Toegang tot interfacesecties',
     'module_usersui_ldap_user_not_found' => 'Gebruiker is niet gevonden',

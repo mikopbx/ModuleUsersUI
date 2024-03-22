@@ -58,7 +58,6 @@ return [
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_modify' => 'open file card',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_save' => 'change or add audio file',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_delete' => 'delete',
-    'module_usersui_CheckBox_enable' => 'inclusion',
     'module_usersui_AppTypeREST' => 'REST API access',
     'module_usersui_AppTypeAPP' => 'Access to interface sections',
     'module_usersui_LdapConfigTab' => 'Setting up domain authorization',

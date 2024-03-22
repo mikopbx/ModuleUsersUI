@@ -110,7 +110,6 @@ return [
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_modify' => 'відкрити картку файлу',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_save' => 'змінити або додати аудіо файл',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_delete' => 'видалити',
-    'module_usersui_CheckBox_enable' => 'включення',
     'module_usersui_AppTypeREST' => 'Доступ до REST API',
     'module_usersui_AppTypeAPP' => 'Доступ до розділів інтерфейсу',
     'module_usersui_ldap_user_not_found' => 'Користувач не знайдений',
