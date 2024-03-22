@@ -143,4 +143,7 @@ return [
     'module_usersui_UsersFilter' => 'Access group users',
     'module_usersui_ValidateNameIsEmpty' => 'Check the group name, it\'s empty',
     'module_usersui_SelectMemberToAddToGroup' => 'Select an employee to add to the current group',
+    'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'setting up Zabbix agent',
+    'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'module setup',
+    'module_usersui_CheckBox_CTIClient_ModuleCTIClient_index' => 'module setup',
 ];
