@@ -143,4 +143,7 @@ return [
     'module_usersui_AddNewAccessGroupShort' => 'Vytvořit',
     'module_usersui_LoginNameNotUnique' => 'Nejedná se o jedinečné uživatelské jméno',
     'module_usersui_SelectMemberToAddToGroup' => 'Vyberte zaměstnance, kterého chcete přidat do aktuální skupiny',
+    'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'nastavení agenta Zabbix',
+    'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'nastavení modulu',
+    'module_usersui_CheckBox_CTIClient_ModuleCTIClient_index' => 'nastavení modulu',
 ];
