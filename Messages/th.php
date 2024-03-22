@@ -160,4 +160,7 @@ return [
     'module_usersui_AddNewAccessGroupShort' => 'สร้าง',
     'module_usersui_LoginNameNotUnique' => 'ไม่ใช่ชื่อผู้ใช้ที่ไม่ซ้ำใคร',
     'module_usersui_SelectMemberToAddToGroup' => 'เลือกพนักงานที่จะเพิ่มเข้าในกลุ่มปัจจุบัน',
+    'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'ตั้งค่าตัวแทน Zabbix',
+    'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'การตั้งค่าโมดูล',
+    'module_usersui_CheckBox_CTIClient_ModuleCTIClient_index' => 'การตั้งค่าโมดูล',
 ];
