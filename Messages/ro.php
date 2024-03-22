@@ -143,4 +143,7 @@ return [
     'module_usersui_AddNewAccessGroupShort' => 'Crea',
     'module_usersui_LoginNameNotUnique' => 'Nu este un nume de utilizator unic',
     'module_usersui_SelectMemberToAddToGroup' => 'Selectați un angajat pe care să îl adăugați la grupul curent',
+    'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'stabilirea agentului Zabbix',
+    'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'configurarea modulului',
+    'module_usersui_CheckBox_CTIClient_ModuleCTIClient_index' => 'configurarea modulului',
 ];
