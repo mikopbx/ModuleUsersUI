@@ -143,4 +143,7 @@ return [
     'module_usersui_AddNewAccessGroupShort' => 'Yaratmak',
     'module_usersui_LoginNameNotUnique' => 'Benzersiz bir kullanıcı adı değil',
     'module_usersui_SelectMemberToAddToGroup' => 'Mevcut gruba eklenecek bir çalışan seçin',
+    'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'Zabbix aracısını ayarlama',
+    'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'modül kurulumu',
+    'module_usersui_CheckBox_CTIClient_ModuleCTIClient_index' => 'modül kurulumu',
 ];
