@@ -143,4 +143,7 @@ return [
     'module_usersui_AddNewAccessGroupShort' => 'Créer',
     'module_usersui_LoginNameNotUnique' => 'Pas un nom d\'utilisateur unique',
     'module_usersui_SelectMemberToAddToGroup' => 'Sélectionnez un employé à ajouter au groupe actuel',
+    'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'configuration de l\'agent Zabbix',
+    'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'configuration des modules',
+    'module_usersui_CheckBox_CTIClient_ModuleCTIClient_index' => 'configuration des modules',
 ];
