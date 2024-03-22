@@ -21,7 +21,6 @@ namespace Modules\ModuleUsersUI\Lib;
 
 use MikoPBX\Common\Handlers\CriticalErrorsHandler;
 use MikoPBX\Common\Models\PbxExtensionModules;
-use MikoPBX\Common\Providers\PBXConfModulesProvider;
 use Modules\ModuleUsersUI\Lib\ACL\CoreACL;
 use Modules\ModuleUsersUI\Models\AccessGroups;
 use Modules\ModuleUsersUI\Models\AccessGroupsRights;
@@ -170,6 +169,51 @@ class UsersUIACL extends \Phalcon\Di\Injectable
     }
 
     /**
+     * Returns ACL methods from modules.
+     *
+     * @param $methodName string The name of the ACL method.
+     * @return array
+     */
+    private static function addRulesFromModules(string $methodName): array
+    {
+        $rules = [];
+        $modules = PbxExtensionModules::getEnabledModulesArray();
+        foreach ($modules as $module) {
+            // Call external module own ACL methods if exists
+            $className = "Modules\\{$module['uniqid']}\\Lib\\{$module['uniqid']}ACL";
+            $rulesFromModule = self::executeModuleMethod($className, $methodName);
+            if (empty($rulesFromModule)) {
+                // Call external module template methods
+                $className = "Modules\\ModuleUsersUI\\Lib\\ACL\\{$module['uniqid']}ACL";
+                $rulesFromModule = self::executeModuleMethod($className, $methodName);
+            }
+            $rules = array_merge($rules, $rulesFromModule);
+        }
+        return $rules;
+    }
+
+    /**
+     *
+     * Executes module ACL method.
+     *
+     * @param string $className Class name of module ACL class.
+     * @param string $methodName Method name of module ACL class.
+     * @return array
+     */
+    private static function executeModuleMethod(string $className, string $methodName): array
+    {
+        $result = [];
+        if (class_exists($className) and method_exists($className, $methodName)) {
+            try {
+                $result = $className::$methodName();
+            } catch (\Throwable $e) {
+                CriticalErrorsHandler::handleException($e);
+            }
+        }
+        return $result;
+    }
+
+    /**
      * Returns list of controllers that are always allowed
      * @return array
      */
@@ -190,32 +234,5 @@ class UsersUIACL extends \Phalcon\Di\Injectable
         $alwaysDenied = CoreACL::getAlwaysDenied();
         $alwaysDeniedFromModules = self::addRulesFromModules('getAlwaysDenied');
         return array_merge($alwaysDenied, $alwaysDeniedFromModules);
-    }
-
-    /**
-     * Returns ACL methods from modules.
-     *
-     * @param $methodName string The name of the ACL method.
-     * @return array
-     */
-    private static function addRulesFromModules(string $methodName):array
-    {
-        $rules = [];
-        $modules = PbxExtensionModules::getEnabledModulesArray();
-        foreach ($modules as $module) {
-            $className =  "Modules\\ModuleUsersUI\\Lib\ACL\\{$module['uniqid']}ACL";
-            if (class_exists($className) and method_exists($className, $methodName)) {
-                try{
-                    $rulesFromModule = $className::$methodName();
-                } catch (\Throwable $e) {
-                    CriticalErrorsHandler::handleException($e);
-                    continue; // skip if module is not installed or has no ACL class.
-                }
-                if (is_array($rulesFromModule)) {
-                    $rules = array_merge($rules, $rulesFromModule);
-                }
-            }
-        }
-        return $rules;
     }
 }

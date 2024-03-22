@@ -13,22 +13,22 @@
 
 {% if id is null %}
     <div class="ui bottom attached tab segment active" data-tab="general">
-        {{ partial("Modules/ModuleUsersUI/AccessGroups/tabGeneralSettingsSimple") }}
+        {{ partial("Modules/ModuleUsersUI/AccessGroups/ModifyTabs/tabGeneralSettingsSimple") }}
     </div>
 {% else %}
     <div class="ui bottom attached tab segment" data-tab="general">
-        {{ partial("Modules/ModuleUsersUI/AccessGroups/tabGeneralSettingsFull") }}
+        {{ partial("Modules/ModuleUsersUI/AccessGroups/ModifyTabs/tabGeneralSettingsFull") }}
     </div>
     <div class="ui bottom attached tab segment active" data-tab="group-rights">
-        {{ partial("Modules/ModuleUsersUI/AccessGroups/tabGroupRights") }}
+        {{ partial("Modules/ModuleUsersUI/AccessGroups/ModifyTabs/tabGroupRights") }}
     </div>
 
     <div class="ui bottom attached tab segment" data-tab="users">
-        {{ partial("Modules/ModuleUsersUI/AccessGroups/tabUsers") }}
+        {{ partial("Modules/ModuleUsersUI/AccessGroups/ModifyTabs/tabUsers") }}
     </div>
 
     <div class="ui bottom attached tab segment" data-tab="cdr-filter">
-        {{ partial("Modules/ModuleUsersUI/AccessGroups/tabCDRFilter") }}
+        {{ partial("Modules/ModuleUsersUI/AccessGroups/ModifyTabs/tabCDRFilter") }}
     </div>
 {% endif %}
 
