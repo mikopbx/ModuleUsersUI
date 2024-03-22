@@ -19,7 +19,7 @@
 
 namespace Modules\ModuleUsersUI\Lib\ACL;
 use Modules\ModuleAmoCrm\App\Controllers\ModuleAmoCrmController;
-use Modules\ModuleUsersUI\Lib\RestEndpointsConstants as RestEndpoints;
+use Modules\ModuleUsersUI\Lib\EndpointConstants as RestEndpoints;
 
 class ModuleAmoCrmACL implements ACLInterface
 {

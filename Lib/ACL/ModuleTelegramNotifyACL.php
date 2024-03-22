@@ -20,7 +20,7 @@
 namespace Modules\ModuleUsersUI\Lib\ACL;
 
 use Modules\ModuleTelegramNotify\App\Controllers\ModuleTelegramNotifyController;
-use Modules\ModuleUsersUI\Lib\RestEndpointsConstants;
+use Modules\ModuleUsersUI\Lib\EndpointConstants;
 
 class ModuleTelegramNotifyACL implements ACLInterface
 {
@@ -35,9 +35,9 @@ class ModuleTelegramNotifyACL implements ACLInterface
     {
         return [
             ModuleTelegramNotifyController::class => [
-                RestEndpointsConstants::ACTION_INDEX=>[
+                EndpointConstants::ACTION_INDEX=>[
                     ModuleTelegramNotifyController::class => [
-                        RestEndpointsConstants::ACTION_SAVE
+                        EndpointConstants::ACTION_SAVE
                     ],
                     self::API_MODULE_TELEGRAM_NOTIFY=>'*'
                 ]

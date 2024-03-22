@@ -19,7 +19,7 @@
 
 namespace Modules\ModuleUsersUI\Lib\ACL;
 use Modules\ModuleUsersGroups\App\Controllers\ModuleUsersGroupsController;
-use Modules\ModuleUsersUI\Lib\RestEndpointsConstants as RestEndpoints;
+use Modules\ModuleUsersUI\Lib\EndpointConstants as RestEndpoints;
 use Modules\ModuleZabbixAgent5\App\Controllers\ModuleZabbixAgent5Controller;
 
 class ModuleUsersGroupsACL implements ACLInterface

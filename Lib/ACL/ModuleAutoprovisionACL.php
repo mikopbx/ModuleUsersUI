@@ -20,7 +20,7 @@
 namespace Modules\ModuleUsersUI\Lib\ACL;
 
 use Modules\ModuleAutoprovision\App\Controllers\ModuleAutoprovisionController;
-use Modules\ModuleUsersUI\Lib\RestEndpointsConstants;
+use Modules\ModuleUsersUI\Lib\EndpointConstants;
 
 class ModuleAutoprovisionACL implements ACLInterface
 {
@@ -36,9 +36,9 @@ class ModuleAutoprovisionACL implements ACLInterface
     {
         return [
             ModuleAutoprovisionController::class => [
-                RestEndpointsConstants::ACTION_INDEX => [
+                EndpointConstants::ACTION_INDEX => [
                     ModuleAutoprovisionController::class => [
-                        RestEndpointsConstants::ACTION_SAVE
+                        EndpointConstants::ACTION_SAVE
                     ],
                     self::API_MODULE_AUTOPROVISION => '*',
                 ]

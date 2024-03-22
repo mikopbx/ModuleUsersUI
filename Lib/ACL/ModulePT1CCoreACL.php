@@ -20,7 +20,7 @@
 namespace Modules\ModuleUsersUI\Lib\ACL;
 
 use Modules\ModulePT1CCore\App\Controllers\ModulePT1CCoreController;
-use Modules\ModuleUsersUI\Lib\RestEndpointsConstants as RestEndpoints;
+use Modules\ModuleUsersUI\Lib\EndpointConstants as RestEndpoints;
 
 class ModulePT1CCoreACL implements ACLInterface
 {

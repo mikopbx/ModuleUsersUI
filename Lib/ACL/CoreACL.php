@@ -50,7 +50,7 @@ use MikoPBX\AdminCabinet\Controllers\TopMenuSearchController;
 use MikoPBX\AdminCabinet\Controllers\UpdateController;
 use MikoPBX\AdminCabinet\Controllers\WikiLinksController;
 use MikoPBX\Common\Models\DialplanApplications;
-use Modules\ModuleUsersUI\Lib\RestEndpointsConstants as RestEndpoints;
+use Modules\ModuleUsersUI\Lib\EndpointConstants as RestEndpoints;
 
 class CoreACL implements ACLInterface
 {
@@ -67,8 +67,8 @@ class CoreACL implements ACLInterface
             RestartController::class => [
                 RestEndpoints::ACTION_INDEX => [ // if index allowed
                     RestEndpoints::API_CDR => [
-                        RestEndpoints::ACTION_GET_ACTIVE_CHANNELS, // Then this action allowed as well
-                        RestEndpoints::ACTION_GET_ACTIVE_CALLS // And this action allowed as well
+                        RestEndpoints::ACTION_CDR_API_GET_ACTIVE_CHANNELS, // Then this action allowed as well
+                        RestEndpoints::ACTION_CDR_API_GET_ACTIVE_CALLS // And this action allowed as well
                     ]
                 ]
             ],
@@ -78,74 +78,74 @@ class CoreACL implements ACLInterface
                         RestEndpoints::ACTION_GET_NEW_RECORDS,
                     ],
                     RestEndpoints::API_CDR => [
-                        RestEndpoints::ACTION_CDR_PLAYBACK_V2,
+                        RestEndpoints::ACTION_CDR_API_PLAYBACK_V2,
                         RestEndpoints::ACTION_CDR_PLAYBACK,
-                        RestEndpoints::ACTION_CDR_GET_RECORD_FILE_V2
+                        RestEndpoints::ACTION_CDR_API_GET_RECORD_FILE_V2
                     ]
                 ]
             ],
             SoundFilesController::class => [
                 RestEndpoints::ACTION_INDEX => [
                     RestEndpoints::API_CDR => [
-                        RestEndpoints::ACTION_CDR_PLAYBACK_V2,
-                        RestEndpoints::ACTION_CDR_GET_RECORD_FILE_V2
+                        RestEndpoints::ACTION_CDR_API_PLAYBACK_V2,
+                        RestEndpoints::ACTION_CDR_API_GET_RECORD_FILE_V2
                     ]
                 ],
                 RestEndpoints::ACTION_SAVE => [
                     RestEndpoints::API_FILES => [
-                        RestEndpoints::ACTION_UPLOAD_FILE
+                        RestEndpoints::ACTION_FILES_API_UPLOAD_FILE
                     ]
                 ],
                 RestEndpoints::ACTION_DELETE => [
                     RestEndpoints::API_FILES => [
-                        RestEndpoints::ACTION_REMOVE_AUDIO_FILE
+                        RestEndpoints::ACTION_FILES_API_REMOVE_AUDIO_FILE
                     ]
                 ]
             ],
             IvrMenuController::class => [
                 RestEndpoints::ACTION_MODIFY => [
                     RestEndpoints::API_CDR => [
-                        RestEndpoints::ACTION_CDR_PLAYBACK_V2,
-                        RestEndpoints::ACTION_CDR_GET_RECORD_FILE_V2
+                        RestEndpoints::ACTION_CDR_API_PLAYBACK_V2,
+                        RestEndpoints::ACTION_CDR_API_GET_RECORD_FILE_V2
                     ],
                     RestEndpoints::API_IVR_MENU => [
-                        RestEndpoints::ACTION_DELETE_RECORD
+                        RestEndpoints::ACTION_API_DELETE_RECORD
                     ]
                 ]
             ],
             CallQueuesController::class => [
                 RestEndpoints::ACTION_MODIFY => [
                     RestEndpoints::API_CDR => [
-                        RestEndpoints::ACTION_CDR_PLAYBACK_V2,
-                        RestEndpoints::ACTION_CDR_GET_RECORD_FILE_V2
+                        RestEndpoints::ACTION_CDR_API_PLAYBACK_V2,
+                        RestEndpoints::ACTION_CDR_API_GET_RECORD_FILE_V2
                     ],
                     RestEndpoints::API_CALL_QUEUES => [
-                        RestEndpoints::ACTION_DELETE_RECORD
+                        RestEndpoints::ACTION_API_DELETE_RECORD
                     ]
                 ]
             ],
             GeneralSettingsController::class => [
                 RestEndpoints::ACTION_MODIFY => [
                     RestEndpoints::API_CDR => [
-                        RestEndpoints::ACTION_CDR_PLAYBACK_V2,
-                        RestEndpoints::ACTION_CDR_GET_RECORD_FILE_V2
+                        RestEndpoints::ACTION_CDR_API_PLAYBACK_V2,
+                        RestEndpoints::ACTION_CDR_API_GET_RECORD_FILE_V2
                     ]
                 ]
             ],
             ProvidersController::class => [
                 RestEndpoints::ACTION_INDEX => [
                     RestEndpoints::API_IAX => [
-                        RestEndpoints::ACTION_GET_REGISTRY
+                        RestEndpoints::ACTION_API_GET_REGISTRY
                     ]
                 ],
                 'modifyiax' => [
                     RestEndpoints::API_IAX => [
-                        RestEndpoints::ACTION_GET_REGISTRY
+                        RestEndpoints::ACTION_API_GET_REGISTRY
                     ]
                 ],
                 'modifysip' => [
                     RestEndpoints::API_SIP => [
-                        RestEndpoints::ACTION_GET_REGISTRY
+                        RestEndpoints::ACTION_API_GET_REGISTRY
                     ]
                 ],
                 RestEndpoints::ACTION_SAVE => [
@@ -162,18 +162,18 @@ class CoreACL implements ACLInterface
                             RestEndpoints::ACTION_GET_NEW_RECORDS,
                         ],
                         RestEndpoints::API_SIP => [
-                            RestEndpoints::ACTION_SIP_GET_PEERS_STATUSES
+                            RestEndpoints::ACTION_SIP_API_GET_PEERS_STATUSES
                         ]
                     ],
                     RestEndpoints::ACTION_MODIFY => [
                         RestEndpoints::API_SIP => [
-                            RestEndpoints::ACTION_SIP_GET_PEER,
-                            RestEndpoints::ACTION_SIP_GET_SECRET,
+                            RestEndpoints::ACTION_SIP_API_GET_PEER,
+                            RestEndpoints::ACTION_SIP_API_GET_SECRET,
                         ],
                         RestEndpoints::API_EXTENSIONS => [
-                            RestEndpoints::ACTION_EXT_GET_RECORD,
-                            RestEndpoints::ACTION_EXT_SAVE_RECORD,
-                            RestEndpoints::ACTION_DELETE_RECORD,
+                            RestEndpoints::ACTION_EXT_API_GET_RECORD,
+                            RestEndpoints::ACTION_EXT_API_SAVE_RECORD,
+                            RestEndpoints::ACTION_API_DELETE_RECORD,
                         ]
                     ],
                 ],
@@ -194,14 +194,14 @@ class CoreACL implements ACLInterface
             ConferenceRoomsController::class => [
                 RestEndpoints::ACTION_MODIFY => [
                     RestEndpoints::API_CONFERENCE_ROOMS => [
-                        RestEndpoints::ACTION_DELETE_RECORD
+                        RestEndpoints::ACTION_API_DELETE_RECORD
                     ],
                 ],
             ],
             DialplanApplications::class => [
                 RestEndpoints::ACTION_MODIFY => [
                     RestEndpoints::API_DIALPLAN_APPLICATIONS => [
-                        RestEndpoints::ACTION_DELETE_RECORD
+                        RestEndpoints::ACTION_API_DELETE_RECORD
                     ],
                 ],
             ],
@@ -222,7 +222,7 @@ class CoreACL implements ACLInterface
     public static function getAlwaysAllowed(): array{
         return [
             AsteriskManagersController::class => [
-                RestEndpoints::ACTION_AVAILABLE,
+                RestEndpoints::ACTION_API_AVAILABLE,
             ],
             ErrorsController::class => '*',
             LocalizationController::class => '*',
@@ -235,23 +235,23 @@ class CoreACL implements ACLInterface
             TopMenuSearchController::class => '*',
             WikiLinksController::class => '*',
             RestEndpoints::API_EXTENSIONS => [
-                RestEndpoints::ACTION_GET_FOR_SELECT,
-                RestEndpoints::ACTION_API_AVAILABLE,
-                RestEndpoints::ACTION_GET_PHONE_REPRESENT,
-                RestEndpoints::ACTION_GET_PHONES_REPRESENT
+                RestEndpoints::ACTION_EXT_API_GET_FOR_SELECT,
+                RestEndpoints::ACTION_EXT_API_AVAILABLE,
+                RestEndpoints::ACTION_EXT_API_GET_PHONE_REPRESENT,
+                RestEndpoints::ACTION_EXT_API_GET_PHONES_REPRESENT
             ],
             RestEndpoints::API_USERS => [
-                RestEndpoints::ACTION_API_AVAILABLE,
+                RestEndpoints::ACTION_EXT_API_AVAILABLE,
             ],
             RestEndpoints::API_FILES => [
-                RestEndpoints::ACTION_SYS_STATUS_UPLOAD,
+                RestEndpoints::ACTION_FILES_STATUS_UPLOAD,
             ],
             RestEndpoints::API_SYSTEM => [
-                RestEndpoints::ACTION_CONVERT_AUDIO_FILE,
-                RestEndpoints::ACTION_PING,
+                RestEndpoints::ACTION_SYS_CONVERT_AUDIO_FILE,
+                RestEndpoints::ACTION_SYS_PING,
             ],
             RestEndpoints::API_LICENSE => [
-                RestEndpoints::ACTION_SYS_SEND_PBX_METRICS
+                RestEndpoints::ACTION_LIC_SEND_PBX_METRICS
             ],
             RestEndpoints::API_NCHAN => '*',
         ];
@@ -283,9 +283,9 @@ class CoreACL implements ACLInterface
             // CORE REST API
             RestEndpoints::API_SOME_ENDPOINT => '*',
             RestEndpoints::API_FILES => [
-                RestEndpoints::ACTION_SYS_FIRMWARE_DOWNLOAD_STATUS,
-                RestEndpoints::ACTION_SYS_DOWNLOAD_NEW_FIRMWARE,
-                RestEndpoints::ACTION_SYS_GET_FILE_CONTENT
+                RestEndpoints::ACTION_FILES_FIRMWARE_DOWNLOAD_STATUS,
+                RestEndpoints::ACTION_FILES_DOWNLOAD_NEW_FIRMWARE,
+                RestEndpoints::ACTION_FILES_GET_FILE_CONTENT
             ],
             RestEndpoints::API_FIREWALL => '*',
             RestEndpoints::API_LICENSE => '*',
@@ -304,7 +304,7 @@ class CoreACL implements ACLInterface
             RestEndpoints::API_SYSINFO => '*',
             RestEndpoints::API_STORAGE => '*',
             RestEndpoints::API_ADVICES => [
-                RestEndpoints::ACTION_SYS_GET_LIST,
+                RestEndpoints::ACTION_ADVICE_GET_LIST,
             ],
 
         ];

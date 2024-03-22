@@ -20,7 +20,7 @@
 namespace Modules\ModuleUsersUI\Lib\ACL;
 
 use Modules\ModuleDocker\App\Controllers\ModuleDockerController;
-use Modules\ModuleUsersUI\Lib\RestEndpointsConstants as RestEndpoints;
+use Modules\ModuleUsersUI\Lib\EndpointConstants as RestEndpoints;
 
 class ModuleDockerACL implements ACLInterface
 {

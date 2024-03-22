@@ -20,7 +20,7 @@
 namespace Modules\ModuleUsersUI\Lib\ACL;
 
 use Modules\ModuleBitrix24Integration\App\Controllers\ModuleBitrix24IntegrationController;
-use Modules\ModuleUsersUI\Lib\RestEndpointsConstants;
+use Modules\ModuleUsersUI\Lib\EndpointConstants;
 
 class ModuleBitrix24IntegrationACL implements ACLInterface
 {
@@ -35,7 +35,7 @@ class ModuleBitrix24IntegrationACL implements ACLInterface
     {
         return [
             ModuleBitrix24IntegrationController::class=>[
-                RestEndpointsConstants::ACTION_INDEX=>[
+                EndpointConstants::ACTION_INDEX=>[
                     ModuleBitrix24IntegrationController::class=>[
                         'activateCode',
                         'getAppId',

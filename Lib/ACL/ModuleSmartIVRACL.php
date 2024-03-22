@@ -20,7 +20,7 @@
 namespace Modules\ModuleUsersUI\Lib\ACL;
 
 use Modules\ModuleSmartIVR\App\Controllers\ModuleSmartIVRController;
-use Modules\ModuleUsersUI\Lib\RestEndpointsConstants;
+use Modules\ModuleUsersUI\Lib\EndpointConstants;
 
 class ModuleSmartIVRACL implements ACLInterface
 {
@@ -35,9 +35,9 @@ class ModuleSmartIVRACL implements ACLInterface
     {
         return [
             ModuleSmartIVRController::class => [
-                RestEndpointsConstants::ACTION_INDEX=>[
+                EndpointConstants::ACTION_INDEX=>[
                     ModuleSmartIVRController::class => [
-                        RestEndpointsConstants::ACTION_SAVE,
+                        EndpointConstants::ACTION_SAVE,
                     ],
                     self::API_MODULE_SMART_IVR=>'*'
                 ]

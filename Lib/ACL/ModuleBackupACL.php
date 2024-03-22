@@ -20,7 +20,7 @@
 namespace Modules\ModuleUsersUI\Lib\ACL;
 
 use Modules\ModuleBackup\App\Controllers\ModuleBackupController;
-use Modules\ModuleUsersUI\Lib\RestEndpointsConstants;
+use Modules\ModuleUsersUI\Lib\EndpointConstants;
 
 class ModuleBackupACL implements ACLInterface
 {
@@ -36,7 +36,7 @@ class ModuleBackupACL implements ACLInterface
     {
         return [
             ModuleBackupController::class => [
-                RestEndpointsConstants::ACTION_INDEX => [
+                EndpointConstants::ACTION_INDEX => [
                     ModuleBackupController::class =>
                         [
                             'automatic'

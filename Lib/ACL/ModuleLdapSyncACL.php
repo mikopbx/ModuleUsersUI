@@ -20,7 +20,7 @@
 namespace Modules\ModuleUsersUI\Lib\ACL;
 
 use Modules\ModuleLdapSync\App\Controllers\ModuleLdapSyncController;
-use Modules\ModuleUsersUI\Lib\RestEndpointsConstants;
+use Modules\ModuleUsersUI\Lib\EndpointConstants;
 
 class ModuleLdapSyncACL implements ACLInterface
 {
@@ -35,17 +35,17 @@ class ModuleLdapSyncACL implements ACLInterface
     {
         return [
             ModuleLdapSyncController::class => [
-                RestEndpointsConstants::ACTION_INDEX=>[
+                EndpointConstants::ACTION_INDEX=>[
                     ModuleLdapSyncController::class => [
-                        RestEndpointsConstants::ACTION_MODIFY,
+                        EndpointConstants::ACTION_MODIFY,
                     ],
                     self::API_MODULE_LDAP_SYNC=>'*',
                 ],
-                RestEndpointsConstants::ACTION_SAVE=>[
+                EndpointConstants::ACTION_SAVE=>[
                     ModuleLdapSyncController::class => [
-                        RestEndpointsConstants::ACTION_ENABLE,
-                        RestEndpointsConstants::ACTION_DISABLE,
-                        RestEndpointsConstants::ACTION_DELETE,
+                        EndpointConstants::ACTION_ENABLE,
+                        EndpointConstants::ACTION_DISABLE,
+                        EndpointConstants::ACTION_DELETE,
                     ],
                 ]
             ],

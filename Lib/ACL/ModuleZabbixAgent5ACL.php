@@ -18,7 +18,7 @@
  */
 
 namespace Modules\ModuleUsersUI\Lib\ACL;
-use Modules\ModuleUsersUI\Lib\RestEndpointsConstants as RestEndpoints;
+use Modules\ModuleUsersUI\Lib\EndpointConstants as RestEndpoints;
 use Modules\ModuleZabbixAgent5\App\Controllers\ModuleZabbixAgent5Controller;
 class ModuleZabbixAgent5ACL implements ACLInterface
 {

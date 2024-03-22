@@ -20,7 +20,7 @@
 namespace Modules\ModuleUsersUI\Lib\ACL;
 
 use Modules\ModuleGetSsl\App\Controllers\ModuleGetSslController;
-use Modules\ModuleUsersUI\Lib\RestEndpointsConstants;
+use Modules\ModuleUsersUI\Lib\EndpointConstants;
 
 class ModuleGetSslACL implements ACLInterface
 {
@@ -35,10 +35,10 @@ class ModuleGetSslACL implements ACLInterface
     {
         return [
             ModuleGetSslController::class => [
-                RestEndpointsConstants::ACTION_INDEX=>[
+                EndpointConstants::ACTION_INDEX=>[
                     ModuleGetSslController::class => [
-                        RestEndpointsConstants::ACTION_SAVE,
-                        RestEndpointsConstants::ACTION_DELETE,
+                        EndpointConstants::ACTION_SAVE,
+                        EndpointConstants::ACTION_DELETE,
                         'getTablesDescription',
                         'getNewRecords',
                         'getCert',
