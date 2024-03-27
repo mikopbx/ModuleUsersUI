@@ -142,4 +142,8 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'W module nie utworzono jeszcze żadnych grup dostępu',
     'module_usersui_AddNewAccessGroupShort' => 'Tworzyć',
     'module_usersui_LoginNameNotUnique' => 'Nie jest to unikalna nazwa użytkownika',
+    'module_usersui_SelectMemberToAddToGroup' => 'Wybierz pracownika, którego chcesz dodać do bieżącej grupy',
+    'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'konfigurowanie agenta Zabbix',
+    'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'konfiguracja modułu',
+    'module_usersui_CheckBox_CTIClient_ModuleCTIClient_index' => 'konfiguracja modułu',
 ];

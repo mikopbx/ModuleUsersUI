@@ -142,4 +142,8 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'Δεν έχουν δημιουργηθεί ακόμη ομάδες πρόσβασης στη λειτουργική μονάδα',
     'module_usersui_AddNewAccessGroupShort' => 'Δημιουργώ',
     'module_usersui_LoginNameNotUnique' => 'Δεν είναι μοναδικό όνομα χρήστη',
+    'module_usersui_SelectMemberToAddToGroup' => 'Επιλέξτε έναν υπάλληλο για προσθήκη στην τρέχουσα ομάδα',
+    'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'εγκατάσταση του πράκτορα Zabbix',
+    'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'εγκατάσταση μονάδας',
+    'module_usersui_CheckBox_CTIClient_ModuleCTIClient_index' => 'εγκατάσταση μονάδας',
 ];

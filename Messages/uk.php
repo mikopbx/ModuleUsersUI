@@ -142,4 +142,8 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'У модулі ще не створено жодної групи доступу',
     'module_usersui_AddNewAccessGroupShort' => 'Створити',
     'module_usersui_LoginNameNotUnique' => 'Не унікальне ім\'я користувача',
+    'module_usersui_SelectMemberToAddToGroup' => 'Виберіть співробітника, щоб додати до поточної групи',
+    'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'налаштування Zabbix агента',
+    'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'налаштування модуля',
+    'module_usersui_CheckBox_CTIClient_ModuleCTIClient_index' => 'налаштування модуля',
 ];

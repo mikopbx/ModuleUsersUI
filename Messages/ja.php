@@ -142,4 +142,8 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'モジュール内にアクセス グループがまだ作成されていません',
     'module_usersui_AddNewAccessGroupShort' => '作成',
     'module_usersui_LoginNameNotUnique' => '一意のユーザー名ではない',
+    'module_usersui_SelectMemberToAddToGroup' => '現在のグループに追加する従業員を選択してください',
+    'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'Zabbixエージェントのセットアップ',
+    'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'モジュールのセットアップ',
+    'module_usersui_CheckBox_CTIClient_ModuleCTIClient_index' => 'モジュールのセットアップ',
 ];

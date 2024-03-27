@@ -142,4 +142,8 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'Er zijn nog geen toegangsgroepen aangemaakt in de module',
     'module_usersui_AddNewAccessGroupShort' => 'Creëren',
     'module_usersui_LoginNameNotUnique' => 'Geen unieke gebruikersnaam',
+    'module_usersui_SelectMemberToAddToGroup' => 'Selecteer een medewerker om toe te voegen aan de huidige groep',
+    'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'Zabbix-agent opzetten',
+    'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'module-opstelling',
+    'module_usersui_CheckBox_CTIClient_ModuleCTIClient_index' => 'module-opstelling',
 ];

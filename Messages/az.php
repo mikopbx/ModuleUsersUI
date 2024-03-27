@@ -142,4 +142,8 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'Modulda hələ heç bir giriş qrupu yaradılmayıb',
     'module_usersui_AddNewAccessGroupShort' => 'Yaradın',
     'module_usersui_LoginNameNotUnique' => 'Unikal istifadəçi adı deyil',
+    'module_usersui_SelectMemberToAddToGroup' => 'Cari qrupa əlavə etmək üçün işçi seçin',
+    'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'Zabbix agentinin qurulması',
+    'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'modulun qurulması',
+    'module_usersui_CheckBox_CTIClient_ModuleCTIClient_index' => 'modulun qurulması',
 ];

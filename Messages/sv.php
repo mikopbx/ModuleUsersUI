@@ -142,4 +142,8 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'Inga åtkomstgrupper har skapats i modulen ännu',
     'module_usersui_AddNewAccessGroupShort' => 'Skapa',
     'module_usersui_LoginNameNotUnique' => 'Inte ett unikt användarnamn',
+    'module_usersui_SelectMemberToAddToGroup' => 'Välj en anställd att lägga till i den aktuella gruppen',
+    'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'ställa in Zabbix-agent',
+    'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'moduluppställning',
+    'module_usersui_CheckBox_CTIClient_ModuleCTIClient_index' => 'moduluppställning',
 ];

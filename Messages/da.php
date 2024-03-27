@@ -142,4 +142,8 @@ return [
     'module_usersui_NoAnyAccessGroup' => 'Der er endnu ikke oprettet adgangsgrupper i modulet',
     'module_usersui_AddNewAccessGroupShort' => 'skab',
     'module_usersui_LoginNameNotUnique' => 'Ikke et unikt brugernavn',
+    'module_usersui_SelectMemberToAddToGroup' => 'Vælg en medarbejder, der skal føjes til den aktuelle gruppe',
+    'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'opsætning af Zabbix-agent',
+    'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'modul opsætning',
+    'module_usersui_CheckBox_CTIClient_ModuleCTIClient_index' => 'modul opsætning',
 ];
