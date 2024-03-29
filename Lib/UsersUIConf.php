@@ -26,6 +26,7 @@ use MikoPBX\AdminCabinet\Providers\AssetProvider;
 use MikoPBX\AdminCabinet\Providers\SecurityPluginProvider;
 use MikoPBX\Common\Providers\AclProvider;
 use MikoPBX\Common\Providers\SessionProvider;
+use MikoPBX\Core\System\Util;
 use MikoPBX\Modules\Config\ConfigClass;
 use Modules\ModuleUsersUI\App\Controllers\UsersCredentialsController;
 use Modules\ModuleUsersUI\App\Forms\ExtensionEditAdditionalForm;
@@ -43,14 +44,15 @@ class UsersUIConf extends ConfigClass
     /**
      * Clears the ACL cache after the module is disabled.
      */
-    public function onAfterModuleDisable():void{
+    public function onAfterModuleDisable(): void
+    {
         AclProvider::clearCache();
     }
 
     /**
      * Clears the ACL cache after the module is enabled.
      */
-    public function onAfterModuleEnable():void
+    public function onAfterModuleEnable(): void
     {
         AclProvider::clearCache();
     }
@@ -69,10 +71,11 @@ class UsersUIConf extends ConfigClass
         ];
 
         // Check if the changed model is in the cache-interfere models array.
-        if (in_array($data['model'],  $cacheInterfereModels)) {
+        if (in_array($data['model'], $cacheInterfereModels)) {
             AclProvider::clearCache();
         }
     }
+
     /**
      * Prepares list of additional ACL roles and rules
      *
@@ -94,7 +97,7 @@ class UsersUIConf extends ConfigClass
     public function authenticateUser(string $login, string $password): array
     {
         $authenticator = new UsersUIAuthenticator($login, $password);
-        return $authenticator->authenticate()??[];
+        return $authenticator->authenticate() ?? [];
     }
 
     /**
@@ -151,13 +154,14 @@ class UsersUIConf extends ConfigClass
      *
      * @return void
      */
-    public function onBeforeExecuteRoute(Dispatcher $dispatcher):void{
-        $controller = $dispatcher->getActiveController();
+    public function onBeforeExecuteRoute(Dispatcher $dispatcher): void
+    {
+       $controller = $dispatcher->getActiveController();
         if (is_a($controller, ExtensionsController::class)
             && $dispatcher->getActionName() === 'modify'
         ) {
             $controller->view->addCustomTabFromModuleUsersUI =
-                $this->di->get(SecurityPluginProvider::SERVICE_NAME, [UsersCredentialsController::class,'changeUserCredentials']);
+                $this->di->get(SecurityPluginProvider::SERVICE_NAME, [UsersCredentialsController::class, 'changeUserCredentials']);
         }
     }
 
@@ -173,11 +177,12 @@ class UsersUIConf extends ConfigClass
     {
         // Intercept the form submission of Extensions, only save action
         $calledUrl = $app->request->get('_url');
-        if ($calledUrl!=='/api/extensions/saveRecord') {
+
+        if ($calledUrl !== '/api/extensions/saveRecord') {
             return;
         }
         $response = json_decode($app->response->getContent());
-        if (!empty($response->result) and $response->result===true){
+        if (!empty($response->result) and $response->result === true) {
             $userController = new UsersCredentialsController();
             $postData = $app->request->getPost();
             $userController->saveUserCredential($postData);
@@ -214,13 +219,13 @@ class UsersUIConf extends ConfigClass
      *
      * @return void
      */
-    public function onAfterAssetsPrepared(Manager $assets, Dispatcher $dispatcher):void
+    public function onAfterAssetsPrepared(Manager $assets, Dispatcher $dispatcher): void
     {
         $currentController = $dispatcher->getControllerName();
         $currentAction = $dispatcher->getActionName();
-        if ($currentController==='Extensions' and $currentAction==='modify') {
-            $isAllowed = $this->di->get(SecurityPluginProvider::SERVICE_NAME, [UsersCredentialsController::class,'changeUserCredentials']);
-            if ($isAllowed){
+        if ($currentController === 'Extensions' and $currentAction === 'modify') {
+            $isAllowed = $this->di->get(SecurityPluginProvider::SERVICE_NAME, [UsersCredentialsController::class, 'changeUserCredentials']);
+            if ($isAllowed) {
                 $assets->collection(AssetProvider::SEMANTIC_UI_CSS)
                     ->addCss('css/vendor/semantic/search.min.css', true);
                 $assets->collection(AssetProvider::SEMANTIC_UI_JS)
