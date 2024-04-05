@@ -347,6 +347,12 @@ const ModuleUsersUIUsersTab = {
         $(`tr#${rowId} .changed-field`).find('.ui.spinner.loading.icon').hide();
         $(`tr#${rowId} .changed-field`).closest('div').search('hide results').search('destroy');
     },
+
+    /**
+     * Calculate data table page length
+     *
+     * @returns {number}
+     */
     calculatePageLength() {
         // Calculate row height
         let rowHeight = ModuleUsersUIUsersTab.$usersTable.find('tr').first().outerHeight();
