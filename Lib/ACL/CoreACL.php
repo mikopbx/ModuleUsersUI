@@ -303,7 +303,7 @@ class CoreACL implements ACLInterface
             RestEndpoints::API_SYSLOG => '*',
             RestEndpoints::API_SYSINFO => '*',
             RestEndpoints::API_STORAGE => '*',
-            RestEndpoints::API_ADVICES => [
+            RestEndpoints::API_ADVICE => [
                 RestEndpoints::ACTION_ADVICE_GET_LIST,
             ],
 

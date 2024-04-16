@@ -41,7 +41,7 @@ class EndpointConstants
     const API_SYSLOG = '/pbxcore/api/syslog';
     const API_SYSINFO = '/pbxcore/api/sysinfo';
     const API_STORAGE = '/pbxcore/api/storage';
-    const API_ADVICES = '/pbxcore/api/advices';
+    const API_ADVICE = '/pbxcore/api/advice';
     const API_SOME_ENDPOINT = '/pbxcore/api/someendpoint';
 
     // CDR (Call Detail Records) API Actions
@@ -87,7 +87,7 @@ class EndpointConstants
     // License API Actions
     const ACTION_LIC_SEND_PBX_METRICS = '/sendPBXMetrics';
 
-    // Advices API Actions
+    // Advice API Actions
     const ACTION_ADVICE_GET_LIST = '/getList';
 
     // Sound File Actions
