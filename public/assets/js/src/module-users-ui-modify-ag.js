@@ -459,7 +459,7 @@ const moduleUsersUIModifyAG = {
      * @returns {*}
      */
     convertCamelToDash(str) {
-        return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+        return str.replace(/([a-z\d])([A-Z])/g, '$1-$2').toLowerCase();
     },
     /**
      * Callback function before sending the form.
