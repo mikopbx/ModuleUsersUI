@@ -33,6 +33,6 @@
 {% endif %}
 
 
-{{ partial("partials/submitbutton",['indexurl':'module-users-u-i/index']) }}
+{{ partial("partials/submitbutton",['indexurl':'module-users-u-i/module-users-u-i/index']) }}
 
 {{ endform() }}

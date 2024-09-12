@@ -25,7 +25,6 @@ use Modules\ModuleUsersUI\Models\AccessGroups;
 
 class AccessGroupsController extends ModuleUsersUIBaseController
 {
-
     /**
      * The modify action for creating or editing access group.
      *
@@ -164,7 +163,7 @@ class AccessGroupsController extends ModuleUsersUIBaseController
             $this->view->success = true;
         }
 
-        $this->forward('module-users-u-i/access-groups/index');
+        $this->forward('module-users-u-i/module-users-u-i/index');
     }
 
 }
