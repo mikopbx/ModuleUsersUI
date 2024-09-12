@@ -411,20 +411,25 @@ const moduleUsersUIModifyAG = {
                 let url = moduleUsersUIModifyAG.convertCamelToDash(`/${module}/${controllerName}/${action}`);
 
                 let nameTemplates = [
+                    `mo_${module}`,
                     `mm_${controllerName}`,
                     `Breadcrumb${module}`,
                     `module_usersui_${module}_${controllerName}_${action}`
                 ];
 
                 let name = '';
-                nameTemplates.every((nameTemplate)=>{
+                nameTemplates.some((nameTemplate) => {
+                    // Попытка найти перевод
                     name = globalTranslate[nameTemplate];
-                    if (name === undefined) {
-                        name = nameTemplate;
-                        return true;
-                    } else {
-                        return false;
+
+                    // Если перевод найден (он не undefined), прекращаем перебор
+                    if (name !== undefined && name !== nameTemplate) {
+                        return true;  // Останавливаем перебор
                     }
+
+                    // Если перевод не найден, продолжаем поиск
+                    name = nameTemplate;  // Используем шаблон как значение по умолчанию
+                    return false;
                 });
                 if (currentHomePage === url){
                     values.push( { name: name, value: url, selected: true });
