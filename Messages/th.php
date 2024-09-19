@@ -183,4 +183,5 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'เปลี่ยนการตั้งค่า',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'ดูการตั้งค่า',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'เปลี่ยนการตั้งค่า',
+    'module_usersui_LdapType' => 'ประเภทเซิร์ฟเวอร์',
 ];
