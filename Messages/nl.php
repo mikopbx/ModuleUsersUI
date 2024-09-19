@@ -166,4 +166,5 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'instellingen veranderen',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'Bekijk instellingen',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'instellingen veranderen',
+    'module_usersui_LdapType' => 'Servertype',
 ];
