@@ -166,4 +166,5 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_index' => 'zobrazit nastavení',
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'změnit nastavení',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'zobrazit nastavení',
+    'module_usersui_LdapType' => 'Typ serveru',
 ];
