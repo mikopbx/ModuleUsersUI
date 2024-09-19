@@ -166,4 +166,5 @@ return [
     'module_usersui_CheckBox_Bitrix24Integration_ModuleBitrix24Integration_index' => 'alterando as configurações do módulo',
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_index' => 'configurações de exibição',
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'mudar configurações',
+    'module_usersui_LdapType' => 'Tipo de servidor',
 ];
