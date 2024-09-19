@@ -183,4 +183,5 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'beállítások megváltoztatása',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'beállítások megtekintése',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'beállítások megváltoztatása',
+    'module_usersui_LdapType' => 'Szerver típusa',
 ];
