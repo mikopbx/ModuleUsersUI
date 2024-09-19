@@ -166,4 +166,5 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'პარამეტრების შეცვლა',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'პარამეტრების ნახვა',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'პარამეტრების შეცვლა',
+    'module_usersui_LdapType' => 'სერვერის ტიპი',
 ];
