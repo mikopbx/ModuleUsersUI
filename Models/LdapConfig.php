@@ -44,12 +44,20 @@ class LdapConfig extends ModulesModelsBase
      */
     public $serverName;
 
+
     /**
      * Ldap server port
      *
      * @Column(type="string", nullable=false)
      */
     public $serverPort;
+
+    /**
+     * Ldap server use TLS
+     *
+     * @Column(type="string", length=1, nullable=false, default="0")
+     */
+    public ?string $useTLS='0';
 
     /**
      * Login of user with read rights on the domain
@@ -92,6 +100,13 @@ class LdapConfig extends ModulesModelsBase
      * @Column(type="string", nullable=true)
      */
     public $organizationalUnit;
+
+    /**
+     * Type of ldap server {ActiveDirectory, OpenLDAP, FreeIPA, DirectoryServer}
+     *
+     * @Column(type="string", nullable=false)
+     */
+    public ?string $ldapType='ActiveDirectory';
 
 
     public function initialize(): void

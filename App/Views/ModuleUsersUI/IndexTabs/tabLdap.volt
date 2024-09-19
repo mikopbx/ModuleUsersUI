@@ -7,10 +7,23 @@
     </div>
 </div>
 
+<div class="inline field">
+    <label for="ldapType">{{ t._('module_usersui_LdapType') }}</label>
+    {{ ldapForm.render('ldapType') }}
+</div>
+
 <div class="fields disable-if-no-ldap">
+    {{ ldapForm.render('useTLS') }}
     <div class="six wide field">
         <label for="serverName">{{ t._('module_usersui_LdapServerName') }}</label>
-        {{ ldapForm.render('serverName') }}
+        <div class="ui left labeled input">
+            <div class="ui dropdown label use-tls-dropdown">
+                {{ ldapForm.render('useTLS') }}
+                <div class="text">ldap://</div>
+                <i class="dropdown icon"></i>
+            </div>
+            {{ ldapForm.render('serverName') }}
+        </div>
     </div>
     <div class="two wide field">
         <label for="serverPort">{{ t._('module_usersui_LdapServerPort') }}</label>
@@ -27,10 +40,10 @@
 <div class="field disable-if-no-ldap">
     <label>{{ t._('module_usersui_LdapAdminLogin') }}</label>
     <div class="equal width fields">
-        <div class="field max-width-250">
+        <div class="field">
             {{ ldapForm.render('administrativeLogin') }}
         </div>
-        <div class="field max-width-400">
+        <div class="field">
             {{ ldapForm.render('administrativePasswordHidden') }}
         </div>
     </div>

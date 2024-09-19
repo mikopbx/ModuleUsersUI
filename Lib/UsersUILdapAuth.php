@@ -33,12 +33,20 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
 {
     private string $serverName;
     private string $serverPort;
+    private string $useTLS;
     private string $baseDN;
     private string $administrativeLogin;
     private string $administrativePassword;
     private string $userIdAttribute;
     private string $organizationalUnit;
     private string $userFilter;
+
+    /**
+     * The class of the user model based on LDAP type.
+     *
+     * @var string
+     */
+    private string $userModelClass;
 
     public function __construct(array $ldapCredentials)
     {
@@ -50,6 +58,10 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
         $this->userIdAttribute = $ldapCredentials['userIdAttribute'];
         $this->organizationalUnit = $ldapCredentials['organizationalUnit'];
         $this->userFilter = $ldapCredentials['userFilter'];
+        $this->useTLS = $ldapCredentials['useTLS'];
+
+        // Set user model class based on LDAP type
+        $this->userModelClass = $this->getUserModelClass($ldapCredentials['ldapType']);
     }
 
     /**
@@ -69,6 +81,12 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
             'base_dn' => $this->baseDN,
             'username' => $this->administrativeLogin,
             'password' => $this->administrativePassword,
+            'timeout'  => 15,
+            'use_tls'  => $this->useTLS,
+            'options' => [
+                // See: http://php.net/ldap_set_option
+                LDAP_OPT_X_TLS_REQUIRE_CERT => LDAP_OPT_X_TLS_ALLOW
+            ]
         ]);
 
         $success = false;
@@ -98,14 +116,16 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
             });
 
             // Query LDAP for the user
-            $query = $connection->query();
+            $query = call_user_func([$this->userModelClass, 'query']);
+
             if ($this->userFilter!==''){
                 $query->rawFilter($this->userFilter);
             }
             if ($this->organizationalUnit!==''){
                 $query->in($this->organizationalUnit);
             }
-            $user = $query->where($this->userIdAttribute, '=', $username)->first();;
+
+            $user = $query->where($this->userIdAttribute, '=', $username)->first();
 
             if ($user) {
                 // Continue with authentication if user is found and attempt authentication
@@ -126,6 +146,25 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
         return $success;
     }
 
+    /**
+     * Get the class of the user model based on LDAP type.
+     *
+     * @param string $ldapType The LDAP type.
+     * @return string The user model class.
+     */
+    private function getUserModelClass(string $ldapType): string
+    {
+        switch ($ldapType) {
+            case 'OpenLDAP':
+                return \LdapRecord\Models\OpenLDAP\User::class;
+            case 'DirectoryServer':
+                return \LdapRecord\Models\DirectoryServer\User::class;
+            case 'FreeIPA':
+                return \LdapRecord\Models\FreeIPA\User::class;
+            default:
+                return \LdapRecord\Models\ActiveDirectory\User::class;
+        }
+    }
 
     /**
      * Get available users list via LDAP.

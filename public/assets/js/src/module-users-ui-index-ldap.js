@@ -74,6 +74,18 @@ const moduleUsersUiIndexLdap = {
     $ldapCheckGetUsersSegment: $('#ldap-check-get-users'),
 
     /**
+     * jQuery object for the use TLS selector
+     * @type {jQuery}
+     */
+    $useTlsDropdown: $('.use-tls-dropdown'),
+
+    /**
+     * jQuery object for the server type dropdown.
+     * @type {jQuery}
+     */
+    $ldapTypeDropdown: $('.select-ldap-field'),
+
+    /**
      * Validation rules for the form fields.
      * @type {Object}
      */
@@ -157,6 +169,24 @@ const moduleUsersUiIndexLdap = {
             onChange: moduleUsersUiIndexLdap.onChangeLdapCheckbox,
         });
         moduleUsersUiIndexLdap.onChangeLdapCheckbox();
+
+        moduleUsersUiIndexLdap.$ldapTypeDropdown.dropdown();
+        // Handle change TLS protocol
+        moduleUsersUiIndexLdap.$useTlsDropdown.dropdown({
+            values: [
+                {
+                    name: 'ldap://',
+                    value: '0',
+                    selected : moduleUsersUiIndexLdap.$formObj.form('get value','useTLS')==='0'
+                },
+                {
+                    name     : 'ldaps://',
+                    value    : '1',
+                    selected : moduleUsersUiIndexLdap.$formObj.form('get value','useTLS')==='1'
+                }
+            ],
+        });
+
     },
 
     /**

@@ -44,6 +44,7 @@ class LdapConfigController extends ModuleUsersUIBaseController
 
         if (!$ldapConfig) {
             $ldapConfig = new LdapConfig();
+            $ldapConfig->useTLS = '0';
         }
 
         // Update ldapConfig properties with the provided data
@@ -184,6 +185,8 @@ class LdapConfigController extends ModuleUsersUIBaseController
             'userIdAttribute' => $postData['userIdAttribute'],
             'organizationalUnit' => $postData['organizationalUnit'],
             'userFilter' => $postData['userFilter'],
+            'useTLS' => $postData['useTLS'],
+           'ldapType' => $postData['ldapType'],
         ];
     }
 }

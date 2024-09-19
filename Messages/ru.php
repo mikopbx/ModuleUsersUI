@@ -183,5 +183,6 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_index'=>'просмотр настроек',
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save'=>'изменение настроек',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index'=>'просмотр настроек',
-    'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save'=>'изменение настроек'
+    'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save'=>'изменение настроек',
+    'module_usersui_LdapType'=>'Тип сервера',
 ];
