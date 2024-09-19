@@ -183,4 +183,5 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'muuttaa asetuksia',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'tarkastella asetuksia',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'muuttaa asetuksia',
+    'module_usersui_LdapType' => 'Palvelimen tyyppi',
 ];
