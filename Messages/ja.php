@@ -166,4 +166,5 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_index' => '設定を表示する',
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => '設定を変更する',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => '設定を表示する',
+    'module_usersui_LdapType' => 'サーバーの種類',
 ];
