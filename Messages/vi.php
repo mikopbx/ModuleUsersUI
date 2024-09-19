@@ -166,4 +166,5 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_index' => 'Giao diện cài đặt',
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'thay đổi cài đặt',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'Giao diện cài đặt',
+    'module_usersui_LdapType' => 'Loại máy chủ',
 ];
