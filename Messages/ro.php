@@ -166,4 +166,5 @@ return [
     'module_usersui_CheckBox_SmartIVR_ModuleSmartIVR_index' => 'modificarea setărilor modulului',
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'schimbă setările',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'vizualizați setările',
+    'module_usersui_LdapType' => 'Tip server',
 ];
