@@ -104,7 +104,7 @@ class LdapConfig extends ModulesModelsBase
     /**
      * Type of ldap server {ActiveDirectory, OpenLDAP, FreeIPA, DirectoryServer}
      *
-     * @Column(type="string", nullable=false)
+     * @Column(type="string", nullable=false, default="ActiveDirectory")
      */
     public ?string $ldapType='ActiveDirectory';
 
