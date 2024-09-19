@@ -166,4 +166,5 @@ return [
     'module_usersui_CheckBox_Autoprovision_ModuleAutoprovision_index' => 'αλλαγή των ρυθμίσεων της μονάδας',
     'module_usersui_CheckBox_SmartIVR_ModuleSmartIVR_index' => 'αλλαγή των ρυθμίσεων της μονάδας',
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_index' => 'προβολή ρυθμίσεων',
+    'module_usersui_LdapType' => 'Τύπος διακομιστή',
 ];
