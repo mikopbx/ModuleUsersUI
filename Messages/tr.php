@@ -166,4 +166,5 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_index' => 'ayarları görüntüle',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'ayarları görüntüle',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'ayarları değiştir',
+    'module_usersui_LdapType' => 'Sunucu türü',
 ];
