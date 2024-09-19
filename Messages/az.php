@@ -166,4 +166,5 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'parametrləri dəyişdirin',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'parametrlərə baxın',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'parametrləri dəyişdirin',
+    'module_usersui_LdapType' => 'Server növü',
 ];
