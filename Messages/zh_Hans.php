@@ -166,4 +166,5 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => '更改设置',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => '查看设置',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => '更改设置',
+    'module_usersui_LdapType' => '服务器类型',
 ];
