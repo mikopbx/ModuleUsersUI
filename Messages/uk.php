@@ -166,4 +166,5 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'зміна налаштувань',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'перегляд налаштувань',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'зміна налаштувань',
+    'module_usersui_LdapType' => 'Тип сервера',
 ];
