@@ -84,8 +84,8 @@ class LdapConfigForm extends BaseForm
         $types = [
             'ActiveDirectory' => 'ActiveDirectory',
             'OpenLDAP' => 'OpenLDAP',
-            'DirectoryServer' => 'DirectoryServer',
-            'FreeIPA' => 'FreeIPA',
+//            'DirectoryServer' => 'DirectoryServer',
+//            'FreeIPA' => 'FreeIPA',
         ];
         $ldapType = new Select(
             'ldapType', $types, [

@@ -189,6 +189,9 @@ const moduleUsersUiIndexLdap = {
             ],
         });
     },
+    /**
+     * Handles change LDAP dropdown.
+     */
     onChangeLdapType(value){
         if(value==='OpenLDAP'){
             moduleUsersUiIndexLdap.$formObj.form('set value','userIdAttribute','uid');
