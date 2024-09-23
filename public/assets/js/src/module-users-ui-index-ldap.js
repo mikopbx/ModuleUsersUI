@@ -153,13 +153,13 @@ const moduleUsersUiIndexLdap = {
         moduleUsersUiIndexLdap.initializeForm();
 
         // Handle get users list button click
-        moduleUsersUiIndexLdap.$checkGetUsersButton.on('click', function(e) {
+        moduleUsersUiIndexLdap.$checkGetUsersButton.on('click', function (e) {
             e.preventDefault();
             moduleUsersUiIndexLdap.apiCallGetLdapUsers();
         });
 
         // Handle check button click
-        moduleUsersUiIndexLdap.$checkAuthButton.on('click', function(e) {
+        moduleUsersUiIndexLdap.$checkAuthButton.on('click', function (e) {
             e.preventDefault();
             moduleUsersUiIndexLdap.apiCallCheckAuth();
         });
@@ -170,25 +170,40 @@ const moduleUsersUiIndexLdap = {
         });
         moduleUsersUiIndexLdap.onChangeLdapCheckbox();
 
-        moduleUsersUiIndexLdap.$ldapTypeDropdown.dropdown();
+        moduleUsersUiIndexLdap.$ldapTypeDropdown.dropdown({
+            onChange: moduleUsersUiIndexLdap.onChangeLdapType,
+        });
         // Handle change TLS protocol
         moduleUsersUiIndexLdap.$useTlsDropdown.dropdown({
             values: [
                 {
                     name: 'ldap://',
                     value: '0',
-                    selected : moduleUsersUiIndexLdap.$formObj.form('get value','useTLS')==='0'
+                    selected: moduleUsersUiIndexLdap.$formObj.form('get value', 'useTLS') === '0'
                 },
                 {
-                    name     : 'ldaps://',
-                    value    : '1',
-                    selected : moduleUsersUiIndexLdap.$formObj.form('get value','useTLS')==='1'
+                    name: 'ldaps://',
+                    value: '1',
+                    selected: moduleUsersUiIndexLdap.$formObj.form('get value', 'useTLS') === '1'
                 }
             ],
         });
-
     },
-
+    onChangeLdapType(value){
+        if(value==='OpenLDAP'){
+            moduleUsersUiIndexLdap.$formObj.form('set value','userIdAttribute','uid');
+            moduleUsersUiIndexLdap.$formObj.form('set value','administrativeLogin','cn=admin,dc=example,dc=com');
+            moduleUsersUiIndexLdap.$formObj.form('set value','userFilter','(objectClass=inetOrgPerson)');
+            moduleUsersUiIndexLdap.$formObj.form('set value','baseDN','dc=example,dc=com');
+            moduleUsersUiIndexLdap.$formObj.form('set value','organizationalUnit','ou=users, dc=domain, dc=com');
+        } else if(value==='ActiveDirectory'){
+            moduleUsersUiIndexLdap.$formObj.form('set value','administrativeLogin','admin');
+            moduleUsersUiIndexLdap.$formObj.form('set value','userIdAttribute','samaccountname')
+            moduleUsersUiIndexLdap.$formObj.form('set value','userFilter','(&(objectClass=user)(objectCategory=PERSON))');
+            moduleUsersUiIndexLdap.$formObj.form('set value','baseDN','dc=example,dc=com');
+            moduleUsersUiIndexLdap.$formObj.form('set value','organizationalUnit','ou=users, dc=domain, dc=com');
+        }
+    },
     /**
      * Handles get LDAP users list button click.
      */
