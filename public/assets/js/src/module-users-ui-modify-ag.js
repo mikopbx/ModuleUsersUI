@@ -459,7 +459,17 @@ const moduleUsersUIModifyAG = {
      * @returns {*}
      */
     convertCamelToDash(str) {
-        return str.replace(/([a-z\d])([A-Z])/g, '$1-$2').toLowerCase();
+        return str
+            // Insert a hyphen between a lowercase letter and an uppercase letter
+            .replace(/([a-z])([A-Z])/g, '$1-$2')
+            // Insert a hyphen between a digit and an uppercase letter
+            .replace(/(\d)([A-Z])/g, '$1-$2')
+            // Insert a hyphen between an uppercase letter or sequence and an uppercase letter followed by a lowercase letter
+            .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+            // Split sequences of two or more uppercase letters with hyphens
+            .replace(/([A-Z]{2,})/g, (match) => match.split('').join('-'))
+            // Convert the entire string to lowercase
+            .toLowerCase();
     },
     /**
      * Callback function before sending the form.
