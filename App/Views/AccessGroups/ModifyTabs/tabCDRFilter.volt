@@ -36,7 +36,7 @@
         <tbody>
     {% endif %}
     <tr data-value="{{ member['userid'] }}">
-        <td class="disability">
+        <td class="disability" >
             <div class="ui toggle checkbox cdr-filter-toggles" data-value="{{ member['userid'] }}">
                 <input type="checkbox" name="cdr-filter-{{ member['userid'] }}"
                        {% if member['selected'] %}checked='checked'{% endif %} />

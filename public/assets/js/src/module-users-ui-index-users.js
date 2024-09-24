@@ -16,7 +16,7 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* global SemanticLocalization, globalRootUrl */
+/* global SemanticLocalization, globalRootUrl, moduleUsersUiIndexLdap, UserMessage, Datatable */
 
 const ModuleUsersUIUsersTab = {
 
@@ -25,6 +25,12 @@ const ModuleUsersUIUsersTab = {
      * @type {jQuery}
      */
     $usersTable: $('#users-table'),
+
+    /**
+     * User data table.
+     * @type {Datatable}
+     */
+    userDataTable: null,
 
     /**
      * Select group dropdowns.
@@ -48,7 +54,9 @@ const ModuleUsersUIUsersTab = {
      * Initializes the ModuleUsersUIIndex module.
      */
     initialize() {
+
         ModuleUsersUIUsersTab.initializeDataTable();
+
         ModuleUsersUIUsersTab.$selectGroup.each((index, obj) => {
             $(obj).dropdown({
                 values: ModuleUsersUIUsersTab.makeDropdownList($(obj).attr('data-value')),
@@ -116,10 +124,22 @@ const ModuleUsersUIUsersTab = {
      * Initializes the users table DataTable.
      */
     initializeDataTable() {
-        ModuleUsersUIUsersTab.$usersTable.DataTable({
+
+        $('#main-users-ui-tab-menu .item').tab({
+            onVisible(){
+                if ($(this).data('tab')==='users' && ModuleUsersUIUsersTab.userDataTable!==null){
+                    const newPageLength = ModuleUsersUIUsersTab.calculatePageLength();
+                    ModuleUsersUIUsersTab.userDataTable.page.len(newPageLength).draw(false);
+                }
+            }
+        });
+
+        ModuleUsersUIUsersTab.userDataTable = ModuleUsersUIUsersTab.$usersTable.DataTable({
             // destroy: true,
             lengthChange: false,
-            paging: false,
+            paging: true,
+            pageLength: ModuleUsersUIUsersTab.calculatePageLength(),
+            scrollCollapse: true,
             columns: [
                 // Username
                 {
@@ -326,7 +346,23 @@ const ModuleUsersUIUsersTab = {
     removeProgressIcon(rowId) {
         $(`tr#${rowId} .changed-field`).find('.ui.spinner.loading.icon').hide();
         $(`tr#${rowId} .changed-field`).closest('div').search('hide results').search('destroy');
-    }
+    },
+
+    /**
+     * Calculate data table page length
+     *
+     * @returns {number}
+     */
+    calculatePageLength() {
+        // Calculate row height
+        let rowHeight = ModuleUsersUIUsersTab.$usersTable.find('tr').first().outerHeight();
+        // Calculate window height and available space for table
+        const windowHeight = window.innerHeight;
+        const headerFooterHeight = 400; // Estimate height for header, footer, and other elements
+
+        // Calculate new page length
+        return Math.max(Math.floor((windowHeight - headerFooterHeight) / rowHeight), 10);
+    },
 };
 
 $(document).ready(() => {

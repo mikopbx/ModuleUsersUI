@@ -25,7 +25,6 @@ use Modules\ModuleUsersUI\Models\AccessGroups;
 
 class AccessGroupsController extends ModuleUsersUIBaseController
 {
-
     /**
      * The modify action for creating or editing access group.
      *
@@ -113,7 +112,7 @@ class AccessGroupsController extends ModuleUsersUIBaseController
         // Save access group rights
         $accessGroupController = new AccessGroupsRightsController();
         // Parse access group rights from the posted JSON string
-        $accessGroupRightsFromPost = json_decode($data['access_group_rights'], true);
+        $accessGroupRightsFromPost = json_decode($data['access_group_rights'], true)??[];
         if ($accessGroupController->saveAccessGroupRights($accessGroupEntity->id, $accessGroupRightsFromPost)===false){
             $this->db->rollback();
             return;
@@ -122,7 +121,7 @@ class AccessGroupsController extends ModuleUsersUIBaseController
         // Save users credentials
         $usersCredentialsController = new UsersCredentialsController();
         // Parse group members from the posted JSON string
-        $membersOfTheGroup = json_decode($data['members'], true);
+        $membersOfTheGroup = json_decode($data['members'], true)??[];
         if ($usersCredentialsController->saveUsersCredentials($accessGroupEntity->id, $membersOfTheGroup)===false){
             $this->db->rollback();
             return;
@@ -131,7 +130,7 @@ class AccessGroupsController extends ModuleUsersUIBaseController
         // Save CDR filter
         $cdrFilterController = new AccessGroupCDRFilterController();
         // Parse cdr filter from the posted JSON string
-        $cdrFilterUsers = json_decode($data['cdrFilter'], true);
+        $cdrFilterUsers = json_decode($data['cdrFilter'], true)??[];
         if ($cdrFilterController->saveCdrFilter($accessGroupEntity->id, $cdrFilterUsers)===false){
             $this->db->rollback();
             return;
@@ -164,7 +163,7 @@ class AccessGroupsController extends ModuleUsersUIBaseController
             $this->view->success = true;
         }
 
-        $this->forward('module-users-u-i/access-groups/index');
+        $this->forward('module-users-u-i/module-users-u-i/index');
     }
 
 }

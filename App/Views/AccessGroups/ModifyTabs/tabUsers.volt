@@ -1,5 +1,5 @@
 <div class="ten wide field">
-    <label for="select-extension-field">{{ t._('mod_usrgr_SelectMemberToAddToGroup') }}</label>
+    <label for="select-extension-field">{{ t._('module_usersui_SelectMemberToAddToGroup') }}</label>
     {{ form.render('select-extension-field') }}
 </div>
 

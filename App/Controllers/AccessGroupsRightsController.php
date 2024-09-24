@@ -137,7 +137,7 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
         $arrayOfExclusions = [];
 
         // Get the list of linked controllers and actions which we hide from settings
-        foreach (UsersUIACL::getLinkedControllersActions() as $controllerClass=> $actions) {
+        foreach (UsersUIACL::getLinkedControllerActions() as $controllerClass=> $actions) {
             // Iterate through the main controllers actions
             foreach ($actions as $action=>$linkedControllers) {
                 // Iterate through the linked controllers actions
@@ -462,7 +462,7 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
             foreach ($modules['controllers'] as $controller) {
                 // Create a new access group right object
                 $accessGroupRight = new AccessGroupsRights();
-                $accessGroupRight->group_id = $accessGroupId;
+                $accessGroupRight->group_id = intval($accessGroupId);
                 $accessGroupRight->module_id = $modules['module'];
                 $accessGroupRight->controller = $controller['controller'];
                 $accessGroupRight->actions = json_encode($controller['actions']);

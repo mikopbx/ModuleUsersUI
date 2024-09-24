@@ -72,7 +72,8 @@ class UsersUIAuthenticator extends \Phalcon\Di\Injectable
 
             $successAuthData = [
                 SessionController::ROLE => Constants::MODULE_ROLE_PREFIX.$userData->accessGroupId,
-                SessionController::HOME_PAGE => $userData->homePage ?? $this->url->get('session/end')
+                SessionController::HOME_PAGE => $userData->homePage ?? $this->url->get('session/end'),
+                SessionController::USER_NAME => $this->login,
             ];
 
             if ($userData->useLdapAuth == '1') {

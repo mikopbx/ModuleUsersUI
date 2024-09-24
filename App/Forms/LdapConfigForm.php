@@ -22,7 +22,9 @@ namespace Modules\ModuleUsersUI\App\Forms;
 use MikoPBX\AdminCabinet\Forms\BaseForm;
 use Modules\ModuleUsersUI\Lib\Constants;
 use Phalcon\Forms\Element\Check;
+use Phalcon\Forms\Element\Hidden;
 use Phalcon\Forms\Element\Password;
+use Phalcon\Forms\Element\Select;
 use Phalcon\Forms\Element\Text;
 
 
@@ -42,25 +44,61 @@ class LdapConfigForm extends BaseForm
         $this->add(new Text('serverName', ['placeholder' =>'dc1.domain.com']));
 
         // ServerPort
-        $this->add(new Text('serverPort',['placeholder' =>'389']));
+        $this->add(new Text('serverPort', [
+            'placeholder' => '389',
+            'value' =>$entity->serverPort ?? '389'
+        ]));
+
+        // Use TLS dropdown
+        $this->add(new hidden('useTLS'));
 
         // AdministrativeLogin
         $this->add(new Text('administrativeLogin', ['placeholder' =>'Domain admin login']));
 
         // AdministrativePassword
-        $this->add(new Password('administrativePasswordHidden', ['autocomplete'=>'off', 'placeholder' =>'Domain admin password', 'value'=>Constants::HIDDEN_PASSWORD]));
+        $this->add(new Password('administrativePasswordHidden',
+            [
+                'autocomplete'=>'off',
+                'placeholder' =>'Domain admin password',
+                'value'=>Constants::HIDDEN_PASSWORD
+            ]));
 
         // BaseDN
-        $this->add(new Text('baseDN', ['placeholder' =>'dc=domain, dc=com']));
+        $this->add(new Text('baseDN', [
+            'placeholder' => 'dc=domain, dc=com',
+            'value' => $entity->baseDN ?? 'dc=domain, dc=com'
+        ]));
 
         // UserFilter
-        $this->addTextArea('userFilter', $entity->userFilter??'', 90, ['placeholder' =>'(&(objectClass=user)(objectCategory=PERSON))']);
+        $this->addTextArea('userFilter', $entity->userFilter ?? '(&(objectClass=user)(objectCategory=PERSON))', 90, [
+            'placeholder' => '(&(objectClass=user)(objectCategory=PERSON))'
+        ]);
 
         // UserIdAttribute
         $this->add(new Text('userIdAttribute', ['placeholder' =>'samaccountname']));
 
         // OrganizationUnit
         $this->add(new Text('organizationalUnit', ['placeholder' =>'ou=users, dc=domain, dc=com']));
+
+        // Select server type
+        $types = [
+            'ActiveDirectory' => 'ActiveDirectory',
+            'OpenLDAP' => 'OpenLDAP',
+//            'DirectoryServer' => 'DirectoryServer',
+//            'FreeIPA' => 'FreeIPA',
+        ];
+        $ldapType = new Select(
+            'ldapType', $types, [
+                'using' => [
+                    'id',
+                    'name',
+                ],
+                'emptyValue' => 'ActiveDirectory',
+                'useEmpty' => false,
+                'class' => "ui selection dropdown select-ldap-field",
+            ]
+        );
+        $this->add($ldapType);
 
     }
 }

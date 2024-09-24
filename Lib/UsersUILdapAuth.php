@@ -23,19 +23,33 @@ use LdapRecord\Auth\Events\Failed;
 use LdapRecord\Container;
 use MikoPBX\Common\Handlers\CriticalErrorsHandler;
 use MikoPBX\Common\Providers\LoggerAuthProvider;
+use Modules\ModuleLdapSync\Lib\AnswerStructure;
 
 include_once __DIR__.'/../vendor/autoload.php';
 
+/**
+ * @property \MikoPBX\Common\Providers\TranslationProvider translation
+ */
 class UsersUILdapAuth extends \Phalcon\Di\Injectable
 {
     private string $serverName;
     private string $serverPort;
+    private bool $useTLS;
     private string $baseDN;
     private string $administrativeLogin;
     private string $administrativePassword;
     private string $userIdAttribute;
     private string $organizationalUnit;
     private string $userFilter;
+
+    // Ldap connection
+    private \LdapRecord\Connection $connection;
+    /**
+     * The class of the user model based on LDAP type.
+     *
+     * @var string
+     */
+    private string $userModelClass;
 
     public function __construct(array $ldapCredentials)
     {
@@ -47,6 +61,10 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
         $this->userIdAttribute = $ldapCredentials['userIdAttribute'];
         $this->organizationalUnit = $ldapCredentials['organizationalUnit'];
         $this->userFilter = $ldapCredentials['userFilter'];
+        $this->useTLS = $ldapCredentials['useTLS']==='1';
+
+        // Set user model class based on LDAP type
+        $this->userModelClass = $this->getUserModelClass($ldapCredentials['ldapType']);
     }
 
     /**
@@ -60,18 +78,25 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
     public function checkAuthViaLdap(string $username, string $password, string &$message=''): bool
     {
         // Create a new LDAP connection
-        $connection = new \LdapRecord\Connection([
+        $this->connection = new \LdapRecord\Connection([
             'hosts' => [$this->serverName],
             'port' => $this->serverPort,
             'base_dn' => $this->baseDN,
             'username' => $this->administrativeLogin,
             'password' => $this->administrativePassword,
+            'timeout'  => 15,
+            'use_tls'  => $this->useTLS,
+            'options' => [
+                // See: http://php.net/ldap_set_option
+                LDAP_OPT_X_TLS_REQUIRE_CERT => LDAP_OPT_X_TLS_ALLOW
+            ]
         ]);
 
         $success = false;
         $message = $this->translation->_('module_usersui_ldap_user_not_found');
         try {
-            $connection->connect();
+            $this->connection->connect();
+            Container::addConnection($this->connection);
 
             $dispatcher = Container::getEventDispatcher();
 
@@ -95,18 +120,20 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
             });
 
             // Query LDAP for the user
-            $query = $connection->query();
+            $query = call_user_func([$this->userModelClass, 'query']);
+
             if ($this->userFilter!==''){
                 $query->rawFilter($this->userFilter);
             }
             if ($this->organizationalUnit!==''){
                 $query->in($this->organizationalUnit);
             }
-            $user = $query->where($this->userIdAttribute, '=', $username)->first();;
+
+            $user = $query->where($this->userIdAttribute, '=', $username)->first();
 
             if ($user) {
                 // Continue with authentication if user is found and attempt authentication
-                if ($connection->auth()->attempt($user['distinguishedname'][0], $password)) {
+                if ($this->connection->auth()->attempt($user->getDN(), $password)) {
                     $message = $this->translation->_('module_usersui_ldap_successfully_authenticated');
                     $success = true;
                 }
@@ -123,28 +150,55 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
         return $success;
     }
 
+    /**
+     * Get the class of the user model based on LDAP type.
+     *
+     * @param string $ldapType The LDAP type.
+     * @return string The user model class.
+     */
+    private function getUserModelClass(string $ldapType): string
+    {
+        switch ($ldapType) {
+            case 'OpenLDAP':
+                return \LdapRecord\Models\OpenLDAP\User::class;
+            case 'DirectoryServer':
+                return \LdapRecord\Models\DirectoryServer\User::class;
+            case 'FreeIPA':
+                return \LdapRecord\Models\FreeIPA\User::class;
+            default:
+                return \LdapRecord\Models\ActiveDirectory\User::class;
+        }
+    }
 
     /**
      * Get available users list via LDAP.
      *
-     * @param string $message The error message.
-     * @return array list of users.
+     * @return AnswerStructure list of users.
      */
-    public function getUsersList(string &$message=''): array
+    public function getUsersList(): AnswerStructure
     {
+        $res = new AnswerStructure();
+        $res->success=true;
+
         // Create a new LDAP connection
-        $connection = new \LdapRecord\Connection([
+        $this->connection = new \LdapRecord\Connection([
             'hosts' => [$this->serverName],
             'port' => $this->serverPort,
             'base_dn' => $this->baseDN,
             'username' => $this->administrativeLogin,
             'password' => $this->administrativePassword,
+            'timeout'  => 15,
+            'use_tls'  => $this->useTLS,
+            'options' => [
+                // See: http://php.net/ldap_set_option
+                LDAP_OPT_X_TLS_REQUIRE_CERT => LDAP_OPT_X_TLS_ALLOW
+            ]
         ]);
 
         $listOfAvailableUsers = [];
-        $message = $this->translation->_('module_usersui_ldap_user_not_found');
         try {
-            $connection->connect();
+            $this->connection->connect();
+            Container::addConnection($this->connection);
 
             $dispatcher = Container::getEventDispatcher();
             // Listen for failed authentication event
@@ -154,7 +208,8 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
             });
 
             // Query LDAP for the user
-            $query = $connection->query();
+            $query = call_user_func([$this->userModelClass, 'query']);
+
             if ($this->userFilter!==''){
                 $query->rawFilter($this->userFilter);
             }
@@ -164,14 +219,15 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
             $users = $query->get();
             foreach ($users as $user) {
                 $record = [];
-                if (array_key_exists($this->userIdAttribute, $user)
-                    && isset($user[$this->userIdAttribute][0])){
-                    $record['login']=$user[$this->userIdAttribute][0];
-                    $record['name']=$user[$this->userIdAttribute][0];
+                if ($user->hasAttribute($this->userIdAttribute)
+                    && $user->getFirstAttribute($this->userIdAttribute)!==null
+                    ){
+                    $record['login']=$user->getFirstAttribute($this->userIdAttribute);
+                    $record['name']=$user->getFirstAttribute($this->userIdAttribute);
                 }
-                if (array_key_exists('name', $user)
-                    && isset($user['name'][0])){
-                    $record['name']=$user['name'][0];
+                if ($user->hasAttribute('name')
+                    && $user->getFirstAttribute('name')!==null){
+                    $record['name']=$user->getFirstAttribute('name');
                 }
                 if (!empty($record)){
                     $listOfAvailableUsers[] = $record;
@@ -181,12 +237,16 @@ class UsersUILdapAuth extends \Phalcon\Di\Injectable
             usort($listOfAvailableUsers, function($a, $b){
                 return $a['name'] > $b['name'];
             });
-
+        } catch (\LdapRecord\Auth\BindException $e) {
+            $res->messages[] = $this->translation->_('module_usersui_ldap_user_not_found');
+            $res->success=false;
         } catch (\Throwable $e) {
             CriticalErrorsHandler::handleExceptionWithSyslog($e);
-            $message = $e->getMessage();
+            $res->messages[] = $e->getMessage();
+            $res->success=false;
         }
 
-        return $listOfAvailableUsers;
+        $res->data = $listOfAvailableUsers;
+        return $res;
     }
 }

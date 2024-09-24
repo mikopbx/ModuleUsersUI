@@ -24,6 +24,7 @@ use Modules\ModuleUsersUI\Lib\Constants;
 use Modules\ModuleUsersUI\Lib\UsersUILdapAuth;
 use Modules\ModuleUsersUI\Models\LdapConfig;
 use Phalcon\Cache\Adapter\Redis;
+use Phalcon\Storage\Exception;
 
 class LdapConfigController extends ModuleUsersUIBaseController
 {
@@ -44,6 +45,7 @@ class LdapConfigController extends ModuleUsersUIBaseController
 
         if (!$ldapConfig) {
             $ldapConfig = new LdapConfig();
+            $ldapConfig->useTLS = '0';
         }
 
         // Update ldapConfig properties with the provided data
@@ -74,6 +76,7 @@ class LdapConfigController extends ModuleUsersUIBaseController
      *
      * @param string $pattern for search
      * @return void
+     * @throws Exception
      */
     public function searchLdapUserAction(string $pattern=''): void
     {
@@ -85,11 +88,11 @@ class LdapConfigController extends ModuleUsersUIBaseController
         } else {
             $ldapCredentials = LdapConfig::findFirst()->toArray();
             $ldapAuth = new UsersUILdapAuth($ldapCredentials);
-            $message = '';
             // Get the list of available LDAP users
-            $availableUsers = $ldapAuth->getUsersList($message);
+            $availableUsersResult = $ldapAuth->getUsersList();
+            $availableUsers = $availableUsersResult->data;
             $redis->set($cacheKey, $availableUsers, 600);
-            $this->view->message = $message;
+            $this->view->message = $availableUsersResult->messages;
         }
         $pattern = urldecode($pattern);
         $usersForDropDown = [];
@@ -145,15 +148,14 @@ class LdapConfigController extends ModuleUsersUIBaseController
         $data = $this->request->getPost();
         $ldapCredentials = $this->prepareLdapCredentialsArrayFromPost($data);
         $ldapAuth = new UsersUILdapAuth($ldapCredentials);
-        $message = '';
 
         // Get the list of available LDAP users
-        $availableUsers = $ldapAuth->getUsersList($message);
+        $availableUsersResult = $ldapAuth->getUsersList();
 
         // Set the data to be passed to the view
-        $this->view->data = $availableUsers;
-        $this->view->success = count($availableUsers) > 0;
-        $this->view->message = $message;
+        $this->view->data = $availableUsersResult->data;
+        $this->view->success = $availableUsersResult->success;
+        $this->view->message = $availableUsersResult->messages;
     }
 
     /**
@@ -184,6 +186,8 @@ class LdapConfigController extends ModuleUsersUIBaseController
             'userIdAttribute' => $postData['userIdAttribute'],
             'organizationalUnit' => $postData['organizationalUnit'],
             'userFilter' => $postData['userFilter'],
+            'useTLS' => $postData['useTLS'],
+           'ldapType' => $postData['ldapType'],
         ];
     }
 }
