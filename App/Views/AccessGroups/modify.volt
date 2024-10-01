@@ -1,4 +1,4 @@
-{{ form('module-users-u-i/access-groups/save', 'role': 'form', 'class': 'ui large form','id':'module-users-ui-form') }}
+<form method="post" action="module-users-u-i/access-groups/save" class="ui large form" id="module-users-ui-form">
 
 <div class="ui top attached tabular menu" id="module-access-group-modify-menu">
     {% if id is null %}
@@ -35,4 +35,4 @@
 
 {{ partial("partials/submitbutton",['indexurl':'module-users-u-i/module-users-u-i/index']) }}
 
-{{ endform() }}
+</form>

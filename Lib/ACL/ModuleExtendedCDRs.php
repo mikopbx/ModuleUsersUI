@@ -1,7 +1,7 @@
 <?php
 /*
  * MikoPBX - free phone system for small business
- * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
+ * Copyright © 2017-2024 Alexey Portnov and Nikolay Beketov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,9 @@
 
 namespace Modules\ModuleUsersUI\Lib\ACL;
 
-class ModuleAutoDialerACL implements ACLInterface
+class ModuleExtendedCDRs implements ACLInterface
 {
-    const API_MODULE_AUTO_DIALER = '/pbxcore/api/modules/module-auto-dialer';
-
+    const API_MODULE_EXTENDED_CDR = '/pbxcore/api/modules/module-extended-c-d-rs';
     /**
      * Prepares list of linked controllers to other controllers to hide it from UI
      * and allow or disallow with the main one.
@@ -32,7 +31,6 @@ class ModuleAutoDialerACL implements ACLInterface
     public static function getLinkedControllerActions(): array
     {
         return [
-
         ];
     }
 
@@ -40,8 +38,7 @@ class ModuleAutoDialerACL implements ACLInterface
      * Returns list of controllers that are always allowed
      * @return array
      */
-    public static function getAlwaysAllowed(): array
-    {
+    public static function getAlwaysAllowed(): array{
         return [];
     }
 
@@ -52,7 +49,6 @@ class ModuleAutoDialerACL implements ACLInterface
      */
     public static function getAlwaysDenied(): array
     {
-        return [
-        ];
+        return [];
     }
 }

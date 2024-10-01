@@ -24,9 +24,9 @@ use MikoPBX\AdminCabinet\Controllers\SessionController;
 use Modules\ModuleUsersUI\Models\AccessGroups;
 use Modules\ModuleUsersUI\Models\LdapConfig;
 use Modules\ModuleUsersUI\Models\UsersCredentials;
-use Phalcon\Security;
+use Phalcon\Di\Injectable;
 
-class UsersUIAuthenticator extends \Phalcon\Di\Injectable
+class UsersUIAuthenticator extends Injectable
 {
     private string $login;
     private string $password;
@@ -87,7 +87,7 @@ class UsersUIAuthenticator extends \Phalcon\Di\Injectable
                 }
             } else {
                 // Authenticate via password
-                $security = new Security();
+                $security = new (MikoPBXVersion::getSecurityClass());
                 if ($security->checkHash($this->password, $userData->userPasswordHash)) {
                     return $successAuthData;
                 }

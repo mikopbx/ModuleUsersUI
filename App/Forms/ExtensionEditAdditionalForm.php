@@ -21,7 +21,6 @@ namespace Modules\ModuleUsersUI\App\Forms;
 
 use MikoPBX\AdminCabinet\Forms\BaseForm;
 use MikoPBX\AdminCabinet\Forms\ExtensionEditForm;
-use MikoPBX\Common\Models\Extensions;
 use Modules\ModuleUsersUI\Lib\Constants;
 use Modules\ModuleUsersUI\Models\AccessGroups;
 use Modules\ModuleUsersUI\Models\LdapConfig;

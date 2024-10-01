@@ -20,7 +20,6 @@
 namespace Modules\ModuleUsersUI\Models;
 
 use MikoPBX\Modules\Models\ModulesModelsBase;
-use Modules\ModuleUsersUI\Lib\Constants;
 use Phalcon\Mvc\Model\Relation;
 
 class AccessGroups extends ModulesModelsBase

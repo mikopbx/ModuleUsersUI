@@ -19,15 +19,13 @@
 
 namespace Modules\ModuleUsersUI\App\Controllers;
 
-
-use MikoPBX\AdminCabinet\Controllers\ExtensionsController;
 use MikoPBX\Common\Models\Extensions;
 use MikoPBX\Common\Models\Sip;
 use MikoPBX\Common\Models\Users;
 use Modules\ModuleUsersUI\Lib\Constants;
 use Modules\ModuleUsersUI\Models\LdapConfig;
 use Modules\ModuleUsersUI\Models\UsersCredentials;
-use Phalcon\Security;
+use Phalcon\Encryption\Security;
 
 class UsersCredentialsController extends ModuleUsersUIBaseController
 {

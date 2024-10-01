@@ -24,13 +24,14 @@ use LdapRecord\Container;
 use MikoPBX\Common\Handlers\CriticalErrorsHandler;
 use MikoPBX\Common\Providers\LoggerAuthProvider;
 use Modules\ModuleLdapSync\Lib\AnswerStructure;
+use Phalcon\Di\Injectable;
 
 include_once __DIR__.'/../vendor/autoload.php';
 
 /**
  * @property \MikoPBX\Common\Providers\TranslationProvider translation
  */
-class UsersUILdapAuth extends \Phalcon\Di\Injectable
+class UsersUILdapAuth extends Injectable
 {
     private string $serverName;
     private string $serverPort;

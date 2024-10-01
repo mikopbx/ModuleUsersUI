@@ -1,7 +1,7 @@
 <?php
 /*
  * MikoPBX - free phone system for small business
- * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
+ * Copyright © 2017-2024 Alexey Portnov and Nikolay Beketov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,7 @@
 namespace Modules\ModuleUsersUI\App\Forms;
 
 use MikoPBX\AdminCabinet\Forms\BaseForm;
-use MikoPBX\Common\Providers\UrlProvider;
 use Modules\ModuleUsersUI\Lib\Constants;
-use Modules\ModuleUsersUI\Lib\UsersUICDRFilter;
-use Modules\ModuleUsersUI\Models\AccessGroupsRights;
 use Phalcon\Forms\Element\Check;
 use Phalcon\Forms\Element\Radio;
 use Phalcon\Forms\Element\Text;

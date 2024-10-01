@@ -21,9 +21,8 @@ namespace Modules\ModuleUsersUI\Models;
 
 use MikoPBX\Common\Models\Users;
 use MikoPBX\Modules\Models\ModulesModelsBase;
+use Modules\ModuleUsersUI\Lib\MikoPBXVersion;
 use Phalcon\Mvc\Model\Relation;
-use Phalcon\Validation;
-use Phalcon\Validation\Validator\Uniqueness as UniquenessValidator;
 
 /**
  * Class ModuleUsers
@@ -148,10 +147,10 @@ class UsersCredentials extends ModulesModelsBase
      */
     public function validation(): bool
     {
-        $validation = new Validation();
+        $validation = new (MikoPBXVersion::getValidationClass());
         $validation->add(
             'user_login',
-            new UniquenessValidator(
+            new (MikoPBXVersion::getUniquenessClass())(
                 [
                     'message' => $this->t('module_usersui_LoginNameNotUnique'),
                 ]

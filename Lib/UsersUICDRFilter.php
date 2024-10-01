@@ -23,9 +23,9 @@ use MikoPBX\Common\Models\Extensions;
 use MikoPBX\Common\Models\Users;
 use Modules\ModuleUsersUI\Models\AccessGroupCDRFilter;
 use Modules\ModuleUsersUI\Models\AccessGroups;
-use Phalcon\Di;
+use Phalcon\Di\Injectable;
 
-class UsersUICDRFilter extends \Phalcon\Di\Injectable
+class UsersUICDRFilter extends Injectable
 {
 
     /**
@@ -38,7 +38,7 @@ class UsersUICDRFilter extends \Phalcon\Di\Injectable
      */
     public static function applyCDRFilterRules(string $accessGroupId, array &$cdrRequestParameters): void
     {
-        $di = Di::getDefault();
+        $di=MikoPBXVersion::getDefaultDi();
 
         $modelsManager = $di->get('modelsManager');
 

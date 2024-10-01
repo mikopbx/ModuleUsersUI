@@ -26,7 +26,6 @@ use MikoPBX\AdminCabinet\Providers\AssetProvider;
 use MikoPBX\AdminCabinet\Providers\SecurityPluginProvider;
 use MikoPBX\Common\Providers\AclProvider;
 use MikoPBX\Common\Providers\SessionProvider;
-use MikoPBX\Core\System\Util;
 use MikoPBX\Modules\Config\ConfigClass;
 use Modules\ModuleUsersUI\App\Controllers\UsersCredentialsController;
 use Modules\ModuleUsersUI\App\Forms\ExtensionEditAdditionalForm;
@@ -60,9 +59,9 @@ class UsersUIConf extends ConfigClass
     /**
      * Handles the event when data in certain models is changed and clears the ACL cache accordingly.
      *
-     * @param array $data The data related to the event.
+     * @param mixed $data The data related to the event.
      */
-    public function modelsEventChangeData($data): void
+    public function modelsEventChangeData(mixed $data): void
     {
         // Define models that are interfere on ACL cache.
         $cacheInterfereModels = [
@@ -139,7 +138,7 @@ class UsersUIConf extends ConfigClass
      *
      * @return void
      */
-    public function onBeforeFormInitialize(Form $form, $entity, $options): void
+    public function onBeforeFormInitialize(Form $form, mixed $entity, mixed $options): void
     {
         if (is_a($form, ExtensionEditForm::class)) {
             ExtensionEditAdditionalForm::prepareAdditionalFields($form, $entity, $options);

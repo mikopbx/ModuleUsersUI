@@ -27,10 +27,10 @@ use Modules\ModuleUsersUI\Models\AccessGroupsRights;
 use Phalcon\Acl\Adapter\Memory as AclList;
 use Phalcon\Acl\Component;
 use Phalcon\Acl\Role as AclRole;
-use Phalcon\Di;
 use Phalcon\Mvc\Model\Query;
+use Phalcon\Di\Injectable;
 
-class UsersUIACL extends \Phalcon\Di\Injectable
+class UsersUIACL extends Injectable
 {
     /**
      * Modifies the ACL list based on the database query result.
@@ -148,10 +148,7 @@ class UsersUIACL extends \Phalcon\Di\Injectable
             'order' => 'AccessGroups.id, AccessGroupsRights.controller'
         ];
 
-        $di = Di::getDefault();
-        $query = $di->get('modelsManager')->createBuilder($parameters)->getQuery();
-
-        return $query;
+        return  MikoPBXVersion::getDefaultDi()->get('modelsManager')->createBuilder($parameters)->getQuery();
     }
 
     /**

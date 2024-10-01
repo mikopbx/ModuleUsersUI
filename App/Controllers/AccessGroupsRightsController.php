@@ -23,11 +23,11 @@ use MikoPBX\Common\Models\PbxExtensionModules;
 use MikoPBX\Common\Providers\PBXConfModulesProvider;
 use MikoPBX\Modules\Config\RestAPIConfigInterface;
 use Modules\ModuleUsersUI\Lib\Constants;
+use Modules\ModuleUsersUI\Lib\MikoPBXVersion;
 use Modules\ModuleUsersUI\Lib\UsersUIACL;
 use Modules\ModuleUsersUI\Models\AccessGroupsRights;
 use Phalcon\Annotations\Reader;
 use Phalcon\Annotations\Reflection;
-use Phalcon\Text;
 use ReflectionClass;
 use Throwable;
 use function MikoPBX\Common\Config\appPath;
@@ -328,8 +328,8 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
 
                 // Create a reflection of the controller class
                 $reflection = new Reflection($parsedClass);
-
-                $controllerName = '/pbxcore/api/modules/' . Text::uncamelize($configObject->moduleUniqueId, '-');
+                $textClass = MikoPBXVersion::getTextClass();
+                $controllerName = '/pbxcore/api/modules/' . $textClass::uncamelize($configObject->moduleUniqueId, '-');
 
                 // Get the actions of the controller if they are defined in the method description
                 $actions = [];
