@@ -62,7 +62,7 @@ class UsersUIConf extends ConfigClass
      *
      * @param mixed $data The data related to the event.
      */
-    public function modelsEventChangeData(mixed $data): void
+    public function modelsEventChangeData($data): void
     {
         // Define models that are interfere on ACL cache.
         $cacheInterfereModels = [
@@ -139,7 +139,7 @@ class UsersUIConf extends ConfigClass
      *
      * @return void
      */
-    public function onBeforeFormInitialize(Form $form, mixed $entity, mixed $options): void
+    public function onBeforeFormInitialize(Form $form, $entity, $options): void
     {
         if (is_a($form, ExtensionEditForm::class)) {
             ExtensionEditAdditionalForm::prepareAdditionalFields($form, $entity, $options);

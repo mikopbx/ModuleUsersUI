@@ -87,7 +87,8 @@ class UsersUIAuthenticator extends Injectable
                 }
             } else {
                 // Authenticate via password
-                $security = new (MikoPBXVersion::getSecurityClass());
+                $securityClass = MikoPBXVersion::getSecurityClass();
+                $security = new $securityClass();
                 if ($security->checkHash($this->password, $userData->userPasswordHash)) {
                     return $successAuthData;
                 }
