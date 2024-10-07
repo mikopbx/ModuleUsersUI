@@ -1,4 +1,4 @@
-<form method="post" action="module-users-u-i/ldap-config/save" role="form" class="ui large form" id="module-users-ui-ldap-form">
+<form method="post" autocomplete="off" action="module-users-u-i/ldap-config/save" role="form" class="ui large form" id="module-users-ui-ldap-form">
 
 <div class="field">
     <div class="ui toggle checkbox" id="use-ldap-auth-method">

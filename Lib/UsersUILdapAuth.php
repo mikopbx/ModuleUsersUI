@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
@@ -26,7 +27,7 @@ use MikoPBX\Common\Providers\LoggerAuthProvider;
 use Modules\ModuleLdapSync\Lib\AnswerStructure;
 use Phalcon\Di\Injectable;
 
-include_once __DIR__.'/../vendor/autoload.php';
+include_once __DIR__ . '/../vendor/autoload.php';
 
 /**
  * @property \MikoPBX\Common\Providers\TranslationProvider translation
@@ -62,7 +63,7 @@ class UsersUILdapAuth extends Injectable
         $this->userIdAttribute = $ldapCredentials['userIdAttribute'];
         $this->organizationalUnit = $ldapCredentials['organizationalUnit'];
         $this->userFilter = $ldapCredentials['userFilter'];
-        $this->useTLS = $ldapCredentials['useTLS']==='1';
+        $this->useTLS = $ldapCredentials['useTLS'] === '1';
 
         // Set user model class based on LDAP type
         $this->userModelClass = $this->getUserModelClass($ldapCredentials['ldapType']);
@@ -76,7 +77,7 @@ class UsersUILdapAuth extends Injectable
      * @param string $message The error message.
      * @return bool The authentication result.
      */
-    public function checkAuthViaLdap(string $username, string $password, string &$message=''): bool
+    public function checkAuthViaLdap(string $username, string $password, string &$message = ''): bool
     {
         // Create a new LDAP connection
         $this->connection = new \LdapRecord\Connection([
@@ -123,10 +124,10 @@ class UsersUILdapAuth extends Injectable
             // Query LDAP for the user
             $query = call_user_func([$this->userModelClass, 'query']);
 
-            if ($this->userFilter!==''){
+            if ($this->userFilter !== '') {
                 $query->rawFilter($this->userFilter);
             }
-            if ($this->organizationalUnit!==''){
+            if ($this->organizationalUnit !== '') {
                 $query->in($this->organizationalUnit);
             }
 
@@ -179,7 +180,7 @@ class UsersUILdapAuth extends Injectable
     public function getUsersList(): AnswerStructure
     {
         $res = new AnswerStructure();
-        $res->success=true;
+        $res->success = true;
 
         // Create a new LDAP connection
         $this->connection = new \LdapRecord\Connection([
@@ -211,40 +212,43 @@ class UsersUILdapAuth extends Injectable
             // Query LDAP for the user
             $query = call_user_func([$this->userModelClass, 'query']);
 
-            if ($this->userFilter!==''){
+            if ($this->userFilter !== '') {
                 $query->rawFilter($this->userFilter);
             }
-            if ($this->organizationalUnit!==''){
+            if ($this->organizationalUnit !== '') {
                 $query->in($this->organizationalUnit);
             }
             $users = $query->get();
             foreach ($users as $user) {
                 $record = [];
-                if ($user->hasAttribute($this->userIdAttribute)
-                    && $user->getFirstAttribute($this->userIdAttribute)!==null
-                    ){
-                    $record['login']=$user->getFirstAttribute($this->userIdAttribute);
-                    $record['name']=$user->getFirstAttribute($this->userIdAttribute);
+                if (
+                    $user->hasAttribute($this->userIdAttribute)
+                    && $user->getFirstAttribute($this->userIdAttribute) !== null
+                ) {
+                    $record['login'] = $user->getFirstAttribute($this->userIdAttribute);
+                    $record['name'] = $user->getFirstAttribute($this->userIdAttribute);
                 }
-                if ($user->hasAttribute('name')
-                    && $user->getFirstAttribute('name')!==null){
-                    $record['name']=$user->getFirstAttribute('name');
+                if (
+                    $user->hasAttribute('name')
+                    && $user->getFirstAttribute('name') !== null
+                ) {
+                    $record['name'] = $user->getFirstAttribute('name');
                 }
-                if (!empty($record)){
+                if (!empty($record)) {
                     $listOfAvailableUsers[] = $record;
                 }
             }
             // Sort the array based on the name value
-            usort($listOfAvailableUsers, function($a, $b){
-                return $a['name'] > $b['name'];
+            usort($listOfAvailableUsers, function ($a, $b) {
+                return strcmp($a['name'], $b['name']);
             });
         } catch (\LdapRecord\Auth\BindException $e) {
             $res->messages[] = $this->translation->_('module_usersui_ldap_user_not_found');
-            $res->success=false;
+            $res->success = false;
         } catch (\Throwable $e) {
             CriticalErrorsHandler::handleExceptionWithSyslog($e);
             $res->messages[] = $e->getMessage();
-            $res->success=false;
+            $res->success = false;
         }
 
         $res->data = $listOfAvailableUsers;

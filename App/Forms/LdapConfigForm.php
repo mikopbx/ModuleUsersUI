@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
@@ -27,41 +28,42 @@ use Phalcon\Forms\Element\Password;
 use Phalcon\Forms\Element\Select;
 use Phalcon\Forms\Element\Text;
 
-
 class LdapConfigForm extends BaseForm
 {
     public function initialize($entity = null, $options = null): void
     {
 
         // UseLdapAuthMethod
-        $checkArr = [];
-        if ($entity->useLdapAuthMethod === '1') {
-            $checkArr['checked'] = 'checked';
-        }
-        $this->add(new Check('useLdapAuthMethod', $checkArr));
+        $checkbox = new Check('useLdapAuthMethod', [
+            'checked'   => '1',
+            'value'     => $entity->useLdapAuthMethod??'0',
+        ]);
+        $this->add($checkbox);
 
         // ServerHost
-        $this->add(new Text('serverName', ['placeholder' =>'dc1.domain.com']));
+        $this->add(new Text('serverName', ['placeholder' => 'dc1.domain.com']));
 
         // ServerPort
         $this->add(new Text('serverPort', [
             'placeholder' => '389',
-            'value' =>$entity->serverPort ?? '389'
+            'value' => $entity->serverPort ?? '389'
         ]));
 
         // Use TLS dropdown
-        $this->add(new hidden('useTLS'));
+        $this->add(new Hidden('useTLS', ['value' => $entity->useTLS ?? '0']));
 
         // AdministrativeLogin
-        $this->add(new Text('administrativeLogin', ['placeholder' =>'Domain admin login']));
+        $this->add(new Text('administrativeLogin', ['placeholder' => 'Domain admin login']));
 
         // AdministrativePassword
-        $this->add(new Password('administrativePasswordHidden',
+        $this->add(new Password(
+            'administrativePasswordHidden',
             [
-                'autocomplete'=>'off',
-                'placeholder' =>'Domain admin password',
-                'value'=>Constants::HIDDEN_PASSWORD
-            ]));
+                'autocomplete' => 'off',
+                'placeholder' => 'Domain admin password',
+                'value' => Constants::HIDDEN_PASSWORD
+            ]
+        ));
 
         // BaseDN
         $this->add(new Text('baseDN', [
@@ -75,10 +77,16 @@ class LdapConfigForm extends BaseForm
         ]);
 
         // UserIdAttribute
-        $this->add(new Text('userIdAttribute', ['placeholder' =>'samaccountname']));
+        $this->add(new Text('userIdAttribute', [
+            'placeholder' => 'samaccountname',
+            'value' => $entity->userIdAttribute ?? 'samaccountname'
+        ]));
 
         // OrganizationUnit
-        $this->add(new Text('organizationalUnit', ['placeholder' =>'ou=users, dc=domain, dc=com']));
+        $this->add(new Text('organizationalUnit', [
+            'placeholder' => 'ou=users, dc=domain, dc=com',
+            'value' => $entity->organizationalUnit ?? 'ou=users, dc=domain, dc=com'
+        ]));
 
         // Select server type
         $types = [
@@ -88,7 +96,9 @@ class LdapConfigForm extends BaseForm
 //            'FreeIPA' => 'FreeIPA',
         ];
         $ldapType = new Select(
-            'ldapType', $types, [
+            'ldapType',
+            $types,
+            [
                 'using' => [
                     'id',
                     'name',
@@ -99,6 +109,5 @@ class LdapConfigForm extends BaseForm
             ]
         );
         $this->add($ldapType);
-
     }
 }

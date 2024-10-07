@@ -81,13 +81,31 @@ const ModuleUsersUIUsersTab = {
 
             if (moduleUsersUiIndexLdap.$useLdapCheckbox.checkbox('is checked')
                 && $(e.target).closest('tr').find('.user-use-ldap-checkbox').checkbox('is checked')){
-                $(e.target).closest('div').search({
+
+                const $inputField = $(e.target);
+                $inputField.closest('div').search({
                     // change search endpoint to a custom endpoint by manipulating apiSettings
                     apiSettings: {
                         url: `${globalRootUrl}module-users-u-i/ldap-config/search-ldap-user/{query}`
                     },
                 });
+                // Обрабатываем событие нажатия клавиши Enter
+                $inputField.on('keydown', function(event) {
+                    if (event.key === 'Enter') {
+                        // Прекращаем действие по умолчанию (если форма, то предотвратим отправку)
+                        event.preventDefault();
+
+                        const $searchResults = $inputField.closest('div').find('.results .result');
+
+                        // Если есть один результат, подставляем его в поле
+                        if ($searchResults.length === 1) {
+                            const result = $searchResults.first().data('result');
+                            $inputField.val(result.title);
+                        }
+                    }
+                });
             }
+
         });
 
         // Submit form on Enter or Tab
