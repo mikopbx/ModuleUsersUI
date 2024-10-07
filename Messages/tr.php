@@ -141,7 +141,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => 'Seçilen çalışanların kayıtları hariç tümünü göster',
     'module_usersui_NoAnyAccessGroup' => 'Modülde henüz erişim grubu oluşturulmadı',
     'module_usersui_AddNewAccessGroupShort' => 'Yaratmak',
-    'module_usersui_LoginNameNotUnique' => 'Benzersiz bir kullanıcı adı değil',
+    'module_usersui_LoginNameNotUnique' => 'MikoPBX\'te yetkilendirme için benzersiz bir kullanıcı adı değil',
     'module_usersui_SelectMemberToAddToGroup' => 'Mevcut gruba eklenecek bir çalışan seçin',
     'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'Zabbix aracısını ayarlama',
     'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'modül kurulumu',
@@ -167,4 +167,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'ayarları görüntüle',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'ayarları değiştir',
     'module_usersui_LdapType' => 'Sunucu türü',
+    'module_usersui_EmptyServerResponse' => 'Sunucu, filtreniz için boş bir kullanıcı listesi döndürdü',
 ];
