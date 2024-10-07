@@ -141,7 +141,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => 'Показувати все, крім записів обраних працівників',
     'module_usersui_NoAnyAccessGroup' => 'У модулі ще не створено жодної групи доступу',
     'module_usersui_AddNewAccessGroupShort' => 'Створити',
-    'module_usersui_LoginNameNotUnique' => 'Не унікальне ім\'я користувача',
+    'module_usersui_LoginNameNotUnique' => 'Не унікальне ім\'я користувача для авторизації у MikoPBX',
     'module_usersui_SelectMemberToAddToGroup' => 'Виберіть співробітника, щоб додати до поточної групи',
     'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'налаштування Zabbix агента',
     'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'налаштування модуля',
@@ -167,4 +167,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'перегляд налаштувань',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'зміна налаштувань',
     'module_usersui_LdapType' => 'Тип сервера',
+    'module_usersui_EmptyServerResponse' => 'Сервер повернув порожній список користувачів за вашим фільтром',
 ];
