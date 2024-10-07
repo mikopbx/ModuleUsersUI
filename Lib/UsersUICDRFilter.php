@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
@@ -27,7 +28,6 @@ use Phalcon\Di\Injectable;
 
 class UsersUICDRFilter extends Injectable
 {
-
     /**
      * Applies CDR filter rules based on the given access group ID.
      *
@@ -38,7 +38,7 @@ class UsersUICDRFilter extends Injectable
      */
     public static function applyCDRFilterRules(string $accessGroupId, array &$cdrRequestParameters): void
     {
-        $di=MikoPBXVersion::getDefaultDi();
+        $di = MikoPBXVersion::getDefaultDi();
 
         $modelsManager = $di->get('modelsManager');
 
@@ -78,6 +78,8 @@ class UsersUICDRFilter extends Injectable
         ];
         $filteredUsers = $modelsManager->createBuilder($parameters)->getQuery()->execute()->toArray();
 
+
+
         // Get filtered extensions based on the filtered users
         $parameters = [
             'models' => [
@@ -88,7 +90,7 @@ class UsersUICDRFilter extends Injectable
             ],
             'conditions' => 'Users.id IN ({ids:array})',
             'bind' => [
-                'ids' => array_column($filteredUsers, 'user_id')??[],
+                'ids' => array_column($filteredUsers, 'user_id'),
             ],
             'joins' => [
                 'Users' => [
@@ -99,8 +101,11 @@ class UsersUICDRFilter extends Injectable
                 ],
             ],
         ];
-
-        $filteredExtensions = array_column($modelsManager->createBuilder($parameters)->getQuery()->execute()->toArray(), 'number');
+        if (count($filteredUsers) > 0) {
+            $filteredExtensions = array_column($modelsManager->createBuilder($parameters)->getQuery()->execute()->toArray(), 'number');
+        } else {
+            $filteredExtensions = [];
+        }
         if (count($filteredExtensions) > 0) {
             // Update CDR request parameters with filtered extensions
             $cdrRequestParameters['bind']['filteredExtensions'] = $filteredExtensions;
@@ -111,7 +116,6 @@ class UsersUICDRFilter extends Injectable
                 // Only show CDRs for the filtered extensions NOT in the AccessGroupCDRFilter list
                 $cdrRequestParameters['conditions'] = 'src_num NOT IN ({filteredExtensions:array}) AND dst_num NOT IN ({filteredExtensions:array}) AND (' . $cdrRequestParameters['conditions'] . ')';
             }
-
         } elseif ($cdrFilterMode === Constants::CDR_FILTER_ONLY_SELECTED) {
             // No users to filter - hide all CDRs
             $cdrRequestParameters['conditions'] = '1=0';

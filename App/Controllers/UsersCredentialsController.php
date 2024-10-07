@@ -24,9 +24,9 @@ use MikoPBX\Common\Models\Extensions;
 use MikoPBX\Common\Models\Sip;
 use MikoPBX\Common\Models\Users;
 use Modules\ModuleUsersUI\Lib\Constants;
+use Modules\ModuleUsersUI\Lib\MikoPBXVersion;
 use Modules\ModuleUsersUI\Models\LdapConfig;
 use Modules\ModuleUsersUI\Models\UsersCredentials;
-use Phalcon\Encryption\Security;
 
 class UsersCredentialsController extends ModuleUsersUIBaseController
 {
@@ -95,7 +95,8 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
         $newMembers = $query->execute();
 
         $ldapEnabled = LdapConfig::findFirst()->useLdapAuthMethod ?? '0' === '1';
-        $security = new Security();
+        $securityClass = MikoPBXVersion::getSecurityClass();
+        $security = new $securityClass();
 
         foreach ($newMembers as $member) {
             // Find or create a new user credential
