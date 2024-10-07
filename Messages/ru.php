@@ -143,7 +143,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => 'Показывать все, кроме записей выбранных сотрудников',
     'module_usersui_NoAnyAccessGroup' => 'В модуле еще не создано ни одной группы доступа',
     'module_usersui_AddNewAccessGroupShort' => 'Создать',
-    'module_usersui_LoginNameNotUnique' => 'Не уникальное имя пользователя',
+    'module_usersui_LoginNameNotUnique' => 'Не уникальное имя пользователя для авторизации в MikoPBX',
     'module_usersui_SelectMemberToAddToGroup' => 'Выберите сотрудника для добавления в текущую группу',
     'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'настройка Zabbix агента',
     'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'настройка модуля',

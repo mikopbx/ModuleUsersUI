@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
@@ -18,6 +19,7 @@
  */
 
 namespace Modules\ModuleUsersUI\App\Controllers;
+
 use MikoPBX\AdminCabinet\Providers\AssetProvider;
 use Modules\ModuleUsersUI\App\Forms\LdapConfigForm;
 use Modules\ModuleUsersUI\Models\AccessGroups;
@@ -44,15 +46,15 @@ class ModuleUsersUIController extends ModuleUsersUIBaseController
         $footerCollection = $this->assets->collection(AssetProvider::FOOTER_JS);
         $footerCollection
             ->addJs('js/vendor/datatable/dataTables.semanticui.js', true)
-            ->addJs('js/cache/'.$this->moduleUniqueID.'/module-users-ui-index.js', true)
-            ->addJs('js/cache/'.$this->moduleUniqueID.'/module-users-ui-index-users.js', true)
+            ->addJs('js/cache/' . $this->moduleUniqueID . '/module-users-ui-index.js', true)
+            ->addJs('js/cache/' . $this->moduleUniqueID . '/module-users-ui-index-users.js', true)
             ->addJs('js/pbx/main/form.js', true)
-            ->addJs('js/cache/'.$this->moduleUniqueID.'/module-users-ui-index-ldap.js', true);
+            ->addJs('js/cache/' . $this->moduleUniqueID . '/module-users-ui-index-ldap.js', true);
 
         $headerCollectionCSS = $this->assets->collection(AssetProvider::HEADER_CSS);
         $headerCollectionCSS
             ->addCss('css/vendor/datatable/dataTables.semanticui.min.css', true)
-            ->addCss('css/cache/'.$this->moduleUniqueID.'/module-users-ui.css', true);
+            ->addCss('css/cache/' . $this->moduleUniqueID . '/module-users-ui.css', true);
 
         $parameters = [
             'models'     => [
@@ -63,7 +65,7 @@ class ModuleUsersUIController extends ModuleUsersUIBaseController
                 'name' => 'AccessGroups.name',
                 'fullAccess' => 'AccessGroups.fullAccess=1',
                 'description' => 'AccessGroups.description',
-                'countUsers'=> 'COUNT(UsersCredentials.id)',
+                'countUsers' => 'COUNT(UsersCredentials.id)',
             ],
             'joins'      => [
                 'UsersCredentials' => [
@@ -83,5 +85,4 @@ class ModuleUsersUIController extends ModuleUsersUIBaseController
         $this->view->ldapForm = new LdapConfigForm($ldapConfig);
         $this->view->submitMode    = null;
     }
-
 }

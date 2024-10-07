@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
@@ -18,6 +19,7 @@
  */
 
 namespace Modules\ModuleUsersUI\App\Controllers;
+
 use MikoPBX\AdminCabinet\Providers\AssetProvider;
 use Modules\ModuleUsersUI\App\Forms\AccessGroupForm;
 use Modules\ModuleUsersUI\Lib\Constants;
@@ -43,7 +45,7 @@ class AccessGroupsController extends ModuleUsersUIBaseController
         $footerCollection
             ->addJs('js/pbx/main/form.js', true)
             ->addJs('js/vendor/datatable/dataTables.semanticui.js', true)
-            ->addJs('js/cache/'.$this->moduleUniqueID.'/module-users-ui-modify-ag.js', true);
+            ->addJs('js/cache/' . $this->moduleUniqueID . '/module-users-ui-modify-ag.js', true);
 
         $record = AccessGroups::findFirstById($id);
         if ($record === null) {
@@ -52,13 +54,13 @@ class AccessGroupsController extends ModuleUsersUIBaseController
             $record->name = '';
             $record->description = '';
         } else {
-            $this->view->members = $this->getTheListOfUsersForDisplayInTheFilter($record->id??'');
+            $this->view->members = $this->getTheListOfUsersForDisplayInTheFilter($record->id ?? '');
             $cdrFilterController = new AccessGroupCDRFilterController();
             $this->view->cdrFilterMembers = $cdrFilterController->getTheListOfUsersForCDRFilter($record->id);
         }
         $groupRightsController = new AccessGroupsRightsController();
-        $groupRights = $groupRightsController->getGroupRights($record->id??'');
-        $this->view->form = new AccessGroupForm($record,['groupRights'=>$groupRights]);
+        $groupRights = $groupRightsController->getGroupRights($record->id ?? '');
+        $this->view->form = new AccessGroupForm($record, ['groupRights' => $groupRights]);
         $this->view->represent = $record->getRepresent();
         $this->view->id = $id;
         $this->view->groupRights = $groupRights;
@@ -72,7 +74,7 @@ class AccessGroupsController extends ModuleUsersUIBaseController
     public function saveAction(): void
     {
         if (!$this->request->isPost()) {
-           return;
+            return;
         }
         $data = $this->request->getPost();
 
@@ -82,17 +84,17 @@ class AccessGroupsController extends ModuleUsersUIBaseController
         if (array_key_exists('id', $data)) {
             $accessGroupEntity = AccessGroups::findFirstById($data['id']);
         }
-        if ($accessGroupEntity===null) {
-            $accessGroupEntity=new AccessGroups();
+        if ($accessGroupEntity === null) {
+            $accessGroupEntity = new AccessGroups();
             $accessGroupEntity->id = $data['id'];
         }
-        if (empty($data['cdrFilterMode'])){
+        if (empty($data['cdrFilterMode'])) {
             $accessGroupEntity->cdrFilterMode = Constants::CDR_FILTER_DISABLED;
         } else {
             $accessGroupEntity->cdrFilterMode = $data['cdrFilterMode'];
         }
 
-        if (empty($data['homePage'])){
+        if (empty($data['homePage'])) {
             $accessGroupEntity->homePage = $this->url->get('session/end');
         } else {
             $accessGroupEntity->homePage = $data['homePage'];
@@ -103,7 +105,7 @@ class AccessGroupsController extends ModuleUsersUIBaseController
         $accessGroupEntity->fullAccess = $data['fullAccess'];
 
         // Save the access group object
-        if ($this->saveEntity($accessGroupEntity)===false){
+        if ($this->saveEntity($accessGroupEntity) === false) {
             // If there are validation errors, display them and return false
             $this->db->rollback();
             return;
@@ -112,8 +114,8 @@ class AccessGroupsController extends ModuleUsersUIBaseController
         // Save access group rights
         $accessGroupController = new AccessGroupsRightsController();
         // Parse access group rights from the posted JSON string
-        $accessGroupRightsFromPost = json_decode($data['access_group_rights'], true)??[];
-        if ($accessGroupController->saveAccessGroupRights($accessGroupEntity->id, $accessGroupRightsFromPost)===false){
+        $accessGroupRightsFromPost = json_decode($data['access_group_rights'], true) ?? [];
+        if ($accessGroupController->saveAccessGroupRights($accessGroupEntity->id, $accessGroupRightsFromPost) === false) {
             $this->db->rollback();
             return;
         }
@@ -121,8 +123,8 @@ class AccessGroupsController extends ModuleUsersUIBaseController
         // Save users credentials
         $usersCredentialsController = new UsersCredentialsController();
         // Parse group members from the posted JSON string
-        $membersOfTheGroup = json_decode($data['members'], true)??[];
-        if ($usersCredentialsController->saveUsersCredentials($accessGroupEntity->id, $membersOfTheGroup)===false){
+        $membersOfTheGroup = json_decode($data['members'], true) ?? [];
+        if ($usersCredentialsController->saveUsersCredentials($accessGroupEntity->id, $membersOfTheGroup) === false) {
             $this->db->rollback();
             return;
         }
@@ -130,8 +132,8 @@ class AccessGroupsController extends ModuleUsersUIBaseController
         // Save CDR filter
         $cdrFilterController = new AccessGroupCDRFilterController();
         // Parse cdr filter from the posted JSON string
-        $cdrFilterUsers = json_decode($data['cdrFilter'], true)??[];
-        if ($cdrFilterController->saveCdrFilter($accessGroupEntity->id, $cdrFilterUsers)===false){
+        $cdrFilterUsers = json_decode($data['cdrFilter'], true) ?? [];
+        if ($cdrFilterController->saveCdrFilter($accessGroupEntity->id, $cdrFilterUsers) === false) {
             $this->db->rollback();
             return;
         }
@@ -144,7 +146,6 @@ class AccessGroupsController extends ModuleUsersUIBaseController
         if (empty($data['id'])) {
             $this->view->reload = "module-users-u-i/access-groups/modify/{$accessGroupEntity->id}";
         }
-
     }
 
     /**
@@ -165,5 +166,4 @@ class AccessGroupsController extends ModuleUsersUIBaseController
 
         $this->forward('module-users-u-i/module-users-u-i/index');
     }
-
 }

@@ -8,7 +8,7 @@
             <th class="center aligned show-only-if-ldap-enabled collapsing hide-on-mobile">{{ t._('module_usersui_ColumnUseLdap') }}</th>
             <th class="center aligned">{{ t._('module_usersui_ColumnUserLogin') }}</th>
             <th class="center aligned">{{ t._('module_usersui_ColumnUserPassword') }}</th>
-            <th class="center aligned collapsing">{{ t._('module_usersui_ColumnGroupName') }}</th>
+            <th class="right aligned collapsing">{{ t._('module_usersui_ColumnGroupName') }}</th>
         </tr>
         </thead>
         <tbody>
@@ -43,7 +43,7 @@
                 <i class="ui spinner loading icon" style="display: none"></i>
             </div>
         </td>
-        <td class="left aligned collapsing">
+        <td class="right aligned collapsing">
             <div class="ui dropdown select-group" data-value="{{ member['group'] }}">
                 <div class="text">{{ member['group'] }}</div>
                 <i class="dropdown icon"></i>

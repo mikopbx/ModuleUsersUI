@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2024 Alexey Portnov and Nikolay Beketov
@@ -27,13 +28,11 @@ use Phalcon\Forms\Element\Text;
 use Phalcon\Forms\Element\Hidden;
 use Phalcon\Forms\Element\Select;
 
-
 /**
  * @property \MikoPBX\Common\Providers\TranslationProvider translation
  */
 class AccessGroupForm extends BaseForm
 {
-
     /**
      * Initializes the form.
      *
@@ -45,7 +44,7 @@ class AccessGroupForm extends BaseForm
     public function initialize($entity = null, $options = null): void
     {
         $disabledClass = '';
-        if ($entity->id===null){
+        if ($entity->id === null) {
             $disabledClass = "disabled";
         }
 
@@ -71,7 +70,9 @@ class AccessGroupForm extends BaseForm
 
         // Select User to assign the user group field
         $extension = new Select(
-            'select-extension-field', [], [
+            'select-extension-field',
+            [],
+            [
                 'using' => [
                     'id',
                     'name',
@@ -86,14 +87,13 @@ class AccessGroupForm extends BaseForm
         foreach ($options['groupRights'] as $module => $types) {
             foreach ($types as $type => $controllers) {
                 foreach ($controllers as $controllerClass => $actions) {
-
                     $controllerParts = explode('\\', $controllerClass);
                     $controllerName = end($controllerParts);
                     $controllerName = str_replace("Controller", "", $controllerName);
 
                     // Main CheckBox
                     $checkBox = new Check("{$controllerClass}_main");
-                    $checkBox->setLabel("<b>" . $this->getControllerTranslation($controllerName) . '</b>');
+                    $checkBox->setLabel($this->getControllerTranslation($controllerName));
                     $this->add($checkBox);
 
                     foreach ($actions as $action => $allowed) {
@@ -105,10 +105,11 @@ class AccessGroupForm extends BaseForm
                             'data-controller' => $controllerClass,
                             'data-controller-name' => $controllerName,
                             'data-action' => $action,
-                            'tabindex' => '0'
+                            'tabindex' => '0',
                         ];
                         if ($allowed) {
-                            $parameters['checked'] = 'checked';
+                            $parameters['value'] = '1';
+                            $parameters['checked'] = '1';
                         }
                         $checkBox = new Check($checkBoxId, $parameters);
                         $checkBox->setLabel($this->getActionTranslation($module, $controllerName, $action));
@@ -121,17 +122,27 @@ class AccessGroupForm extends BaseForm
         // CDR filter mode select
         $parameters = [
             Constants::CDR_FILTER_DISABLED =>
-                ['name'=>'cdrFilterMode', 'value'=>Constants::CDR_FILTER_DISABLED],
+                [
+                    'name' => 'cdrFilterMode',
+                    'value' => Constants::CDR_FILTER_DISABLED,
+                    'checked' => $entity->cdrFilterMode ?? Constants::CDR_FILTER_DISABLED
+                ],
             Constants::CDR_FILTER_ONLY_SELECTED =>
-                ['name'=>'cdrFilterMode', 'value'=>Constants::CDR_FILTER_ONLY_SELECTED],
+                [
+                    'name' => 'cdrFilterMode',
+                    'value' => Constants::CDR_FILTER_ONLY_SELECTED,
+                    'checked' => $entity->cdrFilterMode ?? Constants::CDR_FILTER_DISABLED
+                ],
             Constants::CDR_FILTER_EXCEPT_SELECTED =>
-                ['name'=>'cdrFilterMode', 'value'=>Constants::CDR_FILTER_EXCEPT_SELECTED],
+                [
+                    'name' => 'cdrFilterMode',
+                    'value' => Constants::CDR_FILTER_EXCEPT_SELECTED ,
+                    'checked' => $entity->cdrFilterMode ?? Constants::CDR_FILTER_DISABLED
+                ],
         ];
-        $parameters[$entity->cdrFilterMode??Constants::CDR_FILTER_DISABLED]['checked'] = 'checked';
         $this->add(new Radio('cdr_filter_mode_off', $parameters[Constants::CDR_FILTER_DISABLED]));
         $this->add(new Radio('cdr_filter_mode_by_list', $parameters[Constants::CDR_FILTER_ONLY_SELECTED]));
         $this->add(new Radio('cdr_filter_mode_except_list', $parameters[Constants::CDR_FILTER_EXCEPT_SELECTED]));
-
     }
     /**
      * Retrieves the translated controller name.
