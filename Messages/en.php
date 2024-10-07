@@ -136,7 +136,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => 'Show all but records of selected employees',
     'module_usersui_NoAnyAccessGroup' => 'No access groups have been created in the module yet',
     'module_usersui_AddNewAccessGroupShort' => 'Create',
-    'module_usersui_LoginNameNotUnique' => 'Not a unique username',
+    'module_usersui_LoginNameNotUnique' => 'Non-unique username for authorization in MikoPBX',
     'module_usersui_LdapCheckButton' => 'Login',
     'module_usersui_GroupRights' => 'Setting permissions',
     'SubHeaderAccessGroups' => 'Detailed setting of rights for interface elements and REST API',
@@ -167,4 +167,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'view settings',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'change settings',
     'module_usersui_LdapType' => 'Server type',
+    'module_usersui_EmptyServerResponse' => 'The server returned an empty list of users for your filter.',
 ];
