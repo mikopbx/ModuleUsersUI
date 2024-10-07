@@ -141,7 +141,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => 'Mostrar todos, exceto registros de funcionários selecionados',
     'module_usersui_NoAnyAccessGroup' => 'Nenhum grupo de acesso foi criado no módulo ainda',
     'module_usersui_AddNewAccessGroupShort' => 'Criar',
-    'module_usersui_LoginNameNotUnique' => 'Não é um nome de usuário exclusivo',
+    'module_usersui_LoginNameNotUnique' => 'Não é um nome de usuário exclusivo para autorização no MikoPBX',
     'module_usersui_SelectMemberToAddToGroup' => 'Selecione um funcionário para adicionar ao grupo atual',
     'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'configurando o agente Zabbix',
     'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'configuração do módulo',
@@ -167,4 +167,5 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_index' => 'configurações de exibição',
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'mudar configurações',
     'module_usersui_LdapType' => 'Tipo de servidor',
+    'module_usersui_EmptyServerResponse' => 'O servidor retornou uma lista vazia de usuários para seu filtro',
 ];
