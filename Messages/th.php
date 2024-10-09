@@ -158,7 +158,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => 'แสดงทุกอย่าง ยกเว้นบันทึกของพนักงานที่เลือก',
     'module_usersui_NoAnyAccessGroup' => 'ยังไม่มีการสร้างกลุ่มการเข้าถึงในโมดูล',
     'module_usersui_AddNewAccessGroupShort' => 'สร้าง',
-    'module_usersui_LoginNameNotUnique' => 'ไม่ใช่ชื่อผู้ใช้ที่ไม่ซ้ำใคร',
+    'module_usersui_LoginNameNotUnique' => 'ไม่ใช่ชื่อผู้ใช้ที่ไม่ซ้ำกันสำหรับการอนุญาตใน MikoPBX',
     'module_usersui_SelectMemberToAddToGroup' => 'เลือกพนักงานที่จะเพิ่มเข้าในกลุ่มปัจจุบัน',
     'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'ตั้งค่าตัวแทน Zabbix',
     'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'การตั้งค่าโมดูล',
@@ -184,4 +184,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'ดูการตั้งค่า',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'เปลี่ยนการตั้งค่า',
     'module_usersui_LdapType' => 'ประเภทเซิร์ฟเวอร์',
+    'module_usersui_EmptyServerResponse' => 'เซิร์ฟเวอร์ส่งคืนรายชื่อผู้ใช้ว่างสำหรับตัวกรองของคุณ',
 ];

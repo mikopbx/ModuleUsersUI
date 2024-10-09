@@ -141,7 +141,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => 'ყველა არჩეული თანამშრომლების ჩანაწერების ჩვენება',
     'module_usersui_NoAnyAccessGroup' => 'მოდულში წვდომის ჯგუფები ჯერ არ შექმნილა',
     'module_usersui_AddNewAccessGroupShort' => 'Შექმნა',
-    'module_usersui_LoginNameNotUnique' => 'არ არის უნიკალური მომხმარებლის სახელი',
+    'module_usersui_LoginNameNotUnique' => 'არ არის უნიკალური მომხმარებლის სახელი MikoPBX-ში ავტორიზაციისთვის',
     'module_usersui_SelectMemberToAddToGroup' => 'აირჩიეთ თანამშრომელი მიმდინარე ჯგუფში დასამატებლად',
     'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'Zabbix აგენტის დაყენება',
     'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'მოდულის დაყენება',
@@ -167,4 +167,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'პარამეტრების ნახვა',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'პარამეტრების შეცვლა',
     'module_usersui_LdapType' => 'სერვერის ტიპი',
+    'module_usersui_EmptyServerResponse' => 'სერვერმა დააბრუნა მომხმარებლების ცარიელი სია თქვენი ფილტრისთვის',
 ];
