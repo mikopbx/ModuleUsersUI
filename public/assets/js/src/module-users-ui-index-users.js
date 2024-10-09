@@ -84,6 +84,8 @@ const ModuleUsersUIUsersTab = {
 
                 const $inputField = $(e.target);
                 $inputField.closest('div').search({
+                    searchDelay: 300,
+                    minCharacters: 2,
                     // change the search endpoint to a custom endpoint by manipulating apiSettings
                     apiSettings: {
                         url: `${globalRootUrl}module-users-u-i/ldap-config/search-ldap-user/{query}`
