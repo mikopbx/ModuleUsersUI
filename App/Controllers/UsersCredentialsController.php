@@ -274,7 +274,8 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
 
         // Update the user password hash if it is not empty
         if (!empty($userPassword) and ($userPassword !== Constants::HIDDEN_PASSWORD)) {
-            $security = new Security();
+            $securityClass = MikoPBXVersion::getSecurityClass();
+            $security = new $securityClass();
             $groupMember->user_password = $security->hash($userPassword);
         }
 
