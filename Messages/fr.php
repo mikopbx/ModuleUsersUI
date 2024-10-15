@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'modifier les paramètres',
     'module_usersui_LdapType' => 'Type de serveur',
     'module_usersui_EmptyServerResponse' => 'Le serveur a renvoyé une liste vide d\'utilisateurs pour votre filtre',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Afficher uniquement les conversations sortantes des employés sélectionnés',
 ];
