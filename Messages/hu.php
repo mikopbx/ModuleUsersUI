@@ -185,4 +185,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'beállítások megváltoztatása',
     'module_usersui_LdapType' => 'Szerver típusa',
     'module_usersui_EmptyServerResponse' => 'A szerver a felhasználók üres listáját adta vissza a szűrőhöz',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Csak a kiválasztott alkalmazottak kimenő beszélgetéseit jelenítse meg',
 ];
