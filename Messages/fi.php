@@ -185,4 +185,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'muuttaa asetuksia',
     'module_usersui_LdapType' => 'Palvelimen tyyppi',
     'module_usersui_EmptyServerResponse' => 'Palvelin palautti tyhjän käyttäjäluettelon suodattimellesi',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Näytä vain valittujen työntekijöiden lähtevät keskustelut',
 ];
