@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'Einstellungen ändern',
     'module_usersui_LdapType' => 'Servertyp',
     'module_usersui_EmptyServerResponse' => 'Der Server hat eine leere Benutzerliste für Ihren Filter zurückgegeben',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Nur ausgehende Gespräche ausgewählter Mitarbeiter anzeigen',
 ];
