@@ -133,6 +133,12 @@ class AccessGroupForm extends BaseForm
                     'value' => Constants::CDR_FILTER_ONLY_SELECTED,
                     'checked' => $entity->cdrFilterMode ?? Constants::CDR_FILTER_DISABLED
                 ],
+            Constants::CDR_FILTER_OUTGOING_SELECTED =>
+                [
+                    'name' => 'cdrFilterMode',
+                    'value' => Constants::CDR_FILTER_OUTGOING_SELECTED,
+                    'checked' => $entity->cdrFilterMode ?? Constants::CDR_FILTER_DISABLED
+                ],
             Constants::CDR_FILTER_EXCEPT_SELECTED =>
                 [
                     'name' => 'cdrFilterMode',
@@ -142,6 +148,7 @@ class AccessGroupForm extends BaseForm
         ];
         $this->add(new Radio('cdr_filter_mode_off', $parameters[Constants::CDR_FILTER_DISABLED]));
         $this->add(new Radio('cdr_filter_mode_by_list', $parameters[Constants::CDR_FILTER_ONLY_SELECTED]));
+        $this->add(new Radio('cdr_filter_mode_outgoing_by_list', $parameters[Constants::CDR_FILTER_OUTGOING_SELECTED]));
         $this->add(new Radio('cdr_filter_mode_except_list', $parameters[Constants::CDR_FILTER_EXCEPT_SELECTED]));
     }
     /**
