@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => '更改设置',
     'module_usersui_LdapType' => '服务器类型',
     'module_usersui_EmptyServerResponse' => '服务器为您的过滤器返回了空用户列表',
+    'module_usersui_CDRFilterModeOutgoingInList' => '仅显示选定员工的传出对话',
 ];
