@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'instellingen veranderen',
     'module_usersui_LdapType' => 'Servertype',
     'module_usersui_EmptyServerResponse' => 'De server heeft een lege lijst met gebruikers voor uw filter geretourneerd',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Toon alleen uitgaande gesprekken van geselecteerde medewerkers',
 ];
