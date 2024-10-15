@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'ayarları değiştir',
     'module_usersui_LdapType' => 'Sunucu türü',
     'module_usersui_EmptyServerResponse' => 'Sunucu, filtreniz için boş bir kullanıcı listesi döndürdü',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Yalnızca seçilen çalışanların giden konuşmalarını göster',
 ];
