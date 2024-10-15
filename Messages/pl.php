@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'Zmień ustawienia',
     'module_usersui_LdapType' => 'Typ serwera',
     'module_usersui_EmptyServerResponse' => 'Serwer zwrócił pustą listę użytkowników dla Twojego filtra',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Pokaż tylko rozmowy wychodzące wybranych pracowników',
 ];
