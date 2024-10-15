@@ -185,4 +185,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'เปลี่ยนการตั้งค่า',
     'module_usersui_LdapType' => 'ประเภทเซิร์ฟเวอร์',
     'module_usersui_EmptyServerResponse' => 'เซิร์ฟเวอร์ส่งคืนรายชื่อผู้ใช้ว่างสำหรับตัวกรองของคุณ',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'แสดงเฉพาะการสนทนาขาออกของพนักงานที่เลือก',
 ];
