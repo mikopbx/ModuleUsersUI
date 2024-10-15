@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => '設定を表示する',
     'module_usersui_LdapType' => 'サーバーの種類',
     'module_usersui_EmptyServerResponse' => 'サーバーはフィルターに対して空のユーザーのリストを返しました',
+    'module_usersui_CDRFilterModeOutgoingInList' => '選択した従業員の発信会話のみを表示',
 ];
