@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'Giao diện cài đặt',
     'module_usersui_LdapType' => 'Loại máy chủ',
     'module_usersui_EmptyServerResponse' => 'Máy chủ trả về danh sách người dùng trống cho bộ lọc của bạn',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Chỉ hiển thị các cuộc trò chuyện đi của nhân viên đã chọn',
 ];
