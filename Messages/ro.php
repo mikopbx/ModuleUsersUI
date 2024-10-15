@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'vizualizați setările',
     'module_usersui_LdapType' => 'Tip server',
     'module_usersui_EmptyServerResponse' => 'Serverul a returnat o listă goală de utilizatori pentru filtrul dvs',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Afișați numai conversațiile de ieșire ale angajaților selectați',
 ];
