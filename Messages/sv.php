@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'ändra inställningar',
     'module_usersui_LdapType' => 'Servertyp',
     'module_usersui_EmptyServerResponse' => 'Servern returnerade en tom lista med användare för ditt filter',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Visa endast utgående konversationer av utvalda medarbetare',
 ];
