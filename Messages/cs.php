@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'zobrazit nastavení',
     'module_usersui_LdapType' => 'Typ serveru',
     'module_usersui_EmptyServerResponse' => 'Server vrátil prázdný seznam uživatelů pro váš filtr',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Zobrazit pouze odchozí konverzace vybraných zaměstnanců',
 ];
