@@ -356,8 +356,12 @@ const moduleUsersUIModifyAG = {
      * Callback function after changing the group right.
      */
     cdAfterChangeGroupRight(){
+        const extCdrIndexCheckboxId = $("input[data-module='ModuleExtendedCDRs'][data-action='index']").attr('id');
+
         const accessToCdr = moduleUsersUIModifyAG.$formObj.form('get value','MikoPBX\\AdminCabinet\\Controllers\\CallDetailRecordsController_main');
-        if (accessToCdr==='on') {
+        const accessToCdrExt = moduleUsersUIModifyAG.$formObj.form('get value', extCdrIndexCheckboxId);
+
+        if (accessToCdr === 'on' || accessToCdrExt === '1') {
             moduleUsersUIModifyAG.$cdrFilterTab.show();
             moduleUsersUIModifyAG.cbAfterChangeCDRFilterMode();
         } else {
