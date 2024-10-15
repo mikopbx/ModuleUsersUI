@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'mudar configurações',
     'module_usersui_LdapType' => 'Tipo de servidor',
     'module_usersui_EmptyServerResponse' => 'O servidor retornou uma lista vazia de usuários para seu filtro',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Mostrar apenas conversas de saída de funcionários selecionados',
 ];
