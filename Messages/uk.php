@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'зміна налаштувань',
     'module_usersui_LdapType' => 'Тип сервера',
     'module_usersui_EmptyServerResponse' => 'Сервер повернув порожній список користувачів за вашим фільтром',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Показувати лише вихідні розмови обраних працівників',
 ];
