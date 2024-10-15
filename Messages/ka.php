@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'პარამეტრების შეცვლა',
     'module_usersui_LdapType' => 'სერვერის ტიპი',
     'module_usersui_EmptyServerResponse' => 'სერვერმა დააბრუნა მომხმარებლების ცარიელი სია თქვენი ფილტრისთვის',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'არჩეული თანამშრომლების მხოლოდ გამავალი საუბრების ჩვენება',
 ];
