@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'ver configuraciones',
     'module_usersui_LdapType' => 'Tipo de servidor',
     'module_usersui_EmptyServerResponse' => 'El servidor devolvió una lista vacía de usuarios para su filtro.',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Mostrar solo conversaciones salientes de empleados seleccionados',
 ];
