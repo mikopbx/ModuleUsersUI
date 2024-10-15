@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'ændre indstillinger',
     'module_usersui_LdapType' => 'Server type',
     'module_usersui_EmptyServerResponse' => 'Serveren returnerede en tom liste over brugere til dit filter',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Vis kun udgående samtaler af udvalgte medarbejdere',
 ];
