@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'parametrləri dəyişdirin',
     'module_usersui_LdapType' => 'Server növü',
     'module_usersui_EmptyServerResponse' => 'Server filtriniz üçün boş istifadəçilər siyahısını qaytardı',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Yalnız seçilmiş işçilərin gedən söhbətlərini göstərin',
 ];
