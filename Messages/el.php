@@ -168,4 +168,5 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_index' => 'προβολή ρυθμίσεων',
     'module_usersui_LdapType' => 'Τύπος διακομιστή',
     'module_usersui_EmptyServerResponse' => 'Ο διακομιστής επέστρεψε μια κενή λίστα χρηστών για το φίλτρο σας',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Εμφάνιση μόνο εξερχόμενων συνομιλιών επιλεγμένων υπαλλήλων',
 ];
