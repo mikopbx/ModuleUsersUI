@@ -20,7 +20,6 @@
 
 namespace Modules\ModuleUsersUI\App\Forms;
 
-use MikoPBX\AdminCabinet\Forms\BaseForm;
 use Modules\ModuleUsersUI\Lib\Constants;
 use Phalcon\Forms\Element\Check;
 use Phalcon\Forms\Element\Radio;
@@ -31,7 +30,7 @@ use Phalcon\Forms\Element\Select;
 /**
  * @property \MikoPBX\Common\Providers\TranslationProvider translation
  */
-class AccessGroupForm extends BaseForm
+class AccessGroupForm extends ModuleBaseForm
 {
     /**
      * Initializes the form.
@@ -55,11 +54,7 @@ class AccessGroupForm extends BaseForm
         $this->add(new Text('name'));
 
         // FullAccess checkbox
-        $checkArr = [];
-        if ($entity->fullAccess === '1') {
-            $checkArr['checked'] = 'checked';
-        }
-        $this->add(new Check('fullAccess', $checkArr));
+        $this->addCheckBox('fullAccess', intval($entity->fullAccess) === 1);
 
         // Add textarea for Description
         $this->addTextArea('description', $entity->description ?? '', 80);
@@ -108,8 +103,8 @@ class AccessGroupForm extends BaseForm
                             'tabindex' => '0',
                         ];
                         if ($allowed) {
-                            $parameters['value'] = '1';
-                            $parameters['checked'] = '1';
+                            $parameters['value'] = 'on';
+                            $parameters['checked'] = 'on';
                         }
                         $checkBox = new Check($checkBoxId, $parameters);
                         $checkBox->setLabel($this->getActionTranslation($module, $controllerName, $action));

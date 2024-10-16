@@ -20,25 +20,19 @@
 
 namespace Modules\ModuleUsersUI\App\Forms;
 
-use MikoPBX\AdminCabinet\Forms\BaseForm;
 use Modules\ModuleUsersUI\Lib\Constants;
-use Phalcon\Forms\Element\Check;
 use Phalcon\Forms\Element\Hidden;
 use Phalcon\Forms\Element\Password;
 use Phalcon\Forms\Element\Select;
 use Phalcon\Forms\Element\Text;
 
-class LdapConfigForm extends BaseForm
+class LdapConfigForm extends ModuleBaseForm
 {
     public function initialize($entity = null, $options = null): void
     {
 
         // UseLdapAuthMethod
-        $checkbox = new Check('useLdapAuthMethod', [
-            'checked'   => '1',
-            'value'     => $entity->useLdapAuthMethod??'0',
-        ]);
-        $this->add($checkbox);
+        $this->addCheckBox('useLdapAuthMethod', intval($entity->useLdapAuthMethod) === 1);
 
         // ServerHost
         $this->add(new Text('serverName', ['placeholder' => 'dc1.domain.com']));

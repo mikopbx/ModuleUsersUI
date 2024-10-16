@@ -20,19 +20,17 @@
 
 namespace Modules\ModuleUsersUI\App\Forms;
 
-use MikoPBX\AdminCabinet\Forms\BaseForm;
 use MikoPBX\AdminCabinet\Forms\ExtensionEditForm;
 use Modules\ModuleUsersUI\Lib\Constants;
 use Modules\ModuleUsersUI\Models\AccessGroups;
 use Modules\ModuleUsersUI\Models\LdapConfig;
 use Modules\ModuleUsersUI\Models\UsersCredentials;
-use Phalcon\Forms\Element\Check;
 use Phalcon\Forms\Element\Hidden;
 use Phalcon\Forms\Element\Password;
 use Phalcon\Forms\Element\Select;
 use Phalcon\Forms\Element\Text;
 
-class ExtensionEditAdditionalForm extends BaseForm
+class ExtensionEditAdditionalForm extends ModuleBaseForm
 {
     public static function prepareAdditionalFields(ExtensionEditForm $form, \stdClass $entity, /** @scrutinizer ignore-unused */ array $options = [])
     {
@@ -53,7 +51,8 @@ class ExtensionEditAdditionalForm extends BaseForm
         // Get the user login from the credentials, or set it to an empty string if not found
         $userLogin = $credentials->user_login ?? '';
 
-        // Get the user password from the credentials, or set it to an empty string if not found or XXX if its hash was saved
+        // Get the user password from the credentials, or set it to
+        // an empty string if not found or XXX if its hash was saved
         $userPassword = empty($credentials->user_password) ? '' : Constants::HIDDEN_PASSWORD;
 
         // Get the ldap auth value from the credentials, or set it to false if not found
@@ -75,12 +74,7 @@ class ExtensionEditAdditionalForm extends BaseForm
         $form->add($password);
 
         // Crete a new Checkbox element on the user form
-        $cheskArr = [];
-        if ($useLdapAuth === '1') {
-            $cheskArr['value'] = '1';
-            $cheskArr['checked'] = '1';
-        }
-        $form->add(new Check('module_users_ui_use_ldap_auth', $cheskArr));
+        $form->addCheckBox('module_users_ui_use_ldap_auth', intval($useLdapAuth) === 1);
 
         // Retrieve all access groups from the database
         $accessGroups = AccessGroups::find();

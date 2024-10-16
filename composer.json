@@ -3,7 +3,7 @@
     "description": "ModuleUsersUI",
     "require": {
         "php": "^7.4 || ^8.0",
-        "directorytree/ldaprecord": "*"
+        "directorytree/ldaprecord": "^v2.20.5"
     },
     "autoload": {
         "psr-4": {
