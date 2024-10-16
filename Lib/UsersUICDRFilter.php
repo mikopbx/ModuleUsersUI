@@ -107,14 +107,20 @@ class UsersUICDRFilter extends Injectable
             $filteredExtensions = [];
         }
         if (count($filteredExtensions) > 0) {
+            $oldConditions = $cdrRequestParameters['conditions'];
             // Update CDR request parameters with filtered extensions
             $cdrRequestParameters['bind']['filteredExtensions'] = $filteredExtensions;
             if ($cdrFilterMode === Constants::CDR_FILTER_ONLY_SELECTED) {
                 // Only show CDRs for the filtered extensions from the AccessGroupCDRFilter list
-                $cdrRequestParameters['conditions'] = '(src_num IN ({filteredExtensions:array}) OR dst_num IN ({filteredExtensions:array})) AND (' . $cdrRequestParameters['conditions'] . ')';
+                $cdrRequestParameters['conditions'] = '(src_num IN ({filteredExtensions:array}) OR dst_num IN ({filteredExtensions:array}))';
+            } elseif ($cdrFilterMode === Constants::CDR_FILTER_OUTGOING_SELECTED) {
+                $cdrRequestParameters['conditions'] = 'src_num IN ({filteredExtensions:array})';
             } elseif ($cdrFilterMode === Constants::CDR_FILTER_EXCEPT_SELECTED) {
                 // Only show CDRs for the filtered extensions NOT in the AccessGroupCDRFilter list
-                $cdrRequestParameters['conditions'] = 'src_num NOT IN ({filteredExtensions:array}) AND dst_num NOT IN ({filteredExtensions:array}) AND (' . $cdrRequestParameters['conditions'] . ')';
+                $cdrRequestParameters['conditions'] = 'AND src_num NOT IN ({filteredExtensions:array}) AND dst_num NOT IN ({filteredExtensions:array})';
+            }
+            if(!empty($oldConditions)){
+                $cdrRequestParameters['conditions'] .= ' AND ('.$oldConditions.')';
             }
         } elseif ($cdrFilterMode === Constants::CDR_FILTER_ONLY_SELECTED) {
             // No users to filter - hide all CDRs

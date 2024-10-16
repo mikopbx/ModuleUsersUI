@@ -140,6 +140,7 @@ return [
     'module_usersui_CDRFilterModeLabel' => 'Выберите режим фильтрации CDR записей',
     'module_usersui_CDRFilterModeOff' => 'Не фильтровать',
     'module_usersui_CDRFilterModeInList' => 'Показывать только разговоры выбранных сотрудников',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Показывать только исходящие разговоры выбранных сотрудников',
     'module_usersui_CDRFilterModeNotInList' => 'Показывать все, кроме записей выбранных сотрудников',
     'module_usersui_NoAnyAccessGroup' => 'В модуле еще не создано ни одной группы доступа',
     'module_usersui_AddNewAccessGroupShort' => 'Создать',
