@@ -21,6 +21,7 @@
 namespace Modules\ModuleUsersUI\App\Forms;
 
 use Modules\ModuleUsersUI\Lib\Constants;
+use Modules\ModuleUsersUI\Lib\MikoPBXVersion;
 use Phalcon\Forms\Element\Check;
 use Phalcon\Forms\Element\Radio;
 use Phalcon\Forms\Element\Text;
@@ -141,6 +142,16 @@ class AccessGroupForm extends ModuleBaseForm
                     'checked' => $entity->cdrFilterMode ?? Constants::CDR_FILTER_DISABLED
                 ],
         ];
+
+        if(!MikoPBXVersion::isPhalcon5Version()){
+            foreach ($parameters as $index => $parameter) {
+                if($index == $entity->cdrFilterMode) {
+                    $parameters[$index]['checked'] = '1';
+                }else{
+                    unset($parameters[$index]['checked']);
+                }
+            }
+        }
         $this->add(new Radio('cdr_filter_mode_off', $parameters[Constants::CDR_FILTER_DISABLED]));
         $this->add(new Radio('cdr_filter_mode_by_list', $parameters[Constants::CDR_FILTER_ONLY_SELECTED]));
         $this->add(new Radio('cdr_filter_mode_outgoing_by_list', $parameters[Constants::CDR_FILTER_OUTGOING_SELECTED]));
