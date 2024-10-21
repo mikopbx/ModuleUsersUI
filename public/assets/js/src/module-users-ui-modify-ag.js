@@ -360,7 +360,7 @@ const moduleUsersUIModifyAG = {
         const accessToCdr = moduleUsersUIModifyAG.$formObj.form('get value', 'MikoPBX\\AdminCabinet\\Controllers\\CallDetailRecordsController_main');
         const accessToCdrExt = moduleUsersUIModifyAG.$formObj.form('get value', extCdrIndexCheckboxId);
 
-        if (accessToCdr === 'on' || accessToCdrExt === '1') {
+        if (accessToCdr === 'on' || accessToCdrExt === 'on') {
             moduleUsersUIModifyAG.$cdrFilterTab.show();
             moduleUsersUIModifyAG.cbAfterChangeCDRFilterMode();
         } else {
