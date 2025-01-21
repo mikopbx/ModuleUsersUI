@@ -191,7 +191,21 @@ class UsersUIConf extends ConfigClass
         if (!empty($response->result) and $response->result === true) {
             $userController = new UsersCredentialsController();
             $postData = $app->request->getPost();
-            $userController->saveUserCredential($postData, $response);
+            
+            // Check if any key in postData contains "module_users_ui_"
+            $hasUserUIKeys = false;
+            foreach ($postData as $key => $value) {
+                if (strpos($key, 'module_users_ui_') !== false) {
+                    $hasUserUIKeys = true;
+                    break;
+                }
+            }
+            
+            // Only save credentials if relevant keys are present
+            if ($hasUserUIKeys) {
+                $userController->saveUserCredential($postData, $response);
+            }
+            
             $app->response->setContent(json_encode($response));
         }
     }

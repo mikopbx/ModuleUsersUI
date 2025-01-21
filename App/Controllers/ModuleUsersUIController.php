@@ -21,7 +21,7 @@
 namespace Modules\ModuleUsersUI\App\Controllers;
 
 use MikoPBX\AdminCabinet\Providers\AssetProvider;
-use Modules\ModuleUsersUI\App\Forms\ModuleBaseForm;
+use Modules\ModuleUsersUI\App\Forms\LdapConfigForm;
 use Modules\ModuleUsersUI\Models\AccessGroups;
 use Modules\ModuleUsersUI\Models\LdapConfig;
 use Modules\ModuleUsersUI\Models\UsersCredentials;
@@ -82,7 +82,7 @@ class ModuleUsersUIController extends ModuleUsersUIBaseController
         $this->view->members = $this->getTheListOfUsersForDisplayInTheFilter();
 
         $ldapConfig = LdapConfig::findFirst();
-        $this->view->ldapForm = new ModuleBaseForm($ldapConfig);
+        $this->view->ldapForm = new LdapConfigForm($ldapConfig);
         $this->view->submitMode    = null;
     }
 }
