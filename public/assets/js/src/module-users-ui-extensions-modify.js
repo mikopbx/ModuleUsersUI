@@ -119,10 +119,24 @@ const ExtensionCredentialsTab = {
      */
     activateLdapLoginSearch(){
         if (ExtensionCredentialsTab.$useLdapCheckbox.parent('.checkbox').checkbox('is checked')){
-            ExtensionCredentialsTab.$loginField.parent('.ui.search').search({
+            const $inputField = ExtensionCredentialsTab.$loginField;
+            $inputField.parent('.ui.search').search({
                 apiSettings: {
                     url: `${globalRootUrl}module-users-u-i/ldap-config/search-ldap-user/{query}`
                 },
+            });
+            // Handle Enter key press event
+            $inputField.on('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    // Prevent default action (if form, prevent submission)
+                    event.preventDefault();
+                    const $searchResults = $inputField.closest('div').find('.results .result');
+                    // If there is one result, insert it into the field
+                    if ($searchResults.length === 1) {
+                        const result = $searchResults.first().data('result');
+                        $inputField.val(result.title);
+                    }
+                }
             });
         } else {
             ExtensionCredentialsTab.$loginField.parent('.ui.search').search('hide results').search('destroy');

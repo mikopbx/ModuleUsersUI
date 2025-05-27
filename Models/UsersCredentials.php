@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
@@ -21,9 +22,8 @@ namespace Modules\ModuleUsersUI\Models;
 
 use MikoPBX\Common\Models\Users;
 use MikoPBX\Modules\Models\ModulesModelsBase;
+use Modules\ModuleUsersUI\Lib\MikoPBXVersion;
 use Phalcon\Mvc\Model\Relation;
-use Phalcon\Validation;
-use Phalcon\Validation\Validator\Uniqueness as UniquenessValidator;
 
 /**
  * Class ModuleUsers
@@ -31,7 +31,6 @@ use Phalcon\Validation\Validator\Uniqueness as UniquenessValidator;
  */
 class UsersCredentials extends ModulesModelsBase
 {
-
     /**
      * @Primary
      * @Identity
@@ -148,10 +147,12 @@ class UsersCredentials extends ModulesModelsBase
      */
     public function validation(): bool
     {
-        $validation = new Validation();
+        $validationClass = MikoPBXVersion::getValidationClass();
+        $uniquenessClass = MikoPBXVersion::getUniquenessClass();
+        $validation = new $validationClass();
         $validation->add(
             'user_login',
-            new UniquenessValidator(
+            new $uniquenessClass(
                 [
                     'message' => $this->t('module_usersui_LoginNameNotUnique'),
                 ]
@@ -160,6 +161,4 @@ class UsersCredentials extends ModulesModelsBase
 
         return $this->validate($validation);
     }
-
-
 }

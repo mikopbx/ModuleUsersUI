@@ -141,7 +141,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => 'Vis alle undtagen registreringer af udvalgte medarbejdere',
     'module_usersui_NoAnyAccessGroup' => 'Der er endnu ikke oprettet adgangsgrupper i modulet',
     'module_usersui_AddNewAccessGroupShort' => 'skab',
-    'module_usersui_LoginNameNotUnique' => 'Ikke et unikt brugernavn',
+    'module_usersui_LoginNameNotUnique' => 'Ikke et unikt brugernavn til autorisation i MikoPBX',
     'module_usersui_SelectMemberToAddToGroup' => 'Vælg en medarbejder, der skal føjes til den aktuelle gruppe',
     'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'opsætning af Zabbix-agent',
     'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'modul opsætning',
@@ -167,4 +167,6 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'se indstillinger',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'ændre indstillinger',
     'module_usersui_LdapType' => 'Server type',
+    'module_usersui_EmptyServerResponse' => 'Serveren returnerede en tom liste over brugere til dit filter',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Vis kun udgående samtaler af udvalgte medarbejdere',
 ];

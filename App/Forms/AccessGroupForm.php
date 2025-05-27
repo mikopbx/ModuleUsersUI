@@ -1,7 +1,8 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
- * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
+ * Copyright © 2017-2024 Alexey Portnov and Nikolay Beketov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,24 +20,19 @@
 
 namespace Modules\ModuleUsersUI\App\Forms;
 
-use MikoPBX\AdminCabinet\Forms\BaseForm;
-use MikoPBX\Common\Providers\UrlProvider;
 use Modules\ModuleUsersUI\Lib\Constants;
-use Modules\ModuleUsersUI\Lib\UsersUICDRFilter;
-use Modules\ModuleUsersUI\Models\AccessGroupsRights;
+use Modules\ModuleUsersUI\Lib\MikoPBXVersion;
 use Phalcon\Forms\Element\Check;
 use Phalcon\Forms\Element\Radio;
 use Phalcon\Forms\Element\Text;
 use Phalcon\Forms\Element\Hidden;
 use Phalcon\Forms\Element\Select;
 
-
 /**
  * @property \MikoPBX\Common\Providers\TranslationProvider translation
  */
-class AccessGroupForm extends BaseForm
+class AccessGroupForm extends ModuleBaseForm
 {
-
     /**
      * Initializes the form.
      *
@@ -48,7 +44,7 @@ class AccessGroupForm extends BaseForm
     public function initialize($entity = null, $options = null): void
     {
         $disabledClass = '';
-        if ($entity->id===null){
+        if ($entity->id === null) {
             $disabledClass = "disabled";
         }
 
@@ -59,11 +55,7 @@ class AccessGroupForm extends BaseForm
         $this->add(new Text('name'));
 
         // FullAccess checkbox
-        $checkArr = [];
-        if ($entity->fullAccess === '1') {
-            $checkArr['checked'] = 'checked';
-        }
-        $this->add(new Check('fullAccess', $checkArr));
+        $this->addCheckBox('fullAccess', intval($entity->fullAccess) === 1);
 
         // Add textarea for Description
         $this->addTextArea('description', $entity->description ?? '', 80);
@@ -74,7 +66,9 @@ class AccessGroupForm extends BaseForm
 
         // Select User to assign the user group field
         $extension = new Select(
-            'select-extension-field', [], [
+            'select-extension-field',
+            [],
+            [
                 'using' => [
                     'id',
                     'name',
@@ -89,14 +83,13 @@ class AccessGroupForm extends BaseForm
         foreach ($options['groupRights'] as $module => $types) {
             foreach ($types as $type => $controllers) {
                 foreach ($controllers as $controllerClass => $actions) {
-
                     $controllerParts = explode('\\', $controllerClass);
                     $controllerName = end($controllerParts);
                     $controllerName = str_replace("Controller", "", $controllerName);
 
                     // Main CheckBox
                     $checkBox = new Check("{$controllerClass}_main");
-                    $checkBox->setLabel("<b>" . $this->getControllerTranslation($controllerName) . '</b>');
+                    $checkBox->setLabel($this->getControllerTranslation($controllerName));
                     $this->add($checkBox);
 
                     foreach ($actions as $action => $allowed) {
@@ -108,10 +101,11 @@ class AccessGroupForm extends BaseForm
                             'data-controller' => $controllerClass,
                             'data-controller-name' => $controllerName,
                             'data-action' => $action,
-                            'tabindex' => '0'
+                            'tabindex' => '0',
                         ];
                         if ($allowed) {
-                            $parameters['checked'] = 'checked';
+                            $parameters['value'] = 'on';
+                            $parameters['checked'] = 'on';
                         }
                         $checkBox = new Check($checkBoxId, $parameters);
                         $checkBox->setLabel($this->getActionTranslation($module, $controllerName, $action));
@@ -124,17 +118,44 @@ class AccessGroupForm extends BaseForm
         // CDR filter mode select
         $parameters = [
             Constants::CDR_FILTER_DISABLED =>
-                ['name'=>'cdrFilterMode', 'value'=>Constants::CDR_FILTER_DISABLED],
+                [
+                    'name' => 'cdrFilterMode',
+                    'value' => Constants::CDR_FILTER_DISABLED,
+                    'checked' => $entity->cdrFilterMode ?? Constants::CDR_FILTER_DISABLED
+                ],
             Constants::CDR_FILTER_ONLY_SELECTED =>
-                ['name'=>'cdrFilterMode', 'value'=>Constants::CDR_FILTER_ONLY_SELECTED],
+                [
+                    'name' => 'cdrFilterMode',
+                    'value' => Constants::CDR_FILTER_ONLY_SELECTED,
+                    'checked' => $entity->cdrFilterMode ?? Constants::CDR_FILTER_DISABLED
+                ],
+            Constants::CDR_FILTER_OUTGOING_SELECTED =>
+                [
+                    'name' => 'cdrFilterMode',
+                    'value' => Constants::CDR_FILTER_OUTGOING_SELECTED,
+                    'checked' => $entity->cdrFilterMode ?? Constants::CDR_FILTER_DISABLED
+                ],
             Constants::CDR_FILTER_EXCEPT_SELECTED =>
-                ['name'=>'cdrFilterMode', 'value'=>Constants::CDR_FILTER_EXCEPT_SELECTED],
+                [
+                    'name' => 'cdrFilterMode',
+                    'value' => Constants::CDR_FILTER_EXCEPT_SELECTED ,
+                    'checked' => $entity->cdrFilterMode ?? Constants::CDR_FILTER_DISABLED
+                ],
         ];
-        $parameters[$entity->cdrFilterMode??Constants::CDR_FILTER_DISABLED]['checked'] = 'checked';
+
+        if(!MikoPBXVersion::isPhalcon5Version()){
+            foreach ($parameters as $index => $parameter) {
+                if($index == $entity->cdrFilterMode) {
+                    $parameters[$index]['checked'] = '1';
+                }else{
+                    unset($parameters[$index]['checked']);
+                }
+            }
+        }
         $this->add(new Radio('cdr_filter_mode_off', $parameters[Constants::CDR_FILTER_DISABLED]));
         $this->add(new Radio('cdr_filter_mode_by_list', $parameters[Constants::CDR_FILTER_ONLY_SELECTED]));
+        $this->add(new Radio('cdr_filter_mode_outgoing_by_list', $parameters[Constants::CDR_FILTER_OUTGOING_SELECTED]));
         $this->add(new Radio('cdr_filter_mode_except_list', $parameters[Constants::CDR_FILTER_EXCEPT_SELECTED]));
-
     }
     /**
      * Retrieves the translated controller name.

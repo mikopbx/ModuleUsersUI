@@ -141,7 +141,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => 'Seçilmiş işçilərin qeydləri istisna olmaqla, hamısını göstərin',
     'module_usersui_NoAnyAccessGroup' => 'Modulda hələ heç bir giriş qrupu yaradılmayıb',
     'module_usersui_AddNewAccessGroupShort' => 'Yaradın',
-    'module_usersui_LoginNameNotUnique' => 'Unikal istifadəçi adı deyil',
+    'module_usersui_LoginNameNotUnique' => 'MikoPBX-də avtorizasiya üçün unikal istifadəçi adı deyil',
     'module_usersui_SelectMemberToAddToGroup' => 'Cari qrupa əlavə etmək üçün işçi seçin',
     'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'Zabbix agentinin qurulması',
     'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'modulun qurulması',
@@ -167,4 +167,6 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'parametrlərə baxın',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'parametrləri dəyişdirin',
     'module_usersui_LdapType' => 'Server növü',
+    'module_usersui_EmptyServerResponse' => 'Server filtriniz üçün boş istifadəçilər siyahısını qaytardı',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Yalnız seçilmiş işçilərin gedən söhbətlərini göstərin',
 ];

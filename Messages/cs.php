@@ -141,7 +141,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => 'Zobrazit všechny záznamy vybraných zaměstnanců kromě záznamů',
     'module_usersui_NoAnyAccessGroup' => 'V modulu zatím nebyly vytvořeny žádné přístupové skupiny',
     'module_usersui_AddNewAccessGroupShort' => 'Vytvořit',
-    'module_usersui_LoginNameNotUnique' => 'Nejedná se o jedinečné uživatelské jméno',
+    'module_usersui_LoginNameNotUnique' => 'Není to jedinečné uživatelské jméno pro autorizaci v MikoPBX',
     'module_usersui_SelectMemberToAddToGroup' => 'Vyberte zaměstnance, kterého chcete přidat do aktuální skupiny',
     'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'nastavení agenta Zabbix',
     'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'nastavení modulu',
@@ -167,4 +167,6 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'změnit nastavení',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'zobrazit nastavení',
     'module_usersui_LdapType' => 'Typ serveru',
+    'module_usersui_EmptyServerResponse' => 'Server vrátil prázdný seznam uživatelů pro váš filtr',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Zobrazit pouze odchozí konverzace vybraných zaměstnanců',
 ];

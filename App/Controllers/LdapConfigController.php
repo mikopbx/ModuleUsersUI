@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
@@ -28,7 +29,6 @@ use Phalcon\Storage\Exception;
 
 class LdapConfigController extends ModuleUsersUIBaseController
 {
-
     /**
      * Save LDAP configuration.
      *
@@ -54,8 +54,10 @@ class LdapConfigController extends ModuleUsersUIBaseController
                 case 'id':
                     break;
                 case 'administrativePassword':
-                    if (isset($data['administrativePasswordHidden'])
-                        && $data['administrativePasswordHidden'] !== Constants::HIDDEN_PASSWORD) {
+                    if (
+                        isset($data['administrativePasswordHidden'])
+                        && $data['administrativePasswordHidden'] !== Constants::HIDDEN_PASSWORD
+                    ) {
                         $ldapConfig->$name = $data['administrativePasswordHidden'];
                     }
                     break;
@@ -78,7 +80,7 @@ class LdapConfigController extends ModuleUsersUIBaseController
      * @return void
      * @throws Exception
      */
-    public function searchLdapUserAction(string $pattern=''): void
+    public function searchLdapUserAction(string $pattern = ''): void
     {
         /** @var Redis $redis */
         $redis = $this->di->getShared(ManagedCacheProvider::SERVICE_NAME);
@@ -96,12 +98,14 @@ class LdapConfigController extends ModuleUsersUIBaseController
         }
         $pattern = urldecode($pattern);
         $usersForDropDown = [];
-        foreach ($availableUsers as $user){
-            if (    stripos($user['name'], $pattern)!==false
-                || stripos($user['login'], $pattern)!==false){
-                $usersForDropDown[]=[
-                    'title'=>$user['login'],
-                    'description'=>$user['name'],
+        foreach ($availableUsers as $user) {
+            if (
+                mb_stripos($user['name'], $pattern) !== false
+                || mb_stripos($user['login'], $pattern) !== false
+            ) {
+                $usersForDropDown[] = [
+                    'title' => $user['login'],
+                    'description' => $user['name'],
                 ];
             }
         }
@@ -169,15 +173,17 @@ class LdapConfigController extends ModuleUsersUIBaseController
     {
         // Admin password can be stored in DB on the time, on this way it has only xxxxxx value.
         // It can be empty as well, if some password manager tried to fill it.
-        if (empty($postData['administrativePasswordHidden'])
-            || $postData['administrativePasswordHidden'] === Constants::HIDDEN_PASSWORD) {
+        if (
+            empty($postData['administrativePasswordHidden'])
+            || $postData['administrativePasswordHidden'] === Constants::HIDDEN_PASSWORD
+        ) {
             $ldapConfig = LdapConfig::findFirst();
-            $postData['administrativePassword'] = $ldapConfig->administrativePassword??'';
+            $postData['administrativePassword'] = $ldapConfig->administrativePassword ?? '';
         } else {
             $postData['administrativePassword'] = $postData['administrativePasswordHidden'];
         }
 
-       return [
+        return [
             'serverName' => $postData['serverName'],
             'serverPort' => $postData['serverPort'],
             'baseDN' => $postData['baseDN'],

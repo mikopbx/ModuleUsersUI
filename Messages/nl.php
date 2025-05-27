@@ -141,7 +141,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => 'Toon alle behalve records van geselecteerde werknemers',
     'module_usersui_NoAnyAccessGroup' => 'Er zijn nog geen toegangsgroepen aangemaakt in de module',
     'module_usersui_AddNewAccessGroupShort' => 'Creëren',
-    'module_usersui_LoginNameNotUnique' => 'Geen unieke gebruikersnaam',
+    'module_usersui_LoginNameNotUnique' => 'Geen unieke gebruikersnaam voor autorisatie in MikoPBX',
     'module_usersui_SelectMemberToAddToGroup' => 'Selecteer een medewerker om toe te voegen aan de huidige groep',
     'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'Zabbix-agent opzetten',
     'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'module-opstelling',
@@ -167,4 +167,6 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'Bekijk instellingen',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'instellingen veranderen',
     'module_usersui_LdapType' => 'Servertype',
+    'module_usersui_EmptyServerResponse' => 'De server heeft een lege lijst met gebruikers voor uw filter geretourneerd',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Toon alleen uitgaande gesprekken van geselecteerde medewerkers',
 ];

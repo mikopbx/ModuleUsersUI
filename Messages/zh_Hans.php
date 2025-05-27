@@ -141,7 +141,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => '显示除选定员工的记录之外的所有内容',
     'module_usersui_NoAnyAccessGroup' => '模块中尚未创建访问组',
     'module_usersui_AddNewAccessGroupShort' => '创造',
-    'module_usersui_LoginNameNotUnique' => '不是唯一的用户名',
+    'module_usersui_LoginNameNotUnique' => '不是 MikoPBX 中授权的唯一用户名',
     'module_usersui_SelectMemberToAddToGroup' => '选择要添加到当前组的员工',
     'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => '设置 Zabbix 代理',
     'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => '模块设置',
@@ -167,4 +167,6 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => '查看设置',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => '更改设置',
     'module_usersui_LdapType' => '服务器类型',
+    'module_usersui_EmptyServerResponse' => '服务器为您的过滤器返回了空用户列表',
+    'module_usersui_CDRFilterModeOutgoingInList' => '仅显示选定员工的传出对话',
 ];

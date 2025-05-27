@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
@@ -18,23 +19,6 @@
  */
 
 return [
-    /*
- * MikoPBX - free phone system for small business
- * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with this program.
- * If not, see <https://www.gnu.org/licenses/>.
- */
     'repModuleUsersUI' => 'Управление доступом в систему - %repesent%',
     'mo_ModuleModuleUsersUI' => 'Управление доступом в систему ',
     'BreadcrumbModuleUsersUI' => 'Управление доступом в систему ',
@@ -156,33 +140,35 @@ return [
     'module_usersui_CDRFilterModeLabel' => 'Выберите режим фильтрации CDR записей',
     'module_usersui_CDRFilterModeOff' => 'Не фильтровать',
     'module_usersui_CDRFilterModeInList' => 'Показывать только разговоры выбранных сотрудников',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Показывать только исходящие разговоры выбранных сотрудников',
     'module_usersui_CDRFilterModeNotInList' => 'Показывать все, кроме записей выбранных сотрудников',
     'module_usersui_NoAnyAccessGroup' => 'В модуле еще не создано ни одной группы доступа',
     'module_usersui_AddNewAccessGroupShort' => 'Создать',
-    'module_usersui_LoginNameNotUnique' => 'Не уникальное имя пользователя',
-    'module_usersui_SelectMemberToAddToGroup'=>'Выберите сотрудника для добавления в текущую группу',
-    'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' =>'настройка Zabbix агента',
-    'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index'=>'настройка модуля',
-    'module_usersui_CheckBox_CTIClient_ModuleCTIClient_index'=>'настройка модуля',
-    'module_usersui_CheckBox_Docker_ModuleDocker_index'=>'настройка модуля',
-    'module_usersui_CheckBox_PT1CCore_ModulePT1CCore_index'=>'настройка модуля',
-    'module_usersui_CheckBox_PhoneBook_ModulePhoneBook_index'=>'просмотр телефонной книги',
-    'module_usersui_CheckBox_PhoneBook_ModulePhoneBook_save'=>'изменение записей',
-    'module_usersui_CheckBox_PhoneBook_ModulePhoneBook_delete'=>'удаление записей',
-    'module_usersui_CheckBox_TelegramNotify_ModuleTelegramNotify_index'=>'настройка модуля',
-    'module_usersui_CheckBox_GetSsl_ModuleGetSsl_index'=>'получение сертификатов',
-    'module_usersui_CheckBox_Backup_ModuleBackup_index'=>'просмотр настроек резервного копирования',
-    'module_usersui_CheckBox_Backup_ModuleBackup_create'=>'создание резервной копии',
-    'module_usersui_CheckBox_Backup_ModuleBackup_delete'=>'удаление резервной копии',
-    'module_usersui_CheckBox_Backup_ModuleBackup_restore'=>'восстановление резервной копии',
-    'module_usersui_CheckBox_Backup_ModuleBackup_download'=>'скачать резервную копию',
-    'module_usersui_CheckBox_Backup_ModuleBackup_save'=>'изменение настроек модуля',
-    'module_usersui_CheckBox_Autoprovision_ModuleAutoprovision_index'=>'изменение настроек модуля',
-    'module_usersui_CheckBox_Bitrix24Integration_ModuleBitrix24Integration_index'=>'изменение настроек модуля',
-    'module_usersui_CheckBox_SmartIVR_ModuleSmartIVR_index'=>'изменение настроек модуля',
-    'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_index'=>'просмотр настроек',
-    'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save'=>'изменение настроек',
-    'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index'=>'просмотр настроек',
-    'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save'=>'изменение настроек',
-    'module_usersui_LdapType'=>'Тип сервера',
+    'module_usersui_LoginNameNotUnique' => 'Не уникальное имя пользователя для авторизации в MikoPBX',
+    'module_usersui_SelectMemberToAddToGroup' => 'Выберите сотрудника для добавления в текущую группу',
+    'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'настройка Zabbix агента',
+    'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'настройка модуля',
+    'module_usersui_CheckBox_CTIClient_ModuleCTIClient_index' => 'настройка модуля',
+    'module_usersui_CheckBox_Docker_ModuleDocker_index' => 'настройка модуля',
+    'module_usersui_CheckBox_PT1CCore_ModulePT1CCore_index' => 'настройка модуля',
+    'module_usersui_CheckBox_PhoneBook_ModulePhoneBook_index' => 'просмотр телефонной книги',
+    'module_usersui_CheckBox_PhoneBook_ModulePhoneBook_save' => 'изменение записей',
+    'module_usersui_CheckBox_PhoneBook_ModulePhoneBook_delete' => 'удаление записей',
+    'module_usersui_CheckBox_TelegramNotify_ModuleTelegramNotify_index' => 'настройка модуля',
+    'module_usersui_CheckBox_GetSsl_ModuleGetSsl_index' => 'получение сертификатов',
+    'module_usersui_CheckBox_Backup_ModuleBackup_index' => 'просмотр настроек резервного копирования',
+    'module_usersui_CheckBox_Backup_ModuleBackup_create' => 'создание резервной копии',
+    'module_usersui_CheckBox_Backup_ModuleBackup_delete' => 'удаление резервной копии',
+    'module_usersui_CheckBox_Backup_ModuleBackup_restore' => 'восстановление резервной копии',
+    'module_usersui_CheckBox_Backup_ModuleBackup_download' => 'скачать резервную копию',
+    'module_usersui_CheckBox_Backup_ModuleBackup_save' => 'изменение настроек модуля',
+    'module_usersui_CheckBox_Autoprovision_ModuleAutoprovision_index' => 'изменение настроек модуля',
+    'module_usersui_CheckBox_Bitrix24Integration_ModuleBitrix24Integration_index' => 'изменение настроек модуля',
+    'module_usersui_CheckBox_SmartIVR_ModuleSmartIVR_index' => 'изменение настроек модуля',
+    'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_index' => 'просмотр настроек',
+    'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'изменение настроек',
+    'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'просмотр настроек',
+    'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'изменение настроек',
+    'module_usersui_LdapType' => 'Тип сервера',
+    'module_usersui_EmptyServerResponse' => 'Сервер вернул пустой список пользователей по вашему фильтру'
 ];

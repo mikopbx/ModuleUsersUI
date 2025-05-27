@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
@@ -23,13 +24,14 @@ use MikoPBX\Common\Models\PbxExtensionModules;
 use MikoPBX\Common\Providers\PBXConfModulesProvider;
 use MikoPBX\Modules\Config\RestAPIConfigInterface;
 use Modules\ModuleUsersUI\Lib\Constants;
+use Modules\ModuleUsersUI\Lib\MikoPBXVersion;
 use Modules\ModuleUsersUI\Lib\UsersUIACL;
 use Modules\ModuleUsersUI\Models\AccessGroupsRights;
 use Phalcon\Annotations\Reader;
 use Phalcon\Annotations\Reflection;
-use Phalcon\Text;
 use ReflectionClass;
 use Throwable;
+
 use function MikoPBX\Common\Config\appPath;
 
 class AccessGroupsRightsController extends ModuleUsersUIBaseController
@@ -92,7 +94,6 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
         [$excludedControllers, $excludedActions] = $this->getExclusionsActionsControllers();
 
         foreach ($controllerFiles as $file) {
-
             $className = pathinfo($file)['filename'];
             $controllerClass = 'MikoPBX\AdminCabinet\Controllers\\' . $className;
 
@@ -105,7 +106,6 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
             if (count($publicMethods) > 0) {
                 $controllers[Constants::ADMIN_CABINET]['APP'][$controllerClass] = $publicMethods;
             }
-
         }
         // Sort the controllers array by translated controller name
         uksort($controllers[Constants::ADMIN_CABINET]['APP'], function ($a, $b) {
@@ -137,11 +137,11 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
         $arrayOfExclusions = [];
 
         // Get the list of linked controllers and actions which we hide from settings
-        foreach (UsersUIACL::getLinkedControllerActions() as $controllerClass=> $actions) {
+        foreach (UsersUIACL::getLinkedControllerActions() as $controllerClass => $actions) {
             // Iterate through the main controllers actions
-            foreach ($actions as $action=>$linkedControllers) {
+            foreach ($actions as $action => $linkedControllers) {
                 // Iterate through the linked controllers actions
-                foreach ($linkedControllers as $linkedController=>$linkedActions) {
+                foreach ($linkedControllers as $linkedController => $linkedActions) {
                     if (array_key_exists($linkedController, $arrayOfExclusions)) {
                         $arrayOfExclusions[$linkedController] = array_merge($arrayOfExclusions[$linkedController], $linkedActions);
                         $arrayOfExclusions[$linkedController] = array_unique($arrayOfExclusions[$linkedController]);
@@ -155,11 +155,13 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
         $arrayOfExclusions = array_merge_recursive(UsersUIACL::getAlwaysAllowed(), UsersUIACL::getAlwaysDenied(), $arrayOfExclusions);
         // Iterate through the always allowed and disallowed controllers and actions
         foreach ($arrayOfExclusions as $controllerClass => $actions) {
-            if ($actions === '*'
-                || (is_array($actions) && in_array('*', $actions))) {
+            if (
+                $actions === '*'
+                || (is_array($actions) && in_array('*', $actions))
+            ) {
                 // Add the controller with all actions to the excluded from settings array
                 $excludedControllers[] = $controllerClass;
-            } elseif (is_array($actions)){
+            } elseif (is_array($actions)) {
                 // Add the controller with defined actions to the excluded from settings array
                 $excludedActions[$controllerClass] = $actions;
             }
@@ -197,7 +199,7 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
                 // Remove "Action" from the action name
                 $actionName = substr($actionName, 0, -6);
                 // Remove always allowed or always disallowed actions
-                if (!in_array($actionName, $excludedActions[$controllerClass])) {
+                if (!in_array($actionName, $excludedActions[$controllerClass] ?? [])) {
                     $publicMethods[$actionName] = false;
                 }
             }
@@ -224,7 +226,6 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
         [$excludedControllers, $excludedActions] = $this->getExclusionsActionsControllers();
 
         foreach ($controllerFiles as $file) {
-
             $className = pathinfo($file)['filename'];
             $subClassName = basename(pathinfo($file)['dirname']);
             $controllerClass = 'MikoPBX\PBXCoreREST\Controllers\\' . $subClassName . '\\' . $className;
@@ -328,8 +329,8 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
 
                 // Create a reflection of the controller class
                 $reflection = new Reflection($parsedClass);
-
-                $controllerName = '/pbxcore/api/modules/' . Text::uncamelize($configObject->moduleUniqueId, '-');
+                $textClass = MikoPBXVersion::getTextClass();
+                $controllerName = '/pbxcore/api/modules/' . $textClass::uncamelize($configObject->moduleUniqueId, '-');
 
                 // Get the actions of the controller if they are defined in the method description
                 $actions = [];
@@ -402,7 +403,6 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
                     $currentContext = array_merge($currentContext ?? [], $actions);
                 }
             }
-
         }
         return $controllers;
     }
@@ -424,7 +424,8 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
                     foreach ($actions as $actionName => $value) {
                         foreach ($allowedRights as $allowedRight) {
                             $allowedActions = json_decode($allowedRight['actions'], true);
-                            if ($allowedRight['module_id'] === $moduleId
+                            if (
+                                $allowedRight['module_id'] === $moduleId
                                 && $allowedRight['controller'] === $controllerClass
                                 && in_array($actionName, $allowedActions)
                             ) {
@@ -472,9 +473,7 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
                     // If there are validation errors, display them and return false
                     return false;
                 }
-
             }
-
         }
         return true;
     }

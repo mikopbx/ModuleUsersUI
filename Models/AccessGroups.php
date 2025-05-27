@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
@@ -20,7 +21,6 @@
 namespace Modules\ModuleUsersUI\Models;
 
 use MikoPBX\Modules\Models\ModulesModelsBase;
-use Modules\ModuleUsersUI\Lib\Constants;
 use Phalcon\Mvc\Model\Relation;
 
 class AccessGroups extends ModulesModelsBase
@@ -62,7 +62,7 @@ class AccessGroups extends ModulesModelsBase
      *
      * @Column(type="string", default='all')
      */
-    public  $cdrFilterMode;
+    public $cdrFilterMode;
 
     /**
      * If it is set to '1' the group has full access
@@ -127,11 +127,10 @@ class AccessGroups extends ModulesModelsBase
                 'group_id' => $this->id
             ]
         ];
-        foreach (UsersCredentials::find($parameters) as $userCredential){
+        foreach (UsersCredentials::find($parameters) as $userCredential) {
             $userCredential->user_access_group_id = null;
             $userCredential->save();
         }
         return parent::beforeDelete();
     }
-
 }

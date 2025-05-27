@@ -141,7 +141,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => 'Hiển thị tất cả trừ hồ sơ của nhân viên đã chọn',
     'module_usersui_NoAnyAccessGroup' => 'Chưa có nhóm truy cập nào được tạo trong mô-đun',
     'module_usersui_AddNewAccessGroupShort' => 'Tạo nên',
-    'module_usersui_LoginNameNotUnique' => 'Không phải tên người dùng duy nhất',
+    'module_usersui_LoginNameNotUnique' => 'Không phải tên người dùng duy nhất để ủy quyền trong MikoPBX',
     'module_usersui_SelectMemberToAddToGroup' => 'Chọn một nhân viên để thêm vào nhóm hiện tại',
     'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'thiết lập đại lý Zabbix',
     'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'thiết lập mô-đun',
@@ -167,4 +167,6 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'thay đổi cài đặt',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'Giao diện cài đặt',
     'module_usersui_LdapType' => 'Loại máy chủ',
+    'module_usersui_EmptyServerResponse' => 'Máy chủ trả về danh sách người dùng trống cho bộ lọc của bạn',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Chỉ hiển thị các cuộc trò chuyện đi của nhân viên đã chọn',
 ];

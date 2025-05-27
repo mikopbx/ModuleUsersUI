@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
@@ -57,7 +58,7 @@ class LdapConfig extends ModulesModelsBase
      *
      * @Column(type="string", length=1, nullable=false, default="0")
      */
-    public ?string $useTLS='0';
+    public ?string $useTLS = '0';
 
     /**
      * Login of user with read rights on the domain
@@ -106,7 +107,7 @@ class LdapConfig extends ModulesModelsBase
      *
      * @Column(type="string", nullable=false, default="ActiveDirectory")
      */
-    public ?string $ldapType='ActiveDirectory';
+    public ?string $ldapType = 'ActiveDirectory';
 
 
     public function initialize(): void
@@ -114,5 +115,4 @@ class LdapConfig extends ModulesModelsBase
         $this->setSource('m_ModuleUsersUI_LDAP_Config');
         parent::initialize();
     }
-
 }

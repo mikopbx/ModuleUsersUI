@@ -227,13 +227,17 @@ const moduleUsersUiIndexLdap = {
              * Handles the successful response of the 'get-available-ldap-users' API request.
              * @param {object} response - The response object.
              */
-            onSuccess: function(response) {
+            onSuccess: function (response) {
                 moduleUsersUiIndexLdap.$checkGetUsersButton.removeClass('loading disabled');
                 $('.ui.message.ajax').remove();
                 let html = '<ul class="ui list">';
-                $.each(response.data, (index, user) => {
-                    html += `<li class="item">${user.name} (${user.login})</li>`;
-                });
+                if (response.data.length === 0) {
+                    html += `<li class="item">${globaltranslate.module_usersui_EmptyServerResponse}</li>`;
+                } else {
+                    $.each(response.data, (index, user) => {
+                        html += `<li class="item">${user.name} (${user.login})</li>`;
+                    });
+                }
                 html += '</ul>';
                 moduleUsersUiIndexLdap.$ldapCheckGetUsersSegment.after(`<div class="ui icon message ajax positive">${html}</div>`);
             },

@@ -141,7 +141,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => 'Afișați toate, cu excepția înregistrărilor angajaților selectați',
     'module_usersui_NoAnyAccessGroup' => 'Nu au fost create încă grupuri de acces în modul',
     'module_usersui_AddNewAccessGroupShort' => 'Crea',
-    'module_usersui_LoginNameNotUnique' => 'Nu este un nume de utilizator unic',
+    'module_usersui_LoginNameNotUnique' => 'Nu este un nume de utilizator unic pentru autorizare în MikoPBX',
     'module_usersui_SelectMemberToAddToGroup' => 'Selectați un angajat pe care să îl adăugați la grupul curent',
     'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'stabilirea agentului Zabbix',
     'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'configurarea modulului',
@@ -167,4 +167,6 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'schimbă setările',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'vizualizați setările',
     'module_usersui_LdapType' => 'Tip server',
+    'module_usersui_EmptyServerResponse' => 'Serverul a returnat o listă goală de utilizatori pentru filtrul dvs',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Afișați numai conversațiile de ieșire ale angajaților selectați',
 ];

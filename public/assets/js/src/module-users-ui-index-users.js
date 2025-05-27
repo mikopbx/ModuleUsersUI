@@ -81,13 +81,31 @@ const ModuleUsersUIUsersTab = {
 
             if (moduleUsersUiIndexLdap.$useLdapCheckbox.checkbox('is checked')
                 && $(e.target).closest('tr').find('.user-use-ldap-checkbox').checkbox('is checked')){
-                $(e.target).closest('div').search({
-                    // change search endpoint to a custom endpoint by manipulating apiSettings
+
+                const $inputField = $(e.target);
+                $inputField.closest('div').search({
+                    searchDelay: 300,
+                    minCharacters: 2,
+                    // change the search endpoint to a custom endpoint by manipulating apiSettings
                     apiSettings: {
                         url: `${globalRootUrl}module-users-u-i/ldap-config/search-ldap-user/{query}`
                     },
                 });
+                // Handle Enters key press event
+                $inputField.on('keydown', function(event) {
+                    if (event.key === 'Enter') {
+                        // Prevent default action (if form, prevent submission)
+                        event.preventDefault();
+                        const $searchResults = $inputField.closest('div').find('.results .result');
+                        // If there is one result, insert it into the field
+                        if ($searchResults.length === 1) {
+                            const result = $searchResults.first().data('result');
+                            $inputField.val(result.title);
+                        }
+                    }
+                });
             }
+
         });
 
         // Submit form on Enter or Tab
@@ -185,15 +203,16 @@ const ModuleUsersUIUsersTab = {
     makeDropdownList(selected) {
         const values = [];
         $('#users-groups-list option').each((index, obj) => {
+            const displayText = obj.text.length > 50 ? obj.text.substring(0, 50) + '...' : obj.text;
             if (selected === obj.text || selected === obj.value) {
                 values.push({
-                    name: obj.text,
+                    name: displayText,
                     value: obj.value,
                     selected: true,
                 });
             } else {
                 values.push({
-                    name: obj.text,
+                    name: displayText,
                     value: obj.value,
                 });
             }

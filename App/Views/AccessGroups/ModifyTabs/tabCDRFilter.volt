@@ -14,6 +14,12 @@
     </div>
     <div class="field">
         <div class="ui radio checkbox cdr-filter-radio">
+            {{ form.render('cdr_filter_mode_outgoing_by_list') }}
+            <label for="cdr_filter_mode_outgoing_by_list">{{ t._('module_usersui_CDRFilterModeOutgoingInList') }}</label>
+        </div>
+    </div>
+    <div class="field">
+        <div class="ui radio checkbox cdr-filter-radio">
             {{ form.render('cdr_filter_mode_except_list') }}
             <label for="cdr_filter_mode_except_list">{{ t._('module_usersui_CDRFilterModeNotInList') }}</label>
         </div>

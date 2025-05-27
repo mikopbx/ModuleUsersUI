@@ -141,7 +141,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => 'Mostrar todos menos los registros de los empleados seleccionados',
     'module_usersui_NoAnyAccessGroup' => 'Aún no se han creado grupos de acceso en el módulo',
     'module_usersui_AddNewAccessGroupShort' => 'Crear',
-    'module_usersui_LoginNameNotUnique' => 'No es un nombre de usuario único',
+    'module_usersui_LoginNameNotUnique' => 'No es un nombre de usuario único para autorización en MikoPBX',
     'module_usersui_SelectMemberToAddToGroup' => 'Seleccione un empleado para agregar al grupo actual',
     'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'configurando el agente Zabbix',
     'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'configuración del módulo',
@@ -167,4 +167,6 @@ return [
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_save' => 'cambiar ajustes',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'ver configuraciones',
     'module_usersui_LdapType' => 'Tipo de servidor',
+    'module_usersui_EmptyServerResponse' => 'El servidor devolvió una lista vacía de usuarios para su filtro.',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Mostrar solo conversaciones salientes de empleados seleccionados',
 ];

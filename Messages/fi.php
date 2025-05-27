@@ -158,7 +158,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => 'Näytä kaikki paitsi valittujen työntekijöiden tiedot',
     'module_usersui_NoAnyAccessGroup' => 'Moduuliin ei ole vielä luotu pääsyryhmiä',
     'module_usersui_AddNewAccessGroupShort' => 'Luoda',
-    'module_usersui_LoginNameNotUnique' => 'Ei yksilöllinen käyttäjätunnus',
+    'module_usersui_LoginNameNotUnique' => 'Ei yksilöllinen käyttäjänimi valtuutusta varten MikoPBX:ssä',
     'module_usersui_SelectMemberToAddToGroup' => 'Valitse nykyiseen ryhmään lisättävä työntekijä',
     'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'Zabbix-agentin perustaminen',
     'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'moduulin asetukset',
@@ -184,4 +184,6 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'tarkastella asetuksia',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'muuttaa asetuksia',
     'module_usersui_LdapType' => 'Palvelimen tyyppi',
+    'module_usersui_EmptyServerResponse' => 'Palvelin palautti tyhjän käyttäjäluettelon suodattimellesi',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Näytä vain valittujen työntekijöiden lähtevät keskustelut',
 ];

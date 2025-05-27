@@ -158,7 +158,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => 'Mutasson mindent, kivéve a kiválasztott alkalmazottak nyilvántartását',
     'module_usersui_NoAnyAccessGroup' => 'Még nem jött létre hozzáférési csoport a modulban',
     'module_usersui_AddNewAccessGroupShort' => 'Teremt',
-    'module_usersui_LoginNameNotUnique' => 'Nem egyedi felhasználónév',
+    'module_usersui_LoginNameNotUnique' => 'Nem egyedi felhasználónév az engedélyezéshez a MikoPBX-ben',
     'module_usersui_SelectMemberToAddToGroup' => 'Válassza ki az aktuális csoporthoz hozzáadni kívánt alkalmazottat',
     'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'Zabbix ügynök felállítása',
     'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'modul beállítása',
@@ -184,4 +184,6 @@ return [
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_index' => 'beállítások megtekintése',
     'module_usersui_CheckBox_LdapSync_ModuleLdapSync_save' => 'beállítások megváltoztatása',
     'module_usersui_LdapType' => 'Szerver típusa',
+    'module_usersui_EmptyServerResponse' => 'A szerver a felhasználók üres listáját adta vissza a szűrőhöz',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Csak a kiválasztott alkalmazottak kimenő beszélgetéseit jelenítse meg',
 ];

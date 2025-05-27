@@ -21,7 +21,7 @@ namespace Modules\ModuleUsersUI\Lib\ACL;
 
 class ModuleCallTrackingACL implements ACLInterface
 {
-    const API_MODULE_CALL_TRACKING = '';
+    const API_MODULE_CALL_TRACKING = '/pbxcore/api/modules/module-call-tracking';
     /**
      * Prepares list of linked controllers to other controllers to hide it from UI
      * and allow or disallow with the main one.

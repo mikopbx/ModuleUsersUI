@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
@@ -26,7 +27,6 @@ use MikoPBX\AdminCabinet\Providers\AssetProvider;
 use MikoPBX\AdminCabinet\Providers\SecurityPluginProvider;
 use MikoPBX\Common\Providers\AclProvider;
 use MikoPBX\Common\Providers\SessionProvider;
-use MikoPBX\Core\System\Util;
 use MikoPBX\Modules\Config\ConfigClass;
 use Modules\ModuleUsersUI\App\Controllers\UsersCredentialsController;
 use Modules\ModuleUsersUI\App\Forms\ExtensionEditAdditionalForm;
@@ -60,7 +60,7 @@ class UsersUIConf extends ConfigClass
     /**
      * Handles the event when data in certain models is changed and clears the ACL cache accordingly.
      *
-     * @param array $data The data related to the event.
+     * @param mixed $data The data related to the event.
      */
     public function modelsEventChangeData($data): void
     {
@@ -156,12 +156,18 @@ class UsersUIConf extends ConfigClass
      */
     public function onBeforeExecuteRoute(Dispatcher $dispatcher): void
     {
-       $controller = $dispatcher->getActiveController();
-        if (is_a($controller, ExtensionsController::class)
+        $controller = $dispatcher->getActiveController();
+        if (
+            is_a($controller, ExtensionsController::class)
             && $dispatcher->getActionName() === 'modify'
         ) {
             $controller->view->addCustomTabFromModuleUsersUI =
-                $this->di->get(SecurityPluginProvider::SERVICE_NAME, [UsersCredentialsController::class, 'changeUserCredentials']);
+                $this->di->get(
+                    SecurityPluginProvider::SERVICE_NAME,
+                    [
+                        UsersCredentialsController::class, 'changeUserCredentials'
+                    ]
+                );
         }
     }
 
@@ -185,13 +191,28 @@ class UsersUIConf extends ConfigClass
         if (!empty($response->result) and $response->result === true) {
             $userController = new UsersCredentialsController();
             $postData = $app->request->getPost();
-            $userController->saveUserCredential($postData);
+            
+            // Check if any key in postData contains "module_users_ui_"
+            $hasUserUIKeys = false;
+            foreach ($postData as $key => $value) {
+                if (strpos($key, 'module_users_ui_') !== false) {
+                    $hasUserUIKeys = true;
+                    break;
+                }
+            }
+            
+            // Only save credentials if relevant keys are present
+            if ($hasUserUIKeys) {
+                $userController->saveUserCredential($postData, $response);
+            }
+            
+            $app->response->setContent(json_encode($response));
         }
     }
 
 
     /**
-     * Adds an extra filters before execute request to CDR table.
+     * Adds an extra filter before executed request to the CDR table.
      * @see https://docs.mikopbx.com/mikopbx-development/module-developement/module-class#applyaclfilterstocdrquery
      *
      * @param array $parameters The array of parameters prepared for execute query.
@@ -224,7 +245,12 @@ class UsersUIConf extends ConfigClass
         $currentController = $dispatcher->getControllerName();
         $currentAction = $dispatcher->getActionName();
         if ($currentController === 'Extensions' and $currentAction === 'modify') {
-            $isAllowed = $this->di->get(SecurityPluginProvider::SERVICE_NAME, [UsersCredentialsController::class, 'changeUserCredentials']);
+            $isAllowed = $this->di->get(
+                SecurityPluginProvider::SERVICE_NAME,
+                [
+                    UsersCredentialsController::class, 'changeUserCredentials'
+                ]
+            );
             if ($isAllowed) {
                 $assets->collection(AssetProvider::SEMANTIC_UI_CSS)
                     ->addCss('css/vendor/semantic/search.min.css', true);

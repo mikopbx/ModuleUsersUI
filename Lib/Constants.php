@@ -24,6 +24,7 @@ class Constants
     // CDR Filter constants
     public const CDR_FILTER_DISABLED = 'all';
     public const CDR_FILTER_ONLY_SELECTED = 'selected';
+    public const CDR_FILTER_OUTGOING_SELECTED = 'outgoing-selected';
     public const CDR_FILTER_EXCEPT_SELECTED = 'not-selected';
 
 

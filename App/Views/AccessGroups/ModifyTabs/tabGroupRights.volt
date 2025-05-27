@@ -25,7 +25,7 @@
                             <div class="item">
                                     <div class="ui master checkbox">
                                         {{ form.render(controller~'_main') }}
-                                        {{ form.label(controller~'_main') }}
+                                        {{ form.label(controller~'_main', ['class':'ui tiny header']) }}
                                     </div>
                                     <div class="list">
                                         {% for element in form %}

@@ -141,7 +141,7 @@ return [
     'module_usersui_CDRFilterModeNotInList' => 'Εμφάνιση όλων εκτός από τα αρχεία επιλεγμένων υπαλλήλων',
     'module_usersui_NoAnyAccessGroup' => 'Δεν έχουν δημιουργηθεί ακόμη ομάδες πρόσβασης στη λειτουργική μονάδα',
     'module_usersui_AddNewAccessGroupShort' => 'Δημιουργώ',
-    'module_usersui_LoginNameNotUnique' => 'Δεν είναι μοναδικό όνομα χρήστη',
+    'module_usersui_LoginNameNotUnique' => 'Δεν είναι μοναδικό όνομα χρήστη για εξουσιοδότηση στο MikoPBX',
     'module_usersui_SelectMemberToAddToGroup' => 'Επιλέξτε έναν υπάλληλο για προσθήκη στην τρέχουσα ομάδα',
     'module_usersui_CheckBox_ZabbixAgent5_ModuleZabbixAgent5_index' => 'εγκατάσταση του πράκτορα Zabbix',
     'module_usersui_CheckBox_AmoCrm_ModuleAmoCrm_index' => 'εγκατάσταση μονάδας',
@@ -167,4 +167,6 @@ return [
     'module_usersui_CheckBox_SmartIVR_ModuleSmartIVR_index' => 'αλλαγή των ρυθμίσεων της μονάδας',
     'module_usersui_CheckBox_UsersGroups_ModuleUsersGroups_index' => 'προβολή ρυθμίσεων',
     'module_usersui_LdapType' => 'Τύπος διακομιστή',
+    'module_usersui_EmptyServerResponse' => 'Ο διακομιστής επέστρεψε μια κενή λίστα χρηστών για το φίλτρο σας',
+    'module_usersui_CDRFilterModeOutgoingInList' => 'Εμφάνιση μόνο εξερχόμενων συνομιλιών επιλεγμένων υπαλλήλων',
 ];

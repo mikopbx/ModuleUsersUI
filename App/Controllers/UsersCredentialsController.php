@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
@@ -19,15 +20,13 @@
 
 namespace Modules\ModuleUsersUI\App\Controllers;
 
-
-use MikoPBX\AdminCabinet\Controllers\ExtensionsController;
 use MikoPBX\Common\Models\Extensions;
 use MikoPBX\Common\Models\Sip;
 use MikoPBX\Common\Models\Users;
 use Modules\ModuleUsersUI\Lib\Constants;
+use Modules\ModuleUsersUI\Lib\MikoPBXVersion;
 use Modules\ModuleUsersUI\Models\LdapConfig;
 use Modules\ModuleUsersUI\Models\UsersCredentials;
-use Phalcon\Security;
 
 class UsersCredentialsController extends ModuleUsersUIBaseController
 {
@@ -96,12 +95,13 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
         $newMembers = $query->execute();
 
         $ldapEnabled = LdapConfig::findFirst()->useLdapAuthMethod ?? '0' === '1';
-        $security = new Security();
+        $securityClass = MikoPBXVersion::getSecurityClass();
+        $security = new $securityClass();
 
         foreach ($newMembers as $member) {
             // Find or create a new user credential
             $groupMember = $this->findCreateNewUserCredential($member->id);
-            if (empty($groupMember->user_password)){
+            if (empty($groupMember->user_password)) {
                 $groupMember->user_password = $security->hash($member->password);
                 if ($ldapEnabled) {
                     $groupMember->use_ldap_auth = '1';
@@ -128,7 +128,7 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
      *
      * @return void
      */
-    public function saveUserCredential(array $postData)
+    public function saveUserCredential(array $postData, object &$response): void
     {
         // Get the current user ID from the request
         $currentUserId = $postData['user_id'];
@@ -139,10 +139,10 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
         }
 
         // Get the access group, user login, and user password from the request
-        $accessGroup = $postData['module_users_ui_access_group']??'';
-        $userLogin = $postData['module_users_ui_login']??'';
-        $userUseLdapAuth = $postData['module_users_ui_use_ldap_auth']??'';
-        $userPassword = $postData['module_users_ui_password']??'';
+        $accessGroup = $postData['module_users_ui_access_group'] ?? '';
+        $userLogin = $postData['module_users_ui_login'] ?? '';
+        $userUseLdapAuth = $postData['module_users_ui_use_ldap_auth'] ?? '';
+        $userPassword = $postData['module_users_ui_password'] ?? '';
 
         // Find the user credentials based on the parameters
         $groupMember = $this->findCreateNewUserCredential($currentUserId);
@@ -154,12 +154,14 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
 
         // Update the user password hash if it is not empty
         if (!empty($userPassword) and ($userPassword !== Constants::HIDDEN_PASSWORD)) {
-            $security = new Security();
+
+            $securityClass = MikoPBXVersion::getSecurityClass();
+            $security = new $securityClass();
             $groupMember->user_password = $security->hash($userPassword);
         }
 
-        // Update the user use LDAP authentication if it is not empty
-        if ($userUseLdapAuth === 'on') {
+        // Update the user uses LDAP authentication if it is not empty
+        if ($userUseLdapAuth === 'on' || $userUseLdapAuth === '1') {
             $groupMember->use_ldap_auth = '1';
         } else {
             $groupMember->use_ldap_auth = '0';
@@ -174,7 +176,10 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
         }
 
         // Save the updated user credentials
-        $groupMember->save();
+        if (!$groupMember->save()) {
+            $response->messages['error'][] = implode('<br>', $groupMember->getMessages());
+            $response->result = false;
+        }
     }
 
     /**
@@ -271,7 +276,8 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
 
         // Update the user password hash if it is not empty
         if (!empty($userPassword) and ($userPassword !== Constants::HIDDEN_PASSWORD)) {
-            $security = new Security();
+            $securityClass = MikoPBXVersion::getSecurityClass();
+            $security = new $securityClass();
             $groupMember->user_password = $security->hash($userPassword);
         }
 
