@@ -34,7 +34,7 @@ return [
  * You should have received a copy of the GNU General Public License along with this program.
  * If not, see <https://www.gnu.org/licenses/>.
  */
-    'repModuleUsersUI' => 'Järjestelmän kulunvalvonta - %repesent%',
+    'repModuleUsersUI' => 'Järjestelmän käyttöoikeuksien hallinta - %repesent%',
     'mo_ModuleModuleUsersUI' => 'Järjestelmän kulunvalvonta ',
     'BreadcrumbModuleUsersUI' => 'Järjestelmän kulunvalvonta ',
     'SubHeaderModuleUsersUI' => 'Käyttöoikeusryhmien luominen, oikeuksien rajoittaminen, verkkotunnuksen valtuutus',
