@@ -17,7 +17,7 @@ return [
  * You should have received a copy of the GNU General Public License along with this program.
  * If not, see <https://www.gnu.org/licenses/>.
  */
-    'repModuleUsersUI' => 'Control acces la sistem - %repesent%',
+    'repModuleUsersUI' => 'Controlul accesului la sistem - %repesent%',
     'mo_ModuleModuleUsersUI' => 'Control acces la sistem ',
     'BreadcrumbModuleUsersUI' => 'Control acces la sistem ',
     'SubHeaderModuleUsersUI' => 'Crearea de grupuri de acces, restrângerea drepturilor, autorizarea domeniului',
