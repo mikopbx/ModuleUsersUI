@@ -80,7 +80,8 @@ class CoreACL implements ACLInterface
                     RestEndpoints::API_CDR => [
                         RestEndpoints::ACTION_CDR_API_PLAYBACK_V2,
                         RestEndpoints::ACTION_CDR_PLAYBACK,
-                        RestEndpoints::ACTION_CDR_API_GET_RECORD_FILE_V2
+                        RestEndpoints::ACTION_CDR_API_GET_RECORD_FILE_V2,
+                        RestEndpoints::ACTION_CDR_API_GET_LATEST_RECORD_DATE
                     ]
                 ]
             ],

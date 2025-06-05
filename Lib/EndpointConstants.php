@@ -51,6 +51,7 @@ class EndpointConstants
     const ACTION_CDR_PLAYBACK = '/playback';
     const ACTION_CDR_API_PLAYBACK_V2 = '/v2/playback';
     const ACTION_CDR_API_GET_RECORD_FILE_V2 = '/v2/getRecordFile';
+    const ACTION_CDR_API_GET_LATEST_RECORD_DATE = '/getLatestRecordDate';
 
     // SIP API Actions
     const ACTION_SIP_API_GET_PEER = '/getSipPeer';
