@@ -255,7 +255,7 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
                     if (in_array($annotation->getName(), $possibleHTTPMethods)) {
                         $actionName = $annotation->getArgument(0);
                         // Remove always allowed or always disallowed actions
-                        if (!empty($actionName) and !in_array($actionName, $excludedActions[$controllerName])) {
+                        if (!empty($actionName) and !in_array($actionName, $excludedActions[$controllerName]??[])) {
                             $actions[$actionName] = false;
                         }
                     }

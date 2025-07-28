@@ -80,7 +80,8 @@ class CoreACL implements ACLInterface
                     RestEndpoints::API_CDR => [
                         RestEndpoints::ACTION_CDR_API_PLAYBACK_V2,
                         RestEndpoints::ACTION_CDR_PLAYBACK,
-                        RestEndpoints::ACTION_CDR_API_GET_RECORD_FILE_V2
+                        RestEndpoints::ACTION_CDR_API_GET_RECORD_FILE_V2,
+                        RestEndpoints::ACTION_CDR_API_GET_LATEST_RECORD_DATE
                     ]
                 ]
             ],
@@ -254,6 +255,11 @@ class CoreACL implements ACLInterface
                 RestEndpoints::ACTION_LIC_SEND_PBX_METRICS
             ],
             RestEndpoints::API_NCHAN => '*',
+            
+            RestEndpoints::API_USER_PAGE_TRACKER => [
+                RestEndpoints::ACTION_USER_PAGE_TRACKER_PAGE_VIEW,
+                RestEndpoints::ACTION_USER_PAGE_TRACKER_PAGE_LEAVE
+            ]
         ];
     }
 

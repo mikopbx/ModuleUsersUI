@@ -34,10 +34,10 @@ return [
  * You should have received a copy of the GNU General Public License along with this program.
  * If not, see <https://www.gnu.org/licenses/>.
  */
-    'repModuleUsersUI' => 'Rendszer hozzáférés-vezérlés - %repesent%',
-    'mo_ModuleModuleUsersUI' => 'Rendszer hozzáférés-szabályozás ',
-    'BreadcrumbModuleUsersUI' => 'Rendszer hozzáférés-szabályozás ',
-    'SubHeaderModuleUsersUI' => 'Hozzáférési csoportok létrehozása, jogok korlátozása, domain jogosultság',
+    'repModuleUsersUI' => 'Rendszerhozzáférés-vezérlés - %repesent%',
+    'mo_ModuleModuleUsersUI' => 'Rendszerhozzáférés kezelése ',
+    'BreadcrumbModuleUsersUI' => 'Rendszerhozzáférés kezelése ',
+    'SubHeaderModuleUsersUI' => 'Hozzáférési csoportok létrehozása, jogok korlátozása, domain engedélyezése',
     'BreadcrumbAccessGroups' => 'Hozzáférési csoport beállítása',
     'SubHeaderAccessGroups' => 'Az interfész elemek és a REST API jogainak részletes konfigurálása',
     'module_usersui_GeneralSettings' => 'Alapvető csoportbeállítások',

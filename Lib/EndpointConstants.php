@@ -42,6 +42,7 @@ class EndpointConstants
     const API_SYSINFO = '/pbxcore/api/sysinfo';
     const API_STORAGE = '/pbxcore/api/storage';
     const API_ADVICE = '/pbxcore/api/advice';
+    const API_USER_PAGE_TRACKER = '/pbxcore/api/user-page-tracker';
     const API_SOME_ENDPOINT = '/pbxcore/api/someendpoint';
 
     // CDR (Call Detail Records) API Actions
@@ -50,6 +51,7 @@ class EndpointConstants
     const ACTION_CDR_PLAYBACK = '/playback';
     const ACTION_CDR_API_PLAYBACK_V2 = '/v2/playback';
     const ACTION_CDR_API_GET_RECORD_FILE_V2 = '/v2/getRecordFile';
+    const ACTION_CDR_API_GET_LATEST_RECORD_DATE = '/getLatestRecordDate';
 
     // SIP API Actions
     const ACTION_SIP_API_GET_PEER = '/getSipPeer';
@@ -93,6 +95,10 @@ class EndpointConstants
     // Sound File Actions
     const ACTION_SOUND_GET_PATH_BY_ID = 'getPathById';
     const ACTION_SOUND_GET_FILES = 'getSoundFiles';
+
+    // User Page Tracker API Actions
+    const ACTION_USER_PAGE_TRACKER_PAGE_VIEW = '/pageView';
+    const ACTION_USER_PAGE_TRACKER_PAGE_LEAVE = '/pageLeave';
 
     // Generic Actions
     const ACTION_API_DELETE_RECORD = '/deleteRecord';
