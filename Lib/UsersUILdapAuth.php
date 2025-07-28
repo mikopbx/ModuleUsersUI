@@ -24,6 +24,7 @@ use LdapRecord\Auth\Events\Failed;
 use LdapRecord\Container;
 use MikoPBX\Common\Handlers\CriticalErrorsHandler;
 use MikoPBX\Common\Providers\LoggerAuthProvider;
+use Modules\ModuleUsersUI\Lib\AnswerStructure;
 use Phalcon\Di\Injectable;
 
 include_once __DIR__ . '/../vendor/autoload.php';
