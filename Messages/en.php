@@ -51,7 +51,7 @@ return [
     'module_usersui_CheckBox_AdminCabinet_Providers_modifysip' => 'view SIP account',
     'module_usersui_CheckBox_AdminCabinet_Providers_modifyiax' => 'view IAX account',
     'module_usersui_CheckBox_AdminCabinet_Providers_enable' => 'enable provider',
-    'module_usersui_CheckBox_AdminCabinet_Providers_disable' => 'provider shutdown',
+    'module_usersui_CheckBox_AdminCabinet_Providers_disable' => 'disable provider',
     'module_usersui_CheckBox_AdminCabinet_Providers_save' => 'save settings or create a new one',
     'module_usersui_CheckBox_AdminCabinet_Providers_delete' => 'delete',
     'module_usersui_CheckBox_AdminCabinet_SoundFiles_index' => 'section access',
