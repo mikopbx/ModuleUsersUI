@@ -25,6 +25,7 @@ use Modules\ModuleUsersUI\Lib\Constants;
 use Modules\ModuleUsersUI\Models\AccessGroups;
 use Modules\ModuleUsersUI\Models\LdapConfig;
 use Modules\ModuleUsersUI\Models\UsersCredentials;
+use Phalcon\Forms\Element\Check;
 use Phalcon\Forms\Element\Hidden;
 use Phalcon\Forms\Element\Password;
 use Phalcon\Forms\Element\Select;
@@ -74,7 +75,11 @@ class ExtensionEditAdditionalForm extends ModuleBaseForm
         $form->add($password);
 
         // Crete a new Checkbox element on the user form
-        $form->addCheckBox('module_users_ui_use_ldap_auth', intval($useLdapAuth) === 1);
+        $checkAr = ['value' => null];
+        if (intval($useLdapAuth) === 1) {
+            $checkAr = ['checked' => 'on','value' => 'on'];
+        }
+        $form->add(new Check('module_users_ui_use_ldap_auth', $checkAr));
 
         // Retrieve all access groups from the database
         $accessGroups = AccessGroups::find();
