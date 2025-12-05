@@ -66,8 +66,10 @@ class LdapConfigForm extends ModuleBaseForm
         ]));
 
         // UserFilter
+        // skipEscaping is required because LDAP filter contains & which should not be HTML-escaped
         $this->addTextArea('userFilter', $entity->userFilter ?? '(&(objectClass=user)(objectCategory=PERSON))', 90, [
-            'placeholder' => '(&(objectClass=user)(objectCategory=PERSON))'
+            'placeholder' => '(&(objectClass=user)(objectCategory=PERSON))',
+            'skipEscaping' => true
         ]);
 
         // UserIdAttribute

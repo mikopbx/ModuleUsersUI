@@ -115,4 +115,31 @@ class AccessGroupCDRFilter extends ModulesModelsBase
             );
         }
     }
+
+    /**
+     * Cleans orphan records from AccessGroupCDRFilter table.
+     * Removes records where user_id references a non-existent user in the main Users table.
+     *
+     * @return int Number of deleted orphan records.
+     */
+    public static function cleanOrphanRecords(): int
+    {
+        $deletedCount = 0;
+
+        // Get all existing user IDs from the main Users table
+        $existingUserIds = Users::find(['columns' => 'id'])->toArray();
+        $existingUserIds = array_column($existingUserIds, 'id');
+
+        // Find and delete orphan CDR filter records
+        $allFilters = self::find();
+        foreach ($allFilters as $filter) {
+            if (!in_array($filter->user_id, $existingUserIds, false)) {
+                if ($filter->delete()) {
+                    $deletedCount++;
+                }
+            }
+        }
+
+        return $deletedCount;
+    }
 }
