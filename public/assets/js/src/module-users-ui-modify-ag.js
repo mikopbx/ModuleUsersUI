@@ -163,10 +163,15 @@ const moduleUsersUIModifyAG = {
             onChange: moduleUsersUIModifyAG.cbAfterChangeFullAccessToggle
         });
 
-        moduleUsersUIModifyAG.$cdrFilterToggles.checkbox();
+        moduleUsersUIModifyAG.$cdrFilterToggles.checkbox({
+            onChange: Form.dataChanged
+        });
         moduleUsersUIModifyAG.cbAfterChangeCDRFilterMode();
         moduleUsersUIModifyAG.$cdrFilterMode.checkbox({
-            onChange: moduleUsersUIModifyAG.cbAfterChangeCDRFilterMode
+            onChange: () => {
+                moduleUsersUIModifyAG.cbAfterChangeCDRFilterMode();
+                Form.dataChanged();
+            }
         });
 
         $('body').on('click', 'div.delete-user-row', (e) => {
@@ -356,11 +361,28 @@ const moduleUsersUIModifyAG = {
      * Callback function after changing the group right.
      */
     cdAfterChangeGroupRight(){
-        const extCdrIndexCheckboxId = $("input[data-module='ModuleExtendedCDRs'][data-action='index']").attr('id');
-        const accessToCdr = moduleUsersUIModifyAG.$formObj.form('get value', 'MikoPBX\\AdminCabinet\\Controllers\\CallDetailRecordsController_main');
-        const accessToCdrExt = moduleUsersUIModifyAG.$formObj.form('get value', extCdrIndexCheckboxId);
+        // Check if any CDR-related checkbox is checked (not just the master checkbox)
+        // This handles partial permissions (e.g., only view without delete)
+        const $cdrCheckboxes = $("input.access-group-checkbox[data-controller='MikoPBX\\\\AdminCabinet\\\\Controllers\\\\CallDetailRecordsController']");
+        const $extCdrCheckboxes = $("input.access-group-checkbox[data-module='ModuleExtendedCDRs']");
 
-        if (accessToCdr === 'on' || accessToCdrExt === 'on') {
+        let accessToCdr = false;
+        $cdrCheckboxes.each(function() {
+            if ($(this).parent('.checkbox').checkbox('is checked')) {
+                accessToCdr = true;
+                return false; // break the loop
+            }
+        });
+
+        let accessToCdrExt = false;
+        $extCdrCheckboxes.each(function() {
+            if ($(this).parent('.checkbox').checkbox('is checked')) {
+                accessToCdrExt = true;
+                return false; // break the loop
+            }
+        });
+
+        if (accessToCdr || accessToCdrExt) {
             moduleUsersUIModifyAG.$cdrFilterTab.show();
             moduleUsersUIModifyAG.cbAfterChangeCDRFilterMode();
         } else {
@@ -614,6 +636,12 @@ const moduleUsersUIModifyAG = {
             ],
             order: [0, 'desc'],
             language: SemanticLocalization.dataTableLocalisation,
+            drawCallback: () => {
+                // Reinitialize Semantic UI checkboxes after DataTable redraw
+                moduleUsersUIModifyAG.$cdrFilterUsersTable.find('div.cdr-filter-toggles').checkbox({
+                    onChange: Form.dataChanged
+                });
+            }
         });
     },
     calculatePageLength() {
