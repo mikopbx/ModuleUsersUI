@@ -1,0 +1,102 @@
+{
+  "limited_extensions_view": {
+    "name": "Test Limited Extensions View",
+    "description": "Can only view extensions list",
+    "fullAccess": false,
+    "homePage": "/admin-cabinet/extensions/index",
+    "cdrFilterMode": "all",
+    "rights": {
+      "ExtensionsController": ["index"]
+    }
+  },
+  "limited_extensions_modify": {
+    "name": "Test Limited Extensions Modify",
+    "description": "Can view and modify extensions",
+    "fullAccess": false,
+    "homePage": "/admin-cabinet/extensions/index",
+    "cdrFilterMode": "all",
+    "rights": {
+      "ExtensionsController": ["index", "modify", "save"]
+    }
+  },
+  "limited_call_queues": {
+    "name": "Test Limited Call Queues",
+    "description": "Can only manage call queues",
+    "fullAccess": false,
+    "homePage": "/admin-cabinet/call-queues/index",
+    "cdrFilterMode": "all",
+    "rights": {
+      "CallQueuesController": ["index", "modify", "save", "delete"]
+    }
+  },
+  "full_admin": {
+    "name": "Test Full Administrator",
+    "description": "Full system access for testing",
+    "fullAccess": true,
+    "homePage": "/admin-cabinet/",
+    "cdrFilterMode": "all",
+    "rights": {}
+  },
+  "cdr_filter_selected": {
+    "name": "Test CDR Filter Selected",
+    "description": "Can see CDR only for selected extensions",
+    "fullAccess": false,
+    "homePage": "/admin-cabinet/call-detail-records/index",
+    "cdrFilterMode": "selected",
+    "rights": {
+      "CallDetailRecordsController": ["index", "getNewRecords"]
+    }
+  },
+  "cdr_filter_except": {
+    "name": "Test CDR Filter Except",
+    "description": "Can see CDR except for selected extensions",
+    "fullAccess": false,
+    "homePage": "/admin-cabinet/call-detail-records/index",
+    "cdrFilterMode": "not-selected",
+    "rights": {
+      "CallDetailRecordsController": ["index", "getNewRecords"]
+    }
+  },
+  "cdr_filter_outgoing": {
+    "name": "Test CDR Filter Outgoing",
+    "description": "Can see only outgoing CDR for selected extensions",
+    "fullAccess": false,
+    "homePage": "/admin-cabinet/call-detail-records/index",
+    "cdrFilterMode": "outgoing-selected",
+    "rights": {
+      "CallDetailRecordsController": ["index", "getNewRecords"]
+    }
+  },
+  "multiple_controllers": {
+    "name": "Test Multiple Controllers",
+    "description": "Access to multiple controllers for transfer testing",
+    "fullAccess": false,
+    "homePage": "/admin-cabinet/extensions/index",
+    "cdrFilterMode": "all",
+    "rights": {
+      "ExtensionsController": ["index", "modify"],
+      "CallQueuesController": ["index"],
+      "ConferenceRoomsController": ["index"]
+    }
+  },
+  "rest_api_extensions": {
+    "name": "Test REST API Extensions",
+    "description": "REST API access to extensions only",
+    "fullAccess": false,
+    "homePage": "/admin-cabinet/session/end",
+    "cdrFilterMode": "all",
+    "rights": {
+      "ExtensionsController": ["index", "modify", "save"]
+    }
+  },
+  "rest_api_cdr": {
+    "name": "Test REST API CDR",
+    "description": "REST API access to CDR only",
+    "fullAccess": false,
+    "homePage": "/admin-cabinet/session/end",
+    "cdrFilterMode": "all",
+    "rights": {
+      "CallDetailRecordsController": ["index", "getNewRecords"]
+    }
+  }
+}

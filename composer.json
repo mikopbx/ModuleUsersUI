@@ -10,6 +10,14 @@
             "Modules\\ModuleUsersUI\\": "/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\ModuleUsersUI\\Tests\\": "Tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5"
+    },
     "type": "application",
     "keywords": [
         "pbx",

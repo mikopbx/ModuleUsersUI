@@ -34,7 +34,7 @@ class AccessGroupsController extends ModuleUsersUIBaseController
      *
      * @return void
      */
-    public function modifyAction(string $id = null): void
+    public function modifyAction(?string $id = null): void
     {
         $headerCssCollection = $this->assets->collection(AssetProvider::HEADER_CSS);
         $headerCssCollection

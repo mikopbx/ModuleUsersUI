@@ -97,4 +97,51 @@ class UsersUIAuthenticator extends Injectable
 
         return [];
     }
+
+    /**
+     * Get session parameters for user by login (without password verification).
+     * Used for passkey authentication where password is not needed.
+     *
+     * @return array Session parameters or empty array if user not found/disabled.
+     */
+    public function getSessionParamsForLogin(): array
+    {
+        $parameters = [
+            'columns' => [
+                'homePage' => 'AccessGroups.homePage',
+                'accessGroupId' => 'AccessGroups.id',
+                'enabled' => 'UsersCredentials.enabled',
+            ],
+            'models' => [
+                'UsersCredentials' => UsersCredentials::class,
+            ],
+            'conditions' => 'user_login=:login:',
+            'bind' => [
+                'login' => $this->login,
+            ],
+            'joins' => [
+                'AccessGroups' => [
+                    0 => AccessGroups::class,
+                    1 => 'AccessGroups.id = UsersCredentials.user_access_group_id',
+                    2 => 'AccessGroups',
+                    3 => 'INNER',
+                ],
+            ],
+        ];
+
+        $userData = $this->di->get('modelsManager')
+            ->createBuilder($parameters)
+            ->getQuery()
+            ->getSingleResult();
+
+        if ($userData && $userData->enabled !== '0') {
+            return [
+                SessionController::ROLE => Constants::MODULE_ROLE_PREFIX . $userData->accessGroupId,
+                SessionController::HOME_PAGE => $userData->homePage ?? $this->url->get('session/end'),
+                SessionController::USER_NAME => $this->login,
+            ];
+        }
+
+        return [];
+    }
 }

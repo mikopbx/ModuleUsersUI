@@ -1,3 +1,11 @@
 vendor/
 db/module.db
 .DS_Store
+
+# Integration tests
+Tests/Integration/.env
+Tests/Integration/.pytest_cache/
+Tests/Integration/__pycache__/
+Tests/Integration/helpers/__pycache__/
+Tests/Integration/venv/
+*.pyc
