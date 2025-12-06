@@ -2,6 +2,8 @@
 
 *Read this in other languages: [English](README.md), [Русский](readme.ru.md).*
 
+<img src="https://raw.githubusercontent.com/mikopbx/docs.mikopbx.com/refs/heads/english/.gitbook/assets/module-index-page.png" alt="Module page for configuring access groups">
+
 ## Overview
 
 **ModuleUsersUI** is a comprehensive access control module for MikoPBX that enables multi-user access with role-based permissions. It provides granular control over web interface sections, REST API endpoints, and call history visibility.

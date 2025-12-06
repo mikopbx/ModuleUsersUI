@@ -2,6 +2,8 @@
 
 *Read this in other languages: [English](README.md), [Русский](readme.ru.md).*
 
+<img src="https://raw.githubusercontent.com/mikopbx/docs.mikopbx.com/refs/heads/russian/.gitbook/assets/All-groups-index.png" alt="Страница модуля с настройкой групп доступа">
+
 ## Обзор
 
 **ModuleUsersUI** — комплексный модуль управления доступом для MikoPBX, обеспечивающий многопользовательский доступ с ролевыми разрешениями. Модуль предоставляет детальный контроль над разделами веб-интерфейса, REST API и видимостью истории звонков.
