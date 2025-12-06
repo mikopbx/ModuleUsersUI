@@ -21,6 +21,7 @@ namespace Modules\ModuleUsersUI\Lib;
 
 use MikoPBX\Common\Handlers\CriticalErrorsHandler;
 use MikoPBX\Common\Models\PbxExtensionModules;
+use Modules\ModuleUsersUI\Lib\ACL\AutoLinkedActionsResolver;
 use Modules\ModuleUsersUI\Lib\ACL\CoreACL;
 use Modules\ModuleUsersUI\Models\AccessGroups;
 use Modules\ModuleUsersUI\Models\AccessGroupsRights;
@@ -29,6 +30,8 @@ use Phalcon\Acl\Component;
 use Phalcon\Acl\Role as AclRole;
 use Phalcon\Mvc\Model\Query;
 use Phalcon\Di\Injectable;
+
+use function MikoPBX\Common\Config\appPath;
 
 class UsersUIACL extends Injectable
 {
@@ -104,16 +107,13 @@ class UsersUIACL extends Injectable
                 }
             }
 
-            if ($isLastAcl) {
+            if ($isLastAcl && !$aclFromModule->fullAccess) {
                 // Add components and allow access for the last role
-                if ($previousRole !== null) {
-                    foreach ($actionsArray as $controller => $actions) {
-                        $aclList->addComponent(new Component($controller), $actions);
-                        $aclList->allow($previousRole, $controller, $actions);
-                    }
+                // Role was already added on line 67, just need to apply permissions
+                foreach ($actionsArray as $controller => $actions) {
+                    $aclList->addComponent(new Component($controller), $actions);
+                    $aclList->allow($role, $controller, $actions);
                 }
-                // Add a new role to the ACL list
-                $aclList->addRole(new AclRole($role, $aclFromModule->name));
             }
         }
     }
@@ -155,14 +155,82 @@ class UsersUIACL extends Injectable
      * Prepares list of linked controllers to other controllers to hide it from UI
      * and allow or disallow with the main one.
      *
+     * This method combines:
+     * 1. Explicit rules from CoreACL (highest priority)
+     * 2. Automatic rules from AutoLinkedActionsResolver (for standard CRUD)
+     * 3. Module-specific rules
+     *
+     * Explicit rules take precedence over automatic ones.
+     *
      * @return array[]
      */
     public static function getLinkedControllerActions(): array
     {
-        $linkedActions = CoreACL::getLinkedControllerActions();
-        $linkedActionsModules = self::addRulesFromModules('getLinkedControllerActions');
-        return array_merge($linkedActions, $linkedActionsModules);
+        // 1. Get explicit rules from CoreACL
+        $explicitRules = CoreACL::getLinkedControllerActions();
 
+        // 2. Get automatic CRUD rules for AdminCabinet controllers
+        $adminCabinetControllers = self::getAdminCabinetControllers();
+        $autoRules = AutoLinkedActionsResolver::getAutoLinkedActions($adminCabinetControllers);
+
+        // 3. Merge: explicit rules override automatic rules
+        $linkedActions = self::mergeLinkedActions($autoRules, $explicitRules);
+
+        // 4. Add module-specific rules
+        $linkedActionsModules = self::addRulesFromModules('getLinkedControllerActions');
+
+        return array_merge($linkedActions, $linkedActionsModules);
+    }
+
+    /**
+     * Get list of AdminCabinet controller class names.
+     *
+     * @return array<string>
+     */
+    private static function getAdminCabinetControllers(): array
+    {
+        $controllersDir = appPath('src/AdminCabinet/Controllers');
+        if (!is_dir($controllersDir)) {
+            return [];
+        }
+
+        $controllerFiles = glob("{$controllersDir}/*.php", GLOB_NOSORT);
+        if ($controllerFiles === false) {
+            return [];
+        }
+
+        $controllers = [];
+        foreach ($controllerFiles as $file) {
+            $className = pathinfo($file, PATHINFO_FILENAME);
+            $controllers[] = 'MikoPBX\\AdminCabinet\\Controllers\\' . $className;
+        }
+
+        return $controllers;
+    }
+
+    /**
+     * Merge two linked actions arrays with priority to explicit rules.
+     *
+     * @param array $autoRules Automatic rules (lower priority)
+     * @param array $explicitRules Explicit rules (higher priority)
+     * @return array Merged array
+     */
+    private static function mergeLinkedActions(array $autoRules, array $explicitRules): array
+    {
+        $result = $autoRules;
+
+        foreach ($explicitRules as $controller => $actions) {
+            if (!isset($result[$controller])) {
+                $result[$controller] = $actions;
+            } else {
+                // Merge actions, explicit takes priority
+                foreach ($actions as $action => $linkedEndpoints) {
+                    $result[$controller][$action] = $linkedEndpoints;
+                }
+            }
+        }
+
+        return $result;
     }
 
     /**

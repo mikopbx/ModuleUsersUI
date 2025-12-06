@@ -20,27 +20,20 @@
 
 namespace Modules\ModuleUsersUI\App\Controllers;
 
-use MikoPBX\Common\Models\PbxExtensionModules;
-use MikoPBX\Common\Providers\PBXConfModulesProvider;
-use MikoPBX\Modules\Config\RestAPIConfigInterface;
+use MikoPBX\Common\Providers\PBXCoreRESTClientProvider;
+use Modules\ModuleUsersUI\Lib\ACL\AutoLinkedActionsResolver;
 use Modules\ModuleUsersUI\Lib\Constants;
-use Modules\ModuleUsersUI\Lib\MikoPBXVersion;
 use Modules\ModuleUsersUI\Lib\UsersUIACL;
 use Modules\ModuleUsersUI\Models\AccessGroupsRights;
-use Phalcon\Annotations\Reader;
-use Phalcon\Annotations\Reflection;
-use ReflectionClass;
-use Throwable;
-
-use function MikoPBX\Common\Config\appPath;
 
 class AccessGroupsRightsController extends ModuleUsersUIBaseController
 {
     /**
      * Retrieves the group rights based on the provided access group ID.
-     * The rights include UI controller actions, REST controller actions, and module controller actions.
+     * Uses Core API to get available controllers and actions.
      *
-     * @return array  An array containing the group rights.
+     * @param string $accessGroupId The access group ID.
+     * @return array An array containing the group rights.
      */
     public function getGroupRights(string $accessGroupId): array
     {
@@ -54,356 +47,103 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
         // Retrieve allowed rights based on the group ID
         $allowedRights = AccessGroupsRights::find($parameters)->toArray();
 
-        // Get available UI controller actions
-        $availableUiControllersActions = $this->getAvailableUIControllersActions();
-
-        // Get available REST controller actions
-        $availableRESTControllersActions = $this->getAvailableRESTControllersActions();
-
-        // Get available module controller actions
-        $availableModulesControllersActions = $this->getAvailableModulesControllerActions();
-
-        // Get available REST controller actions from modules
-        $availableModulesRESTControllersActions = $this->getAvailableRESTActionsInModules();
-
-        // Combine all available actions
-        $combined = array_merge_recursive(
-            $availableUiControllersActions,
-            $availableRESTControllersActions,
-            $availableModulesControllersActions,
-            $availableModulesRESTControllersActions
-        );
+        // Get available controllers and actions from Core API
+        $combined = $this->getAvailableControllersFromApi();
 
         return $this->fillAllowed($combined, $allowedRights);
     }
 
     /**
-     * Retrieves the available actions of UI controllers.
+     * Retrieves available controllers and actions from Core API.
+     * Transforms API response to UI-expected format and applies exclusion rules.
      *
-     * @return array An array containing the available actions of UI controllers.
+     * Also adds virtual actions (save, delete) for AdminCabinet controllers
+     * that have corresponding REST API endpoints.
+     *
+     * @return array Controllers organized by module/category with actions as keys.
      */
-    private function getAvailableUIControllersActions(): array
+    private function getAvailableControllersFromApi(): array
     {
-        // Scan files in the controllers directory
-        $controllersDir = appPath('src/AdminCabinet/Controllers');
-        $controllerFiles = glob("{$controllersDir}/*.php", GLOB_NOSORT);
+        $result = $this->di->get(
+            PBXCoreRESTClientProvider::SERVICE_NAME,
+            [
+                '/pbxcore/api/v3/openapi:getDetailedPermissions',
+                PBXCoreRESTClientProvider::HTTP_METHOD_GET
+            ]
+        );
 
-        $controllers = [];
-
-        // Get the list of controllers and actions which we hide from settings
-        [$excludedControllers, $excludedActions] = $this->getExclusionsActionsControllers();
-
-        foreach ($controllerFiles as $file) {
-            $className = pathinfo($file)['filename'];
-            $controllerClass = 'MikoPBX\AdminCabinet\Controllers\\' . $className;
-
-            if (in_array($controllerClass, $excludedControllers)) {
-                continue;
-            }
-
-            $publicMethods = $this->getControllersActions($controllerClass, $excludedActions);
-
-            if (count($publicMethods) > 0) {
-                $controllers[Constants::ADMIN_CABINET]['APP'][$controllerClass] = $publicMethods;
-            }
-        }
-        // Sort the controllers array by translated controller name
-        uksort($controllers[Constants::ADMIN_CABINET]['APP'], function ($a, $b) {
-            $controllerAParts = explode('\\', $a);
-            $controllerAName = end($controllerAParts);
-            $controllerAName = str_replace("Controller", "", $controllerAName);
-            $controllerANameTranslation = $this->translation->_('mm_' . $controllerAName);
-
-            $controllerBParts = explode('\\', $b);
-            $controllerBName = end($controllerBParts);
-            $controllerBName = str_replace("Controller", "", $controllerBName);
-            $controllerBNameTranslation = $this->translation->_('mm_' . $controllerBName);
-
-            return strcmp($controllerANameTranslation, $controllerBNameTranslation);
-        });
-
-        return $controllers;
-    }
-
-    /**
-     * Get the list of controllers and actions which we hide from settings
-     *
-     * @return array An array containing the excluded controllers and actions.
-     */
-    private function getExclusionsActionsControllers(): array
-    {
-        $excludedControllers = [];
-        $excludedActions = [];
-        $arrayOfExclusions = [];
-
-        // Get the list of linked controllers and actions which we hide from settings
-        foreach (UsersUIACL::getLinkedControllerActions() as $controllerClass => $actions) {
-            // Iterate through the main controllers actions
-            foreach ($actions as $action => $linkedControllers) {
-                // Iterate through the linked controllers actions
-                foreach ($linkedControllers as $linkedController => $linkedActions) {
-                    if (array_key_exists($linkedController, $arrayOfExclusions)) {
-                        $arrayOfExclusions[$linkedController] = array_merge($arrayOfExclusions[$linkedController], $linkedActions);
-                        $arrayOfExclusions[$linkedController] = array_unique($arrayOfExclusions[$linkedController]);
-                    } else {
-                        $arrayOfExclusions[$linkedController] = $linkedActions;
-                    }
-                }
-            }
-        }
-
-        $arrayOfExclusions = array_merge_recursive(UsersUIACL::getAlwaysAllowed(), UsersUIACL::getAlwaysDenied(), $arrayOfExclusions);
-        // Iterate through the always allowed and disallowed controllers and actions
-        foreach ($arrayOfExclusions as $controllerClass => $actions) {
-            if (
-                $actions === '*'
-                || (is_array($actions) && in_array('*', $actions))
-            ) {
-                // Add the controller with all actions to the excluded from settings array
-                $excludedControllers[] = $controllerClass;
-            } elseif (is_array($actions)) {
-                // Add the controller with defined actions to the excluded from settings array
-                $excludedActions[$controllerClass] = $actions;
-            }
-        }
-
-        return [$excludedControllers, $excludedActions];
-    }
-
-    /**
-     * Get the actions for a given controller class, excluding specified actions which are always allowed.
-     *
-     * @param string $controllerClass The controller class.
-     * @param array $excludedActions Actions to be allowed or disallowed for the controller class without user settings.
-     *
-     * @return array The public methods of the controller class, filtered by allowed actions.
-     */
-    private function getControllersActions(string $controllerClass, array $excludedActions = []): array
-    {
-        try {
-            $reflection = new ReflectionClass($controllerClass);
-            // If the controller class is abstract, return an empty array
-            if ($reflection->isAbstract()) {
-                return [];
-            }
-        } catch (Throwable $exception) {
+        if (!$result->success) {
             return [];
         }
 
-        $publicMethods = [];
-
-        // Get all public methods ending with "Action"
-        foreach ($reflection->getMethods() as $method) {
-            $actionName = $method->getName();
-            if ($method->isPublic() && substr($actionName, -6) === 'Action') {
-                // Remove "Action" from the action name
-                $actionName = substr($actionName, 0, -6);
-                // Remove always allowed or always disallowed actions
-                if (!in_array($actionName, $excludedActions[$controllerClass] ?? [])) {
-                    $publicMethods[$actionName] = false;
-                }
-            }
-        }
-
-        return $publicMethods;
-    }
-
-    /**
-     * Retrieves the available actions of REST controllers.
-     *
-     * @return array An array containing the available actions of REST controllers.
-     */
-    private function getAvailableRESTControllersActions(): array
-    {
-        // Scan files in the controllers directory
-        $controllersDir = appPath('src/PBXCoreREST/Controllers');
-
-        $controllerFiles = glob("{$controllersDir}/*/*.php", GLOB_NOSORT);
-
-        $controllers = [];
-
-        // Get the list of controllers and actions which we hide from settings
+        // Get exclusion rules (alwaysAllowed, alwaysDenied, linkedActions)
         [$excludedControllers, $excludedActions] = $this->getExclusionsActionsControllers();
 
-        foreach ($controllerFiles as $file) {
-            $className = pathinfo($file)['filename'];
-            $subClassName = basename(pathinfo($file)['dirname']);
-            $controllerClass = 'MikoPBX\PBXCoreREST\Controllers\\' . $subClassName . '\\' . $className;
-
-            $reader = new Reader();
-            $parsedClass = $reader->parse($controllerClass);
-
-            // Create a reflection of the controller class
-            $reflection = new Reflection($parsedClass);
-
-            $controllerName = $subClassName . '\\' . $className;
-            foreach ($reflection->getClassAnnotations() as $classAnnotation) {
-                if ($classAnnotation->getName() === 'RoutePrefix') {
-                    $controllerName = $classAnnotation->getArgument(0) ?? $controllerName;
-                    if (in_array($controllerName, $excludedControllers)) {
-                        continue 2;
-                    }
-                    break;
-                }
-            }
-
-            // Get the actions of the controller if they are defined in the method description
-            $actions = [];
-            $possibleHTTPMethods = ['Get', 'Post', 'Put', 'Delete', 'Patch', 'Head', 'Options', 'Trace'];
-            foreach ($reflection->getMethodsAnnotations() as $methodAnnotations) {
-                foreach ($methodAnnotations as $annotation) {
-                    if (in_array($annotation->getName(), $possibleHTTPMethods)) {
-                        $actionName = $annotation->getArgument(0);
-                        // Remove always allowed or always disallowed actions
-                        if (!empty($actionName) and !in_array($actionName, $excludedActions[$controllerName]??[])) {
-                            $actions[$actionName] = false;
-                        }
-                    }
-                }
-            }
-
-            if (count($actions) > 0) {
-                $currentContext = &$controllers[Constants::PBX_CORE_REST]['REST'][$controllerName];
-                $currentContext = array_merge_recursive($currentContext ?? [], $actions);
-            }
-        }
-
-        return $controllers;
-    }
-
-    /**
-     * Retrieves the available controller actions for modules.
-     *
-     * @return array An array containing the available controller actions for modules.
-     */
-    private function getAvailableModulesControllerActions(): array
-    {
-
-        // Get the list of controllers and actions which we hide from settings
-        [$excludedControllers, $excludedActions] = $this->getExclusionsActionsControllers();
+        // Get virtual actions that should be added to AdminCabinet controllers
+        $virtualActions = AutoLinkedActionsResolver::getVirtualActions();
 
         $controllers = [];
-        $modules = PbxExtensionModules::find('disabled=0');
-        $modulesDir = $this->getDI()->getShared('config')->path('core.modulesDir');
-        foreach ($modules as $module) {
-            $controllersDir = "{$modulesDir}/{$module->uniqid}/App/Controllers";
-            // Check if the controllers directory exists
-            if (is_dir($controllersDir)) {
-                $controllerFiles = glob("{$controllersDir}/*.php", GLOB_NOSORT);
+        $categories = $result->data['categories'] ?? [];
 
-                foreach ($controllerFiles as $file) {
-                    $className = pathinfo($file)['filename'];
-                    $controllerClass = "Modules\\{$module->uniqid}\\App\\Controllers\\{$className}";
-                    if (in_array($controllerClass, $excludedControllers)) {
-                        continue;
-                    }
-                    $publicMethods = $this->getControllersActions($controllerClass, $excludedActions);
-                    if (count($publicMethods) > 0) {
-                        $controllers[$module->uniqid]['APP'][$controllerClass] = $publicMethods;
-                    }
-                }
-            }
-        }
+        foreach ($categories as $categoryId => $categoryData) {
+            $type = $categoryData['type'] ?? 'APP';
 
-        return $controllers;
-    }
-
-    /**
-     * Retrieves the available actions of external modules REST controllers.
-     *
-     * @return array An array containing the available actions of external modules REST actions.
-     */
-    private function getAvailableRESTActionsInModules(): array
-    {
-        // Get the list of controllers and actions which we hide from settings
-        [$excludedControllers, $excludedActions] = $this->getExclusionsActionsControllers();
-
-        $controllers = [];
-        $configObjects = $this->di->getShared(PBXConfModulesProvider::SERVICE_NAME);
-
-        // Parse additional REST API endpoints
-        foreach ($configObjects as $configObject) {
-            if (method_exists($configObject, RestAPIConfigInterface::MODULE_RESTAPI_CALLBACK)) {
-                $reader = new Reader();
-                $parsedClass = $reader->parse(get_class($configObject));
-
-                // Create a reflection of the controller class
-                $reflection = new Reflection($parsedClass);
-                $textClass = MikoPBXVersion::getTextClass();
-                $controllerName = '/pbxcore/api/modules/' . $textClass::uncamelize($configObject->moduleUniqueId, '-');
-
-                // Get the actions of the controller if they are defined in the method description
-                $actions = [];
-                $possibleHTTPMethods = ['Get', 'Post', 'Put', 'Delete', 'Patch', 'Head', 'Options', 'Trace'];
-                foreach ($reflection->getMethodsAnnotations() as $method => $methodAnnotations) {
-                    if ($method !== RestAPIConfigInterface::MODULE_RESTAPI_CALLBACK) {
-                        continue;
-                    }
-                    foreach ($methodAnnotations as $annotation) {
-                        if (in_array($annotation->getName(), $possibleHTTPMethods)) {
-                            $actionName = $annotation->getArgument(0);
-                            // filter always allowed or always disallowed actions
-                            if (!empty($actionName) and !in_array($actionName, $excludedActions[$controllerName])) {
-                                $actions[$actionName] = false;
-                            }
-                        }
-                    }
-                }
-                if (empty($actions)) {
-                    $actions['*'] = false;
-                }
-                if (in_array($controllerName, $excludedControllers)) {
+            foreach ($categoryData['controllers'] ?? [] as $controllerClass => $controllerInfo) {
+                // Skip controllers that are completely excluded
+                if (in_array($controllerClass, $excludedControllers)) {
                     continue;
                 }
-                $currentContext = &$controllers[$configObject->moduleUniqueId]['REST'][$controllerName];
-                $currentContext = array_merge($currentContext ?? [], $actions);
-            }
 
-            // Parse custom REST API endpoints described in modules
-            if (method_exists($configObject, RestAPIConfigInterface::GET_PBXCORE_REST_ADDITIONAL_ROUTES)) {
-                $reader = new Reader();
-                $parsedClass = $reader->parse(get_class($configObject));
+                // Get excluded actions for this controller
+                $controllerExcludedActions = $excludedActions[$controllerClass] ?? [];
 
-                // Create a reflection of the controller class
-                $reflection = new Reflection($parsedClass);
-
-                // Get the actions of the controller if they are defined in the method description
                 $actions = [];
-                $possibleHTTPMethods = ['Get', 'Post', 'Put', 'Delete', 'Patch', 'Head', 'Options', 'Trace'];
-                foreach ($reflection->getMethodsAnnotations() as $method => $methodAnnotations) {
-                    if ($method !== RestAPIConfigInterface::GET_PBXCORE_REST_ADDITIONAL_ROUTES) {
+                foreach ($controllerInfo['actions'] ?? [] as $actionName) {
+                    // Skip excluded actions
+                    if (in_array($actionName, $controllerExcludedActions)) {
                         continue;
                     }
-                    foreach ($methodAnnotations as $annotation) {
-                        if (in_array($annotation->getName(), $possibleHTTPMethods)) {
-                            $actionName = $annotation->getArgument(0);
-                            if (!empty($actionName)) {
-                                $actions[$actionName] = false;
+                    $actions[$actionName] = false;
+                }
+
+                // Add virtual actions (save, delete) for AdminCabinet controllers
+                // that have corresponding REST API endpoints
+                if ($categoryId === Constants::ADMIN_CABINET) {
+                    $endpoint = AutoLinkedActionsResolver::controllerToEndpoint($controllerClass);
+                    if ($endpoint !== null && AutoLinkedActionsResolver::endpointExists($endpoint)) {
+                        foreach ($virtualActions as $virtualAction) {
+                            // Only add if not already present and not excluded
+                            if (!isset($actions[$virtualAction])
+                                && !in_array($virtualAction, $controllerExcludedActions)) {
+                                $actions[$virtualAction] = false;
                             }
-                        }
-                        if ($annotation->getName() === 'RoutePrefix') {
-                            $controllerName = $annotation->getArgument(0);
                         }
                     }
                 }
-                if (!empty($controllerName) && !in_array($controllerName, $excludedControllers)) {
-                    if (is_array($actions)) {
-                        // Remove always allowed or always disallowed actions
-                        foreach ($actions as $index => $action) {
-                            if (in_array($action, $excludedActions[$controllerName])) {
-                                unset($actions[$index]);
-                            }
-                        }
-                    }
 
-                    if (empty($actions)) {
-                        $actions['*'] = false;
-                    }
-                    $currentContext = &$controllers[$configObject->moduleUniqueId]['REST'][$controllerName];
-                    $currentContext = array_merge($currentContext ?? [], $actions);
+                if (!empty($actions)) {
+                    $controllers[$categoryId][$type][$controllerClass] = $actions;
                 }
             }
+
+            // Sort AdminCabinet controllers by translated name
+            if ($categoryId === Constants::ADMIN_CABINET && isset($controllers[$categoryId][$type])) {
+                uksort($controllers[$categoryId][$type], function ($a, $b) {
+                    $controllerAParts = explode('\\', $a);
+                    $controllerAName = end($controllerAParts);
+                    $controllerAName = str_replace("Controller", "", $controllerAName);
+                    $controllerANameTranslation = $this->translation->_('mm_' . $controllerAName);
+
+                    $controllerBParts = explode('\\', $b);
+                    $controllerBName = end($controllerBParts);
+                    $controllerBName = str_replace("Controller", "", $controllerBName);
+                    $controllerBNameTranslation = $this->translation->_('mm_' . $controllerBName);
+
+                    return strcmp($controllerANameTranslation, $controllerBNameTranslation);
+                });
+            }
         }
+
         return $controllers;
     }
 
@@ -437,6 +177,88 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
             }
         }
         return $combined;
+    }
+
+    /**
+     * Get the list of controllers and actions which we hide from settings.
+     *
+     * Collects exclusion rules from:
+     * - linkedControllerActions: actions that are granted automatically with main action
+     * - alwaysAllowed: public actions that don't require permission checks
+     * - alwaysDenied: admin-only actions that regular users cannot access
+     * - hiddenRestApiActions: standard CRUD actions on REST API (auto-linked to AdminCabinet)
+     *
+     * @return array{0: array<string>, 1: array<string, array<string>>}
+     *         [0] - Controllers to exclude completely (all actions hidden)
+     *         [1] - Specific actions to exclude per controller
+     */
+    private function getExclusionsActionsControllers(): array
+    {
+        $excludedControllers = [];
+        $excludedActions = [];
+        $arrayOfExclusions = [];
+
+        // Get the list of linked controllers and actions which we hide from settings
+        foreach (UsersUIACL::getLinkedControllerActions() as $controllerClass => $actions) {
+            // Iterate through the main controllers actions
+            foreach ($actions as $action => $linkedControllers) {
+                // Iterate through the linked controllers actions
+                foreach ($linkedControllers as $linkedController => $linkedActions) {
+                    if (array_key_exists($linkedController, $arrayOfExclusions)) {
+                        $arrayOfExclusions[$linkedController] = array_merge(
+                            $arrayOfExclusions[$linkedController],
+                            $linkedActions
+                        );
+                        $arrayOfExclusions[$linkedController] = array_unique($arrayOfExclusions[$linkedController]);
+                    } else {
+                        $arrayOfExclusions[$linkedController] = $linkedActions;
+                    }
+                }
+            }
+        }
+
+        // Merge with always allowed and always denied rules
+        $arrayOfExclusions = array_merge_recursive(
+            UsersUIACL::getAlwaysAllowed(),
+            UsersUIACL::getAlwaysDenied(),
+            $arrayOfExclusions
+        );
+
+        // Hide standard CRUD actions on REST API endpoints that have corresponding AdminCabinet controllers
+        // These actions are auto-linked and shouldn't be configured separately
+        $hiddenRestApiActions = AutoLinkedActionsResolver::getHiddenRestApiActions();
+        foreach (AutoLinkedActionsResolver::getAvailableEndpoints() as $endpoint) {
+            // Check if this endpoint has a corresponding AdminCabinet controller
+            $controller = AutoLinkedActionsResolver::endpointToController($endpoint);
+            if ($controller !== null && class_exists($controller)) {
+                // Hide standard CRUD actions for this endpoint
+                if (isset($arrayOfExclusions[$endpoint])) {
+                    $arrayOfExclusions[$endpoint] = array_merge(
+                        $arrayOfExclusions[$endpoint],
+                        $hiddenRestApiActions
+                    );
+                    $arrayOfExclusions[$endpoint] = array_unique($arrayOfExclusions[$endpoint]);
+                } else {
+                    $arrayOfExclusions[$endpoint] = $hiddenRestApiActions;
+                }
+            }
+        }
+
+        // Iterate through the always allowed and disallowed controllers and actions
+        foreach ($arrayOfExclusions as $controllerClass => $actions) {
+            if (
+                $actions === '*'
+                || (is_array($actions) && in_array('*', $actions))
+            ) {
+                // Add the controller with all actions to the excluded from settings array
+                $excludedControllers[] = $controllerClass;
+            } elseif (is_array($actions)) {
+                // Add the controller with defined actions to the excluded from settings array
+                $excludedActions[$controllerClass] = array_unique($actions);
+            }
+        }
+
+        return [$excludedControllers, $excludedActions];
     }
 
     /**

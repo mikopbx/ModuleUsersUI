@@ -21,6 +21,7 @@
 namespace Modules\ModuleUsersUI\Models;
 
 use MikoPBX\Modules\Models\ModulesModelsBase;
+use Modules\ModuleUsersUI\Lib\Constants;
 use Phalcon\Mvc\Model\Relation;
 
 class AccessGroups extends ModulesModelsBase
@@ -117,6 +118,21 @@ class AccessGroups extends ModulesModelsBase
                 'alias'      => 'UsersCredentials',
             ]
         );
+    }
+
+    /**
+     * Called before validation.
+     * Resets cdrFilterMode to 'all' when fullAccess is enabled,
+     * since CDR filtering is not applied to full access groups.
+     *
+     * @return bool
+     */
+    public function beforeValidation(): bool
+    {
+        if ($this->fullAccess === '1') {
+            $this->cdrFilterMode = Constants::CDR_FILTER_DISABLED;
+        }
+        return true;
     }
 
     public function beforeDelete(): bool

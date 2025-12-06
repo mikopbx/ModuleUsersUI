@@ -1,0 +1,10 @@
+{
+  "access_groups": {
+    "file": "access_groups.json",
+    "description": "Access group templates for testing"
+  },
+  "users_credentials": {
+    "file": "users_credentials.json",
+    "description": "User credentials templates for testing"
+  }
+}

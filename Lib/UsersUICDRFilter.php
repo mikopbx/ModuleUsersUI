@@ -22,6 +22,7 @@ namespace Modules\ModuleUsersUI\Lib;
 
 use MikoPBX\Common\Models\Extensions;
 use MikoPBX\Common\Models\Users;
+use MikoPBX\Core\System\Util;
 use Modules\ModuleUsersUI\Models\AccessGroupCDRFilter;
 use Modules\ModuleUsersUI\Models\AccessGroups;
 use Phalcon\Di\Injectable;
@@ -42,7 +43,7 @@ class UsersUICDRFilter extends Injectable
 
         $modelsManager = $di->get('modelsManager');
 
-        // Get CDR filter mode
+        // Get CDR filter mode and fullAccess flag
         $parameters = [
             'models' => [
                 'AccessGroups' => AccessGroups::class,
@@ -53,10 +54,18 @@ class UsersUICDRFilter extends Injectable
             ],
             'columns' => [
                 'cdrFilterMode',
+                'fullAccess',
             ],
         ];
 
-        $cdrFilterMode = $modelsManager->createBuilder($parameters)->getQuery()->execute()->getFirst()->cdrFilterMode;
+        $accessGroup = $modelsManager->createBuilder($parameters)->getQuery()->execute()->getFirst();
+
+        // Skip filter for groups with full access
+        if ($accessGroup === null || $accessGroup->fullAccess === '1') {
+            return;
+        }
+
+        $cdrFilterMode = $accessGroup->cdrFilterMode;
 
         // Disabled filter
         if ($cdrFilterMode === Constants::CDR_FILTER_DISABLED) {
@@ -117,7 +126,7 @@ class UsersUICDRFilter extends Injectable
                 $cdrRequestParameters['conditions'] = 'src_num IN ({filteredExtensions:array})';
             } elseif ($cdrFilterMode === Constants::CDR_FILTER_EXCEPT_SELECTED) {
                 // Only show CDRs for the filtered extensions NOT in the AccessGroupCDRFilter list
-                $cdrRequestParameters['conditions'] = 'AND src_num NOT IN ({filteredExtensions:array}) AND dst_num NOT IN ({filteredExtensions:array})';
+                $cdrRequestParameters['conditions'] = '(src_num NOT IN ({filteredExtensions:array}) AND dst_num NOT IN ({filteredExtensions:array}))';
             }
             if(!empty($oldConditions)){
                 $cdrRequestParameters['conditions'] .= ' AND ('.$oldConditions.')';
@@ -125,6 +134,10 @@ class UsersUICDRFilter extends Injectable
         } elseif ($cdrFilterMode === Constants::CDR_FILTER_ONLY_SELECTED) {
             // No users to filter - hide all CDRs
             $cdrRequestParameters['conditions'] = '1=0';
+            Util::sysLogMsg(
+                __CLASS__,
+                "CDR filter applied: mode='$cdrFilterMode', groupId='$accessGroupId', filteredExtensions=[], result='1=0' (empty result)"
+            );
         }
     }
 }

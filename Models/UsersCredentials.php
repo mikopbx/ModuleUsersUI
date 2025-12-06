@@ -161,4 +161,31 @@ class UsersCredentials extends ModulesModelsBase
 
         return $this->validate($validation);
     }
+
+    /**
+     * Cleans orphan records from UsersCredentials table.
+     * Removes records where user_id references a non-existent user in the main Users table.
+     *
+     * @return int Number of deleted orphan records.
+     */
+    public static function cleanOrphanRecords(): int
+    {
+        $deletedCount = 0;
+
+        // Get all existing user IDs from the main Users table
+        $existingUserIds = Users::find(['columns' => 'id'])->toArray();
+        $existingUserIds = array_column($existingUserIds, 'id');
+
+        // Find and delete orphan credentials
+        $allCredentials = self::find();
+        foreach ($allCredentials as $credential) {
+            if (!in_array($credential->user_id, $existingUserIds, false)) {
+                if ($credential->delete()) {
+                    $deletedCount++;
+                }
+            }
+        }
+
+        return $deletedCount;
+    }
 }
