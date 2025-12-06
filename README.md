@@ -170,8 +170,8 @@ ModuleUsersUI/
 ## Documentation
 
 Full documentation available at:
-- English: [docs.mikopbx.com/modules/miko/module-users-u-i](https://docs.mikopbx.com/mikopbx/v/english/modules/miko/module-users-u-i)
-- Russian: [docs.mikopbx.com/modules/miko/module-users-u-i](https://docs.mikopbx.com/mikopbx/modules/miko/module-users-u-i)
+- English: [docs.mikopbx.com](https://docs.mikopbx.com/mikopbx/english/modules/miko/module-users-u-i)
+- Russian: [docs.mikopbx.ru](https://docs.mikopbx.ru/mikopbx/modules/miko/module-users-u-i)
 
 ## Support
 
