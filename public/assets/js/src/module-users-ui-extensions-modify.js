@@ -20,61 +20,48 @@
 
 /**
  * ExtensionCredentialsTab module for managing extension credentials tab.
+ *
+ * Note: visibility of the LDAP checkbox itself is decided server-side
+ * (volt template), so this module only handles in-form interactions.
+ *
  * @module ExtensionCredentialsTab
  */
 const ExtensionCredentialsTab = {
-    /**
-     * Hidden field for LDAP enabled status.
-     * @type {jQuery}
-     * @private
-     */
-    $ldapEnabledHiddenField: $('#module_users_ui_ldap_enabled'),
-
-    /**
-     * Checkbox for LDAP authentication.
-     * @type {jQuery}
-     * @private
-     */
-    $useLdapCheckbox: $('#module_users_ui_use_ldap_auth'),
-
-    /**
-     * Login input field.
-     * @type {jQuery}
-     * @private
-     */
-    $loginField: $('#module_users_ui_login'),
-
-    /**
-     * Password input field.
-     * @type {jQuery}
-     * @private
-     */
-    $passwordField: $('#module_users_ui_password'),
-
-    /**
-     * Access group dropdown.
-     * @type {jQuery}
-     * @private
-     */
-    $accessGroupDropdown: $('#module_users_ui_access_group'),
-
-    /**
-     * Fields, which we need to disable if selected access group is 'No access'.
-     * @type {jQuery}
-     * @private
-     */
-    $disableIfNoAccess: $('.disable-if-no-access'),
+    $useLdapCheckbox: null,
+    $loginField: null,
+    $passwordField: null,
+    $accessGroupDropdown: null,
+    $disableIfNoAccess: null,
 
     /**
      * Initializes the ExtensionCredentialsTab module.
      */
     initialize: function () {
+        ExtensionCredentialsTab.$useLdapCheckbox = $('#module_users_ui_use_ldap_auth');
+        ExtensionCredentialsTab.$loginField = $('#module_users_ui_login');
+        ExtensionCredentialsTab.$passwordField = $('#module_users_ui_password');
+        ExtensionCredentialsTab.$accessGroupDropdown = $('#module_users_ui_access_group');
+        ExtensionCredentialsTab.$disableIfNoAccess = $('.disable-if-no-access');
+
+        // The LDAP checkbox is only rendered when an LDAP server is configured.
+        if (ExtensionCredentialsTab.$useLdapCheckbox.length > 0) {
+            // Apply initial checked state from a server-rendered hidden field.
+            // Phalcon Check element rendering of `checked` differs across MikoPBX
+            // versions; using a hidden mirror keeps Form.js dirty state correct.
+            const initialLdapAuth = $('#module_users_ui_use_ldap_auth_initial').val();
+            const $checkboxWrap = ExtensionCredentialsTab.$useLdapCheckbox.parent('.checkbox');
+            if (initialLdapAuth === '1') {
+                $checkboxWrap.checkbox('set checked');
+            } else {
+                $checkboxWrap.checkbox('set unchecked');
+            }
+            $checkboxWrap.checkbox({
+                onChange: ExtensionCredentialsTab.showHidePasswordInput,
+            });
+        }
+
         ExtensionCredentialsTab.showHideAuthFields();
-        ExtensionCredentialsTab.showHideUseLdapCheckbox();
         ExtensionCredentialsTab.showHidePasswordInput();
-        ExtensionCredentialsTab.$useLdapCheckbox.parent('.checkbox').checkbox({
-            onChange: ExtensionCredentialsTab.showHidePasswordInput,
-        });
         ExtensionCredentialsTab.$accessGroupDropdown.parent('.dropdown').dropdown({
             onChange: ExtensionCredentialsTab.showHideAuthFields,
         });
@@ -92,22 +79,18 @@ const ExtensionCredentialsTab = {
     },
 
     /**
-     * Shows or hides the LDAP checkbox based on the LDAP enabled status.
+     * Returns true if the LDAP checkbox is rendered and currently checked.
      */
-    showHideUseLdapCheckbox: function () {
-        if (ExtensionCredentialsTab.$ldapEnabledHiddenField.val() === '1') {
-            ExtensionCredentialsTab.$useLdapCheckbox.parent('.field').show();
-        } else {
-            ExtensionCredentialsTab.$useLdapCheckbox.parent('.field').hide();
-            ExtensionCredentialsTab.$useLdapCheckbox.parent('.checkbox').checkbox('set unchecked');
-        }
+    isLdapChecked() {
+        const $cb = ExtensionCredentialsTab.$useLdapCheckbox;
+        return $cb && $cb.length > 0 && $cb.parent('.checkbox').checkbox('is checked');
     },
 
     /**
      * Shows or hides the password input based on the LDAP checkbox status.
      */
     showHidePasswordInput: function (){
-        if (ExtensionCredentialsTab.$useLdapCheckbox.parent('.checkbox').checkbox('is checked')) {
+        if (ExtensionCredentialsTab.isLdapChecked()) {
             ExtensionCredentialsTab.$passwordField.parent('.field').hide();
         } else {
             ExtensionCredentialsTab.$passwordField.parent('.field').show();
@@ -118,13 +101,15 @@ const ExtensionCredentialsTab = {
      * Activate or disactivate ldap search feature
      */
     activateLdapLoginSearch(){
-        if (ExtensionCredentialsTab.$useLdapCheckbox.parent('.checkbox').checkbox('is checked')){
+        if (ExtensionCredentialsTab.isLdapChecked()){
             const $inputField = ExtensionCredentialsTab.$loginField;
-            $inputField.parent('.ui.search').search({
+            const $search = $inputField.parent('.ui.search');
+            $search.search({
                 apiSettings: {
                     url: `${globalRootUrl}module-users-u-i/ldap-config/search-ldap-user/{query}`
                 },
             });
+            $search.data('moduleSearch', true);
             // Handle Enter key press event
             $inputField.on('keydown', function(event) {
                 if (event.key === 'Enter') {
@@ -139,7 +124,11 @@ const ExtensionCredentialsTab = {
                 }
             });
         } else {
-            ExtensionCredentialsTab.$loginField.parent('.ui.search').search('hide results').search('destroy');
+            const $search = ExtensionCredentialsTab.$loginField.parent('.ui.search');
+            if ($search.length > 0 && $search.data('moduleSearch') === true) {
+                $search.search('hide results').search('destroy');
+                $search.removeData('moduleSearch');
+            }
         }
 
     },

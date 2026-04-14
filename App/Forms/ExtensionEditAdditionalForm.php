@@ -23,7 +23,6 @@ namespace Modules\ModuleUsersUI\App\Forms;
 use MikoPBX\AdminCabinet\Forms\ExtensionEditForm;
 use Modules\ModuleUsersUI\Lib\Constants;
 use Modules\ModuleUsersUI\Models\AccessGroups;
-use Modules\ModuleUsersUI\Models\LdapConfig;
 use Modules\ModuleUsersUI\Models\UsersCredentials;
 use Phalcon\Forms\Element\Check;
 use Phalcon\Forms\Element\Hidden;
@@ -35,29 +34,29 @@ class ExtensionEditAdditionalForm extends ModuleBaseForm
 {
     public static function prepareAdditionalFields(ExtensionEditForm $form, \stdClass $entity, /** @scrutinizer ignore-unused */ array $options = [])
     {
-        // Set parameters for the database query
-        $parameters = [
-          'conditions' => 'user_id = :user_id:',
-          'bind' => [
-              'user_id' => $entity->user_id,
-          ]
-        ];
+        // Look up credentials only when we have a real user_id. For new
+        // employees or unresolved entities, fall through with null credentials
+        // so the form is rendered with sensible defaults.
+        $credentials = null;
+        if (!empty($entity->user_id)) {
+            $credentials = UsersCredentials::findFirst([
+                'conditions' => 'user_id = :user_id:',
+                'bind' => ['user_id' => $entity->user_id],
+            ]);
+        }
 
-        // Find the user credentials based on the parameters
-        $credentials = UsersCredentials::findFirst($parameters);
-
-        // Get the access group ID from the credentials, or set it to null if not found
-        $accessGroupId = $credentials->enabled === '1' ? $credentials->user_access_group_id ?? null : Constants::NO_ACCESS_GROUP_ID;
-
-        // Get the user login from the credentials, or set it to an empty string if not found
-        $userLogin = $credentials->user_login ?? '';
-
-        // Get the user password from the credentials, or set it to
-        // an empty string if not found or XXX if its hash was saved
-        $userPassword = empty($credentials->user_password) ? '' : Constants::HIDDEN_PASSWORD;
-
-        // Get the ldap auth value from the credentials, or set it to false if not found
-        $useLdapAuth = $credentials->use_ldap_auth ?? false;
+        if ($credentials === null) {
+            $accessGroupId = Constants::NO_ACCESS_GROUP_ID;
+            $userLogin = '';
+            $userPassword = '';
+            $useLdapAuth = false;
+        } else {
+            // Get the access group ID from the credentials
+            $accessGroupId = $credentials->enabled === '1' ? $credentials->user_access_group_id ?? null : Constants::NO_ACCESS_GROUP_ID;
+            $userLogin = $credentials->user_login ?? '';
+            $userPassword = empty($credentials->user_password) ? '' : Constants::HIDDEN_PASSWORD;
+            $useLdapAuth = $credentials->use_ldap_auth ?? false;
+        }
 
         // Create a new Text form element for user login and set its value
         $login = new Text('module_users_ui_login', [
@@ -74,12 +73,18 @@ class ExtensionEditAdditionalForm extends ModuleBaseForm
         ]);
         $form->add($password);
 
-        // Crete a new Checkbox element on the user form
-        $checkAr = ['value' => null];
+        // Create a new Checkbox element on the user form.
+        // The initial state is also exposed via a hidden field so JS can apply
+        // it consistently across MikoPBX versions where Phalcon's Check element
+        // rendering of the `checked` attribute differs.
+        $checkAr = ['value' => 'on'];
         if (intval($useLdapAuth) === 1) {
-            $checkAr = ['checked' => 'on','value' => 'on'];
+            $checkAr['checked'] = 'checked';
         }
         $form->add(new Check('module_users_ui_use_ldap_auth', $checkAr));
+        $form->add(new Hidden('module_users_ui_use_ldap_auth_initial', [
+            'value' => intval($useLdapAuth) === 1 ? '1' : '0',
+        ]));
 
         // Retrieve all access groups from the database
         $accessGroups = AccessGroups::find();
@@ -107,9 +112,5 @@ class ExtensionEditAdditionalForm extends ModuleBaseForm
             ]
         );
         $form->add($accessGroup);
-
-        // Save if LDAP is enabled info to show or hide the LDAP checkbox
-        $ldapEnabled = LdapConfig::findFirst()->useLdapAuthMethod ?? '0' === '1';
-        $form->add(new Hidden('module_users_ui_ldap_enabled', ['value' => $ldapEnabled]));
     }
 }

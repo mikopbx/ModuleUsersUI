@@ -29,9 +29,12 @@ use MikoPBX\Modules\Config\ConfigClass;
 use Modules\ModuleUsersUI\App\Controllers\UsersCredentialsController;
 use Modules\ModuleUsersUI\App\Controllers\UserProfileController;
 use Modules\ModuleUsersUI\App\Forms\ExtensionEditAdditionalForm;
+use MikoPBX\Common\Models\Extensions;
+use MikoPBX\Common\Models\Users;
 use Modules\ModuleUsersUI\Models\AccessGroupCDRFilter;
 use Modules\ModuleUsersUI\Models\AccessGroups;
 use Modules\ModuleUsersUI\Models\AccessGroupsRights;
+use Modules\ModuleUsersUI\Models\LdapConfig;
 use Modules\ModuleUsersUI\Models\UsersCredentials;
 use Phalcon\Acl\Adapter\Memory as AclList;
 use Phalcon\Assets\Manager;
@@ -43,6 +46,7 @@ use Phalcon\Mvc\View;
 class UsersUIConf extends ConfigClass
 {
     private const API_V3_EMPLOYEES = '/pbxcore/api/v3/employees';
+    private const API_V2_EXTENSIONS_SAVE = '/api/extensions/saveRecord';
     private const MODULE_PREFIX = 'module_users_ui_';
 
     /**
@@ -81,6 +85,11 @@ class UsersUIConf extends ConfigClass
         // Check if the changed model is in the cache-interfere models array.
         if (in_array($data['model'], $cacheInterfereModels)) {
             AclProvider::clearCache();
+        }
+
+        // Clean orphan UsersCredentials when users are deleted or changed
+        if ($data['model'] === Users::class) {
+            UsersCredentials::cleanOrphanRecords();
         }
     }
 
@@ -165,8 +174,52 @@ class UsersUIConf extends ConfigClass
      */
     public function onBeforeFormInitialize(Form $form, $entity, $options): void
     {
-        if (is_a($form, ExtensionEditForm::class)) {
-            ExtensionEditAdditionalForm::prepareAdditionalFields($form, $entity, $options);
+        if (!is_a($form, ExtensionEditForm::class)) {
+            return;
+        }
+
+        // In MikoPBX V5.0+ the form is initialized without entity (data loaded via REST API).
+        // Resolve user_id from URL parameter so we can render the access group dropdown
+        // with the correct value on initial server-side render.
+        if (!is_object($entity) || empty($entity->user_id)) {
+            $userId = $this->resolveUserIdFromDispatcher();
+            $entity = (object)['user_id' => $userId];
+        }
+        ExtensionEditAdditionalForm::prepareAdditionalFields($form, $entity, $options);
+
+        // Expose LDAP-enabled flag to the view so the template can hide the
+        // checkbox entirely when no LDAP server is configured.
+        $ldapConfig = LdapConfig::findFirst();
+        $ldapEnabled = $ldapConfig !== null && ($ldapConfig->useLdapAuthMethod ?? '0') === '1';
+        $this->di->get('view')->moduleUsersUILdapEnabled = $ldapEnabled;
+    }
+
+    /**
+     * Resolves user_id from current dispatcher params for the Extensions modify route.
+     * In MikoPBX V5.0+ the modify URL parameter IS the user_id (per Employees REST API).
+     * In legacy versions the URL parameter is the extension id and must be looked up.
+     *
+     * @return string|null user_id or null if not resolvable
+     */
+    private function resolveUserIdFromDispatcher(): ?string
+    {
+        try {
+            $dispatcher = $this->di->get('dispatcher');
+            $recordId = $dispatcher->getParam(0);
+            if (empty($recordId) || $recordId === 'new') {
+                return null;
+            }
+
+            if (MikoPBXVersion::isPhalcon5Version()) {
+                // V5.0+: URL id is already the user_id
+                return (string)$recordId;
+            }
+
+            // Legacy: URL id is the extension id, resolve to user_id via Extensions model
+            $extension = Extensions::findFirstById($recordId);
+            return $extension !== null && !empty($extension->userid) ? (string)$extension->userid : null;
+        } catch (\Throwable $e) {
+            return null;
         }
     }
 
@@ -205,36 +258,83 @@ class UsersUIConf extends ConfigClass
      */
     public function onAfterExecuteRestAPIRoute(Micro $app): void
     {
-        // Intercept the form submission of Extensions, only save action
-        $router = $app->getRouter();
-        $matchedRoute = $router->getMatchedRoute();
-        $pattern = $matchedRoute->getPattern();
-        $httpMethod = $app->request->getMethod();
+        $calledUrl = $app->request->get('_url');
 
-        // Check if this is an employee-related request
-        $isEmployeeRoute = strpos($pattern, self::API_V3_EMPLOYEES) === 0;
-        if (!$isEmployeeRoute) {
+        // Handle legacy API v2: /api/extensions/saveRecord (MikoPBX < 2024.2.30)
+        if ($calledUrl === self::API_V2_EXTENSIONS_SAVE) {
+            $this->handleLegacySaveRequest($app);
             return;
         }
 
-        // Handle POST/PUT requests - save group data
-        if (in_array($httpMethod, ['POST', 'PUT'], true)) {
-            /** @var \MikoPBX\PBXCoreREST\Http\Request $request */
-            $request = $app->request;
-         
-            $response = json_decode($app->response->getContent(), false);
-
-            if (!empty($response->result) and $response->result === true) {
-                $userController = new UsersCredentialsController();
-                $postData = $request->getData();
-                
-                if ($this->hasModuleData($postData)) {
-                    $userController->saveUserCredential($postData, $response);
-                }
-
-                $app->response->setContent(json_encode($response));
-            }
+        // Handle REST API v3: /pbxcore/api/v3/employees
+        $router = $app->getRouter();
+        $matchedRoute = $router->getMatchedRoute();
+        if ($matchedRoute !== null) {
+            $this->handleV3EmployeesRequest($app, $matchedRoute);
         }
+    }
+
+    /**
+     * Handle legacy API v2 request: /api/extensions/saveRecord
+     */
+    private function handleLegacySaveRequest(Micro $app): void
+    {
+        $response = json_decode($app->response->getContent(), false);
+        if (empty($response->result) || $response->result !== true) {
+            return;
+        }
+
+        $postData = $app->request->getPost();
+        if (!$this->hasModuleData($postData)) {
+            return;
+        }
+
+        $userController = new UsersCredentialsController();
+        $userController->saveUserCredential($postData, $response);
+
+        $app->response->setContent(json_encode($response));
+    }
+
+    /**
+     * Handle REST API v3 request: /pbxcore/api/v3/employees
+     */
+    private function handleV3EmployeesRequest(Micro $app, $matchedRoute): void
+    {
+        $pattern = $matchedRoute->getPattern();
+        $httpMethod = $app->request->getMethod();
+
+        if (strpos($pattern, self::API_V3_EMPLOYEES) !== 0) {
+            return;
+        }
+
+        if (!in_array($httpMethod, ['POST', 'PUT'], true)) {
+            return;
+        }
+
+        /** @var \MikoPBX\PBXCoreREST\Http\Request $request */
+        $request = $app->request;
+        $response = json_decode($app->response->getContent(), false);
+
+        if (empty($response->result) || $response->result !== true) {
+            return;
+        }
+
+        $postData = $request->getData();
+
+        // In MikoPBX V5.0+ the JS strips user_id from POST data before sending.
+        // The saved record's user_id is returned in response data — pull it from there.
+        if (empty($postData['user_id']) && isset($response->data->id)) {
+            $postData['user_id'] = (string)$response->data->id;
+        }
+
+        if (!$this->hasModuleData($postData)) {
+            return;
+        }
+
+        $userController = new UsersCredentialsController();
+        $userController->saveUserCredential($postData, $response);
+
+        $app->response->setContent(json_encode($response));
     }
 
 
