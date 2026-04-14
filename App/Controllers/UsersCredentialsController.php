@@ -94,7 +94,8 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
         $query = $this->di->get('modelsManager')->createBuilder($parameters)->getQuery();
         $newMembers = $query->execute();
 
-        $ldapEnabled = LdapConfig::findFirst()->useLdapAuthMethod ?? '0' === '1';
+        $ldapConfig = LdapConfig::findFirst();
+        $ldapEnabled = $ldapConfig !== null && ($ldapConfig->useLdapAuthMethod ?? '0') === '1';
         $securityClass = MikoPBXVersion::getSecurityClass();
         $security = new $securityClass();
 
@@ -131,12 +132,10 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
     public function saveUserCredential(array $postData, object &$response): void
     {
         // Get the current user ID from the request
-        $currentUserId = $postData['user_id'];
-
-        // If the current user ID is not set, return
-        if (!isset($currentUserId)) {
+        if (empty($postData['user_id'])) {
             return;
         }
+        $currentUserId = (string)$postData['user_id'];
 
         // Get the access group, user login, and user password from the request
         $accessGroup = $postData['module_users_ui_access_group'] ?? '';
@@ -160,12 +159,10 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
             $groupMember->user_password = $security->hash($userPassword);
         }
 
-        // Update the user uses LDAP authentication if it is not empty
-        if ($userUseLdapAuth === 'on' || $userUseLdapAuth === '1') {
-            $groupMember->use_ldap_auth = '1';
-        } else {
-            $groupMember->use_ldap_auth = '0';
-        }
+        // Update the LDAP auth flag. Different MikoPBX versions send different formats:
+        // - Legacy (Phalcon 4): 'on' or '1' (string)
+        // - V5.0+ with convertCheckboxesToBool=true: true/false (bool)
+        $groupMember->use_ldap_auth = $this->isCheckboxChecked($userUseLdapAuth) ? '1' : '0';
 
         // Update the access group and enabled status based on the selected value
         if ($accessGroup === Constants::NO_ACCESS_GROUP_ID) {
@@ -206,6 +203,22 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
     }
 
     /**
+     * Normalize checkbox value across MikoPBX versions.
+     * Accepts: bool, '1', 1, 'on', 'true' as truthy; everything else as false.
+     */
+    private function isCheckboxChecked($value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+        if (is_string($value)) {
+            $v = strtolower($value);
+            return $v === '1' || $v === 'on' || $v === 'true';
+        }
+        return (int)$value === 1;
+    }
+
+    /**
      * Creates a new user credential entity.
      * @param string $userId
      * @return UsersCredentials
@@ -220,9 +233,11 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
         ];
         $groupMember = UsersCredentials::findFirst($parameters);
         if ($groupMember === null) {
+            // Clean orphan records before creating new to prevent uniqueness conflicts
+            UsersCredentials::cleanOrphanRecords();
             $groupMember = new UsersCredentials();
             $groupMember->user_id = intval($userId);
-            $groupMember->user_login = "User{$userId}";
+            $groupMember->user_login = 'User' . $userId . '_' . bin2hex(random_bytes(4));
         }
         return $groupMember;
     }
@@ -270,8 +285,6 @@ class UsersCredentialsController extends ModuleUsersUIBaseController
         // Update the user login if it is not empty
         if (!empty($userLogin)) {
             $groupMember->user_login = $userLogin;
-        } else {
-            $groupMember->user_login = $data['user_id'];
         }
 
         // Update the user password hash if it is not empty

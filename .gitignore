@@ -1,6 +1,10 @@
 vendor/
 db/module.db
 
+# IDE
+.vscode/
+.idea/
+
 # macOS
 .DS_Store
 **/.DS_Store

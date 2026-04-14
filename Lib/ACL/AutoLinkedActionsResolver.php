@@ -21,8 +21,8 @@ declare(strict_types=1);
 
 namespace Modules\ModuleUsersUI\Lib\ACL;
 
-use MikoPBX\Common\Library\Text;
 use Modules\ModuleUsersUI\Lib\EndpointConstants as E;
+use Modules\ModuleUsersUI\Lib\MikoPBXVersion;
 
 /**
  * Automatic linking of AdminCabinet controller actions to REST API endpoints.
@@ -188,7 +188,8 @@ class AutoLinkedActionsResolver
 
         // Convert CamelCase to kebab-case
         // CallQueues → call-queues
-        $kebabName = Text::uncamelize($controllerName, '-');
+        $textClass = MikoPBXVersion::getTextClass();
+        $kebabName = $textClass::uncamelize($controllerName, '-');
 
         return '/pbxcore/api/v3/' . $kebabName;
     }

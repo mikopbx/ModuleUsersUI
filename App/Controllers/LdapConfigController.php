@@ -88,7 +88,12 @@ class LdapConfigController extends ModuleUsersUIBaseController
         if ($redis->has($cacheKey)) {
             $availableUsers = $redis->get($cacheKey, []);
         } else {
-            $ldapCredentials = LdapConfig::findFirst()->toArray();
+            $ldapConfig = LdapConfig::findFirst();
+            if ($ldapConfig === null) {
+                $this->view->results = [];
+                return;
+            }
+            $ldapCredentials = $ldapConfig->toArray();
             $ldapAuth = new UsersUILdapAuth($ldapCredentials);
             // Get the list of available LDAP users
             $availableUsersResult = $ldapAuth->getUsersList();
