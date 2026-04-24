@@ -183,4 +183,14 @@ return [
     'module_usersui_PasswordChangedSuccessfully' => 'Пароль успешно изменён',
     'module_usersui_CurrentPasswordIncorrect' => 'Текущий пароль неверен',
     'module_usersui_UserNotFound' => 'Пользователь не найден',
+
+    // LDAP TLS / сертификат / проверка подключения
+    'module_usersui_VerifyCertificate' => 'Проверять сертификат сервера',
+    'module_usersui_CaCertificate' => 'CA-сертификат (PEM)',
+    'module_usersui_CaCertificateHint' => 'Вставьте PEM-сертификат корневого УЦ, подписавшего сертификат LDAP-сервера. Допускается склеивание нескольких сертификатов (промежуточный + корневой). Оставьте пустым для использования системного хранилища доверия.',
+    'module_usersui_InsecureTlsWarning' => 'Включён LDAPS, но проверка сертификата выключена — трафик шифруется, но подлинность сервера не проверяется. Для безопасной конфигурации включите проверку и укажите CA-сертификат.',
+    'module_usersui_InvalidPemCert' => 'Указанный CA-сертификат не является корректным PEM-блоком.',
+    'module_usersui_TestBindButton' => 'Проверить подключение к LDAP',
+    'module_usersui_TestBindSuccess' => 'Подключение к LDAP успешно.',
+    'module_usersui_TestBindFailure' => 'Не удалось подключиться к LDAP',
 ];

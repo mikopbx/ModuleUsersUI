@@ -13,12 +13,11 @@
 </div>
 
 <div class="fields disable-if-no-ldap">
-    {{ ldapForm.render('useTLS') }}
+    {{ ldapForm.render('tlsMode') }}
     <div class="six wide field">
         <label for="serverName">{{ t._('module_usersui_LdapServerName') }}</label>
         <div class="ui left labeled input">
             <div class="ui dropdown label use-tls-dropdown">
-                {{ ldapForm.render('useTLS') }}
                 <div class="text">ldap://</div>
                 <i class="dropdown icon"></i>
             </div>
@@ -37,16 +36,38 @@
     </div>
 </div>
 
-<div class="field disable-if-no-ldap">
-    <label>{{ t._('module_usersui_LdapAdminLogin') }}</label>
-    <div class="equal width fields">
-        <div class="field">
-            {{ ldapForm.render('administrativeLogin') }}
+<div class="field disable-if-no-ldap tls-settings" style="display:none;">
+    <div class="ui segment">
+        <div class="ui toggle checkbox">
+            {{ ldapForm.render('verifyCert') }}
+            <label for="verifyCert">{{ t._('module_usersui_VerifyCertificate') }}</label>
         </div>
-        <div class="field">
-            {{ ldapForm.render('administrativePasswordHidden') }}
+        <div class="ui warning message insecure-tls-warning" style="display:none; margin-top:1em;">
+            <i class="exclamation triangle icon"></i>
+            <span>{{ t._('module_usersui_InsecureTlsWarning') }}</span>
         </div>
     </div>
+</div>
+
+<div class="field disable-if-no-ldap">
+    <label>{{ t._('module_usersui_LdapAdminLogin') }}</label>
+    <div class="fields">
+        <div class="seven wide field">
+            {{ ldapForm.render('administrativeLogin') }}
+        </div>
+        <div class="seven wide field">
+            {{ ldapForm.render('administrativePasswordHidden') }}
+        </div>
+        <div class="two wide field">
+            <div class="ui icon basic button test-ldap-bind"
+                 data-tooltip="{{ t._('module_usersui_TestBindButton') }}"
+                 data-position="top right"
+                 data-variation="tiny">
+                <i class="key icon"></i>
+            </div>
+        </div>
+    </div>
+    <div class="ui message test-bind-result" style="display:none;"></div>
 </div>
 <div class="field disable-if-no-ldap">
     <label for="userIdAttribute">{{ t._('module_usersui_LdapUserIdAttribute') }}</label>
@@ -61,6 +82,20 @@
 <div class="field disable-if-no-ldap">
     <label for="userFilter">{{ t._('module_usersui_LdapUserFilter') }}</label>
     {{ ldapForm.render('userFilter') }}
+</div>
+<div class="field disable-if-no-ldap ca-certificate-field" style="display:none;">
+    <div class="ui segment">
+        <div class="ui header">
+            {{ t._('module_usersui_CaCertificate') }}
+            <i class="exclamation triangle icon ca-missing-warning" style="display:none; margin-left:0.3em;"></i>
+        </div>
+        <div class="ui info message">
+            <div class="content">
+                <p>{{ t._('module_usersui_CaCertificateHint') }}</p>
+            </div>
+        </div>
+        {{ ldapForm.render('caCertificate') }}
+    </div>
 </div>
 <div class="field disable-if-no-ldap">
     <div class="ui segment">

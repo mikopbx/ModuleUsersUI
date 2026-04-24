@@ -74,7 +74,7 @@ const moduleUsersUiIndexLdap = {
     $ldapCheckGetUsersSegment: $('#ldap-check-get-users'),
 
     /**
-     * jQuery object for the use TLS selector
+     * jQuery object for the TLS transport-mode selector (ldap / starttls / ldaps).
      * @type {jQuery}
      */
     $useTlsDropdown: $('.use-tls-dropdown'),
@@ -84,6 +84,54 @@ const moduleUsersUiIndexLdap = {
      * @type {jQuery}
      */
     $ldapTypeDropdown: $('.select-ldap-field'),
+
+    /**
+     * jQuery object for the certificate-validation toggle.
+     * @type {jQuery}
+     */
+    $verifyCertCheckbox: $('input[name="verifyCert"]'),
+
+    /**
+     * jQuery object for the custom CA PEM textarea.
+     * @type {jQuery}
+     */
+    $caCertTextarea: $('textarea[name="caCertificate"]'),
+
+    /**
+     * jQuery object for the TLS-specific block (verify-cert toggle + insecure banner).
+     * @type {jQuery}
+     */
+    $tlsSettingsBlock: $('.tls-settings'),
+
+    /**
+     * jQuery object for the CA certificate segment shown when encryption is on.
+     * @type {jQuery}
+     */
+    $caCertificateField: $('.ca-certificate-field'),
+
+    /**
+     * jQuery object for the "insecure TLS" warning (ldaps without verification).
+     * @type {jQuery}
+     */
+    $insecureTlsWarning: $('.insecure-tls-warning'),
+
+    /**
+     * jQuery object for the "CA not provided" warning icon next to the CA header.
+     * @type {jQuery}
+     */
+    $caMissingWarning: $('.ca-missing-warning'),
+
+    /**
+     * jQuery object for the test-bind icon button.
+     * @type {jQuery}
+     */
+    $testBindButton: $('.test-ldap-bind'),
+
+    /**
+     * jQuery object for the inline test-bind result banner.
+     * @type {jQuery}
+     */
+    $testBindResult: $('.test-bind-result'),
 
     /**
      * Validation rules for the form fields.
@@ -173,20 +221,138 @@ const moduleUsersUiIndexLdap = {
         moduleUsersUiIndexLdap.$ldapTypeDropdown.dropdown({
             onChange: moduleUsersUiIndexLdap.onChangeLdapType,
         });
-        // Handle change TLS protocol
+
+        // Handle change TLS protocol — three-way selector (none / starttls / ldaps).
+        const currentTlsMode = moduleUsersUiIndexLdap.$formObj.form('get value', 'tlsMode') || 'none';
         moduleUsersUiIndexLdap.$useTlsDropdown.dropdown({
             values: [
                 {
                     name: 'ldap://',
-                    value: '0',
-                    selected: moduleUsersUiIndexLdap.$formObj.form('get value', 'useTLS') === '0'
+                    value: 'none',
+                    selected: currentTlsMode === 'none'
+                },
+                {
+                    name: 'ldap:// + STARTTLS',
+                    value: 'starttls',
+                    selected: currentTlsMode === 'starttls'
                 },
                 {
                     name: 'ldaps://',
-                    value: '1',
-                    selected: moduleUsersUiIndexLdap.$formObj.form('get value', 'useTLS') === '1'
+                    value: 'ldaps',
+                    selected: currentTlsMode === 'ldaps'
                 }
             ],
+            onChange(value) {
+                moduleUsersUiIndexLdap.$formObj.form('set value', 'tlsMode', value);
+                moduleUsersUiIndexLdap.refreshTlsSectionVisibility();
+            },
+        });
+
+        // Certificate validation toggle — refresh UX state on flip.
+        moduleUsersUiIndexLdap.$verifyCertCheckbox.on('change', () => {
+            moduleUsersUiIndexLdap.refreshTlsSectionVisibility();
+        });
+        // Typing into the CA textarea clears the "missing CA" warning.
+        moduleUsersUiIndexLdap.$caCertTextarea.on('input', () => {
+            moduleUsersUiIndexLdap.refreshTlsSectionVisibility();
+        });
+        moduleUsersUiIndexLdap.refreshTlsSectionVisibility();
+
+        // Handle test-bind icon button click
+        moduleUsersUiIndexLdap.$testBindButton.on('click', (e) => {
+            e.preventDefault();
+            moduleUsersUiIndexLdap.apiCallTestBind();
+        });
+    },
+
+    /**
+     * Recomputes visibility of TLS-related UI based on tlsMode / verifyCert / caCertificate.
+     *  - verify-cert toggle and insecure banner live inside .tls-settings and
+     *    show only for encrypted modes (starttls|ldaps).
+     *  - CA certificate segment appears only for encrypted modes.
+     *  - Warning triangle on the CA header lights up when verification is on
+     *    but the CA textarea is empty.
+     *  - Insecure-TLS banner lights up only for ldaps:// without verification:
+     *    traffic is encrypted but server identity is unverified.
+     */
+    refreshTlsSectionVisibility() {
+        const tlsMode = moduleUsersUiIndexLdap.$formObj.form('get value', 'tlsMode') || 'none';
+        const verify = moduleUsersUiIndexLdap.$verifyCertCheckbox.is(':checked');
+        const encrypted = tlsMode === 'starttls' || tlsMode === 'ldaps';
+        const caEmpty = (moduleUsersUiIndexLdap.$caCertTextarea.val() || '').trim() === '';
+
+        if (encrypted) {
+            moduleUsersUiIndexLdap.$tlsSettingsBlock.show();
+            moduleUsersUiIndexLdap.$caCertificateField.show();
+        } else {
+            moduleUsersUiIndexLdap.$tlsSettingsBlock.hide();
+            moduleUsersUiIndexLdap.$caCertificateField.hide();
+        }
+
+        if (encrypted && verify && caEmpty) {
+            moduleUsersUiIndexLdap.$caMissingWarning.show();
+        } else {
+            moduleUsersUiIndexLdap.$caMissingWarning.hide();
+        }
+
+        if (tlsMode === 'ldaps' && !verify) {
+            moduleUsersUiIndexLdap.$insecureTlsWarning.show();
+        } else {
+            moduleUsersUiIndexLdap.$insecureTlsWarning.hide();
+        }
+    },
+
+    /**
+     * Fires a lightweight bind check against the current form values.
+     * Shows a green success message or a red error message inline under
+     * the admin-credentials row.
+     */
+    apiCallTestBind() {
+        $.api({
+            url: `${globalRootUrl}module-users-u-i/ldap-config/test-bind`,
+            on: 'now',
+            method: 'POST',
+            beforeSend(settings) {
+                moduleUsersUiIndexLdap.$testBindButton.addClass('loading disabled');
+                moduleUsersUiIndexLdap.$testBindResult
+                    .removeClass('positive negative')
+                    .hide();
+                settings.data = moduleUsersUiIndexLdap.$formObj.form('get values');
+                return settings;
+            },
+            successTest(response) {
+                return response.success;
+            },
+            onSuccess(response) {
+                moduleUsersUiIndexLdap.$testBindButton.removeClass('loading disabled');
+                let text = globalTranslate.module_usersui_TestBindSuccess;
+                if (response && response.message) {
+                    const detail = Array.isArray(response.message) ? response.message.join(' ') : response.message;
+                    if (detail) {
+                        text = detail;
+                    }
+                }
+                moduleUsersUiIndexLdap.$testBindResult
+                    .removeClass('negative')
+                    .addClass('positive')
+                    .text(text)
+                    .show();
+            },
+            onFailure(response) {
+                moduleUsersUiIndexLdap.$testBindButton.removeClass('loading disabled');
+                let text = globalTranslate.module_usersui_TestBindFailure;
+                if (response && response.message) {
+                    const detail = Array.isArray(response.message) ? response.message.join(' ') : response.message;
+                    if (detail) {
+                        text = `${text}: ${detail}`;
+                    }
+                }
+                moduleUsersUiIndexLdap.$testBindResult
+                    .removeClass('positive')
+                    .addClass('negative')
+                    .text(text)
+                    .show();
+            },
         });
     },
     /**

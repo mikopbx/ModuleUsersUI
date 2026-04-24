@@ -24,7 +24,6 @@ use LdapRecord\Auth\Events\Failed;
 use LdapRecord\Container;
 use MikoPBX\Common\Handlers\CriticalErrorsHandler;
 use MikoPBX\Common\Providers\LoggerAuthProvider;
-use Modules\ModuleUsersUI\Lib\AnswerStructure;
 use Phalcon\Di\Injectable;
 
 include_once __DIR__ . '/../vendor/autoload.php';
@@ -36,7 +35,18 @@ class UsersUILdapAuth extends Injectable
 {
     private string $serverName;
     private string $serverPort;
-    private bool $useTLS;
+    private string $tlsMode;
+    private bool $verifyCert;
+    private string $caBundlePath = '';
+
+    /**
+     * True once this connector has mutated the process-wide libldap TLS
+     * defaults via ldap_set_option(null, ...). Controls whether __destruct()
+     * needs to reset those defaults so the next request served by this PHP-FPM
+     * worker starts from a clean slate instead of inheriting our policy.
+     */
+    private bool $processWideOptionsDirty = false;
+
     private string $baseDN;
     private string $administrativeLogin;
     private string $administrativePassword;
@@ -44,8 +54,8 @@ class UsersUILdapAuth extends Injectable
     private string $organizationalUnit;
     private string $userFilter;
 
-    // Ldap connection
     private \LdapRecord\Connection $connection;
+
     /**
      * The class of the user model based on LDAP type.
      *
@@ -63,10 +73,167 @@ class UsersUILdapAuth extends Injectable
         $this->userIdAttribute = $ldapCredentials['userIdAttribute'];
         $this->organizationalUnit = $ldapCredentials['organizationalUnit'];
         $this->userFilter = $ldapCredentials['userFilter'];
-        $this->useTLS = $ldapCredentials['useTLS'] === '1';
 
-        // Set user model class based on LDAP type
+        // Back-compat: legacy deployments ship only `useTLS`. Map '1' onto STARTTLS.
+        $tlsMode = $ldapCredentials['tlsMode'] ?? null;
+        if ($tlsMode === null || $tlsMode === '') {
+            $tlsMode = (($ldapCredentials['useTLS'] ?? '0') === '1') ? 'starttls' : 'none';
+        }
+        $this->tlsMode = in_array($tlsMode, ['none', 'starttls', 'ldaps'], true) ? $tlsMode : 'none';
+
+        // HTML checkboxes submit "on" when checked; normalise that and any other
+        // truthy form values so test-bind and save paths agree on meaning.
+        $verifyRaw = strtolower((string)($ldapCredentials['verifyCert'] ?? '0'));
+        $this->verifyCert = in_array($verifyRaw, ['1', 'on', 'true', 'yes'], true);
+
         $this->userModelClass = $this->getUserModelClass($ldapCredentials['ldapType']);
+
+        $this->connection = $this->buildConnection($ldapCredentials['caCertificate'] ?? null);
+    }
+
+    /**
+     * Cleans up the CA bundle written for this session and resets the
+     * process-wide libldap TLS defaults so a later connector in the same
+     * PHP-FPM / worker process doesn't inherit our REQUIRE_CERT policy or a
+     * dangling pointer to our already-unlinked CA bundle. Called whether or
+     * not a custom bundle was ever materialised — otherwise a single request
+     * that enabled strict verification would silently tighten every
+     * subsequent LDAP request handled by the same worker.
+     */
+    public function __destruct()
+    {
+        if ($this->caBundlePath !== '' && is_file($this->caBundlePath)) {
+            @unlink($this->caBundlePath);
+        }
+
+        if (!$this->processWideOptionsDirty) {
+            return;
+        }
+
+        // Repoint libldap at a permissive default (accept any cert) and the
+        // detected system trust store. This matches the pre-module default on
+        // MikoPBX and guarantees no per-request state leaks across binds.
+        @ldap_set_option(null, LDAP_OPT_X_TLS_REQUIRE_CERT, LDAP_OPT_X_TLS_ALLOW);
+        @ldap_set_option(null, LDAP_OPT_X_TLS_CACERTFILE, self::systemDefaultCaFile());
+    }
+
+    /**
+     * Builds the LdapRecord connection using the configured transport mode and
+     * certificate-validation settings. Shared by auth and listing paths so the
+     * TLS setup stays in one place.
+     */
+    private function buildConnection(?string $caCertificate): \LdapRecord\Connection
+    {
+        $tlsOptions = $this->buildTlsOptions($caCertificate);
+
+        // libldap freezes its TLS context the moment ldap_connect() is called
+        // for ldaps://. If REQUIRE_CERT / CACERTFILE are set afterwards on the
+        // connection resource (which is what LdapRecord does via setOptions),
+        // they apply only after an explicit LDAP_OPT_X_TLS_NEWCTX rebuild —
+        // and even then not on every libldap build. To guarantee the chosen
+        // verification policy actually takes effect we set these options as
+        // PROCESS-WIDE defaults BEFORE the LdapRecord connection is created.
+        foreach ($tlsOptions as $opt => $val) {
+            @ldap_set_option(null, $opt, $val);
+        }
+        // Remember that we touched process-wide defaults so __destruct()
+        // can restore benign values before the next request reuses this worker.
+        $this->processWideOptionsDirty = true;
+
+        // On builds where PHP exposes LDAP_OPT_X_TLS_NEWCTX (libldap 2.4+),
+        // also queue a per-connection TLS context rebuild after LdapRecord
+        // re-applies the same options on the resource.
+        if (defined('LDAP_OPT_X_TLS_NEWCTX')) {
+            $tlsOptions[constant('LDAP_OPT_X_TLS_NEWCTX')] = 0;
+        }
+
+        return new \LdapRecord\Connection([
+            'hosts'    => [$this->serverName],
+            'port'     => $this->serverPort,
+            'base_dn'  => $this->baseDN,
+            'username' => $this->administrativeLogin,
+            'password' => $this->administrativePassword,
+            'timeout'  => 15,
+            'use_tls'  => $this->tlsMode === 'starttls',
+            'use_ssl'  => $this->tlsMode === 'ldaps',
+            'options'  => $tlsOptions,
+        ]);
+    }
+
+    /**
+     * Build the `options` array passed to LdapRecord\Connection.
+     * Sets `LDAP_OPT_X_TLS_REQUIRE_CERT` based on the verifyCert flag and
+     * always writes `LDAP_OPT_X_TLS_CACERTFILE` — either to the freshly
+     * materialised custom bundle or to the system trust store. Explicitly
+     * writing the option every time prevents a stale per-process CACERTFILE
+     * (set by a previous connector that has since been destroyed) from
+     * leaking into a later connection's TLS context.
+     *
+     * @return array<int,int|string>
+     */
+    private function buildTlsOptions(?string $caCertificate): array
+    {
+        $options = [
+            LDAP_OPT_X_TLS_REQUIRE_CERT => $this->verifyCert
+                ? LDAP_OPT_X_TLS_HARD
+                : LDAP_OPT_X_TLS_ALLOW,
+        ];
+
+        $caFile = self::systemDefaultCaFile();
+        if ($this->verifyCert && !empty($caCertificate)) {
+            $path = $this->materializeCaBundle($caCertificate);
+            if ($path !== '') {
+                $this->caBundlePath = $path;
+                $caFile = $path;
+            }
+        }
+        $options[LDAP_OPT_X_TLS_CACERTFILE] = $caFile;
+
+        return $options;
+    }
+
+    /**
+     * Probes a short list of well-known CA bundle locations and returns the
+     * first readable one. The result is cached for the lifetime of the
+     * process. Returns an empty string when no bundle is found — libldap
+     * will then fall back to its compiled-in default.
+     */
+    private static function systemDefaultCaFile(): string
+    {
+        static $cached = null;
+        if ($cached !== null) {
+            return $cached;
+        }
+        $candidates = [
+            '/etc/ssl/certs/ca-certificates.crt',   // Debian / Alpine / MikoPBX
+            '/etc/pki/tls/certs/ca-bundle.crt',     // RHEL / CentOS
+            '/etc/ssl/cert.pem',                    // macOS / BSD
+        ];
+        foreach ($candidates as $path) {
+            if (@is_readable($path)) {
+                return $cached = $path;
+            }
+        }
+        return $cached = '';
+    }
+
+    /**
+     * Writes the PEM bundle into a process-private temp file (mode 0600) so
+     * that libldap can load it. The file is removed in __destruct().
+     */
+    private function materializeCaBundle(string $pem): string
+    {
+        $tmpDir = sys_get_temp_dir();
+        $path = tempnam($tmpDir, 'users-ui-ldap-ca-');
+        if ($path === false) {
+            return '';
+        }
+        if (file_put_contents($path, $pem) === false) {
+            @unlink($path);
+            return '';
+        }
+        @chmod($path, 0600);
+        return $path;
     }
 
     /**
@@ -79,21 +246,6 @@ class UsersUILdapAuth extends Injectable
      */
     public function checkAuthViaLdap(string $username, string $password, string &$message = ''): bool
     {
-        // Create a new LDAP connection
-        $this->connection = new \LdapRecord\Connection([
-            'hosts' => [$this->serverName],
-            'port' => $this->serverPort,
-            'base_dn' => $this->baseDN,
-            'username' => $this->administrativeLogin,
-            'password' => $this->administrativePassword,
-            'timeout'  => 15,
-            'use_tls'  => $this->useTLS,
-            'options' => [
-                // See: http://php.net/ldap_set_option
-                LDAP_OPT_X_TLS_REQUIRE_CERT => LDAP_OPT_X_TLS_ALLOW
-            ]
-        ]);
-
         $success = false;
         $message = $this->translation->_('module_usersui_ldap_user_not_found');
         try {
@@ -134,7 +286,6 @@ class UsersUILdapAuth extends Injectable
             $user = $query->where($this->userIdAttribute, '=', $username)->first();
 
             if ($user) {
-                // Continue with authentication if user is found and attempt authentication
                 if ($this->connection->auth()->attempt($user->getDN(), $password)) {
                     $message = $this->translation->_('module_usersui_ldap_successfully_authenticated');
                     $success = true;
@@ -150,6 +301,34 @@ class UsersUILdapAuth extends Injectable
         }
 
         return $success;
+    }
+
+    /**
+     * Lightweight connectivity check. Opens the connection, performs the bind
+     * using the configured administrative credentials and immediately returns.
+     * Intended for a "Test bind" button — no queries.
+     */
+    public function testBind(): AnswerStructure
+    {
+        $res = new AnswerStructure();
+        try {
+            $this->connection->connect();
+            $res->success = true;
+            $res->messages[] = $this->translation->_('module_usersui_TestBindSuccess');
+        } catch (\LdapRecord\Auth\BindException $e) {
+            $detail = $e->getDetailedError();
+            $message = $e->getMessage();
+            if ($detail !== null) {
+                $message .= ' — ' . $detail->getDiagnosticMessage();
+            }
+            $res->success = false;
+            $res->messages[] = $message;
+        } catch (\Throwable $e) {
+            CriticalErrorsHandler::handleExceptionWithSyslog($e);
+            $res->success = false;
+            $res->messages[] = $e->getMessage();
+        }
+        return $res;
     }
 
     /**
@@ -182,34 +361,17 @@ class UsersUILdapAuth extends Injectable
         $res = new AnswerStructure();
         $res->success = true;
 
-        // Create a new LDAP connection
-        $this->connection = new \LdapRecord\Connection([
-            'hosts' => [$this->serverName],
-            'port' => $this->serverPort,
-            'base_dn' => $this->baseDN,
-            'username' => $this->administrativeLogin,
-            'password' => $this->administrativePassword,
-            'timeout'  => 15,
-            'use_tls'  => $this->useTLS,
-            'options' => [
-                // See: http://php.net/ldap_set_option
-                LDAP_OPT_X_TLS_REQUIRE_CERT => LDAP_OPT_X_TLS_ALLOW
-            ]
-        ]);
-
         $listOfAvailableUsers = [];
         try {
             $this->connection->connect();
             Container::addConnection($this->connection);
 
             $dispatcher = Container::getEventDispatcher();
-            // Listen for failed authentication event
             $dispatcher->listen(Failed::class, function (Failed $event) use (&$message) {
                 $ldap = $event->getConnection();
                 $message = $ldap->getDiagnosticMessage();
             });
 
-            // Query LDAP for the user
             $query = call_user_func([$this->userModelClass, 'query']);
 
             if ($this->userFilter !== '') {
@@ -238,7 +400,6 @@ class UsersUILdapAuth extends Injectable
                     $listOfAvailableUsers[] = $record;
                 }
             }
-            // Sort the array based on the name value
             usort($listOfAvailableUsers, function ($a, $b) {
                 return strcmp($a['name'], $b['name']);
             });

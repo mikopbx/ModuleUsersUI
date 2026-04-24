@@ -182,4 +182,14 @@ return [
     'module_usersui_PasswordChangedSuccessfully' => 'Password changed successfully',
     'module_usersui_CurrentPasswordIncorrect' => 'Current password is incorrect',
     'module_usersui_UserNotFound' => 'User not found',
+
+    // LDAP TLS / certificate / test-bind
+    'module_usersui_VerifyCertificate' => 'Validate server certificate',
+    'module_usersui_CaCertificate' => 'CA certificate bundle (PEM)',
+    'module_usersui_CaCertificateHint' => 'Paste the PEM-encoded CA certificate used to sign the LDAP server. Multiple certificates (intermediate + root) may be concatenated. Leave empty to use the system trust store.',
+    'module_usersui_InsecureTlsWarning' => 'LDAPS is enabled but certificate validation is off — traffic is encrypted yet the server identity is not verified. Turn on validation and provide the CA certificate for a secure setup.',
+    'module_usersui_InvalidPemCert' => 'The provided CA certificate is not a valid PEM block.',
+    'module_usersui_TestBindButton' => 'Test LDAP bind',
+    'module_usersui_TestBindSuccess' => 'LDAP bind successful.',
+    'module_usersui_TestBindFailure' => 'LDAP bind failed',
 ];
