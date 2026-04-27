@@ -134,6 +134,18 @@ const moduleUsersUiIndexLdap = {
     $testBindResult: $('.test-bind-result'),
 
     /**
+     * jQuery object for the LDAP sub-tabs menu (Connection / Certificate).
+     * @type {jQuery}
+     */
+    $subTabsMenu: $('#module-users-ui-ldap-sub-tabs'),
+
+    /**
+     * jQuery object for the Certificate sub-tab item in the menu.
+     * @type {jQuery}
+     */
+    $certificateTab: $('.ldap-cert-tab'),
+
+    /**
      * Validation rules for the form fields.
      * @type {Object}
      */
@@ -263,15 +275,26 @@ const moduleUsersUiIndexLdap = {
             e.preventDefault();
             moduleUsersUiIndexLdap.apiCallTestBind();
         });
+
+        // Initialize Fomantic sub-tabs (Connection / Certificate). Scoped to
+        // the LDAP form's menu so it doesn't collide with the page-level tabs.
+        moduleUsersUiIndexLdap.$subTabsMenu.find('.item').tab({
+            context: moduleUsersUiIndexLdap.$formObj,
+        });
     },
 
     /**
      * Recomputes visibility of TLS-related UI based on tlsMode / verifyCert / caCertificate.
-     *  - verify-cert toggle and insecure banner live inside .tls-settings and
-     *    show only for encrypted modes (starttls|ldaps).
-     *  - CA certificate segment appears only for encrypted modes.
-     *  - Warning triangle on the CA header lights up when verification is on
-     *    but the CA textarea is empty.
+     *  - The TLS settings block (verify-cert toggle + insecure banner) lives
+     *    on the Connection sub-tab and shows only for encrypted modes.
+     *  - The Certificate sub-tab item is visible only when LDAP authorization
+     *    is enabled AND the verifyCert toggle is on. This is the gate the
+     *    operator asked for: the tab appears precisely when a CA actually
+     *    matters. If the user was on the Certificate tab and toggles either
+     *    off, snap back to the Connection tab so they aren't stranded on a
+     *    hidden segment.
+     *  - Warning triangle on the Certificate tab header lights up when
+     *    verification is on but the CA textarea is empty.
      *  - Insecure-TLS banner lights up only for ldaps:// without verification:
      *    traffic is encrypted but server identity is unverified.
      */
@@ -280,16 +303,32 @@ const moduleUsersUiIndexLdap = {
         const verify = moduleUsersUiIndexLdap.$verifyCertCheckbox.is(':checked');
         const encrypted = tlsMode === 'starttls' || tlsMode === 'ldaps';
         const caEmpty = (moduleUsersUiIndexLdap.$caCertTextarea.val() || '').trim() === '';
+        const ldapEnabled = moduleUsersUiIndexLdap.$useLdapCheckbox.checkbox('is checked');
 
         if (encrypted) {
             moduleUsersUiIndexLdap.$tlsSettingsBlock.show();
-            moduleUsersUiIndexLdap.$caCertificateField.show();
         } else {
             moduleUsersUiIndexLdap.$tlsSettingsBlock.hide();
-            moduleUsersUiIndexLdap.$caCertificateField.hide();
         }
 
-        if (encrypted && verify && caEmpty) {
+        // Certificate sub-tab: gate strictly on LDAP-on + verify-on, regardless
+        // of tlsMode. If the operator turned validation on but stayed on plain
+        // LDAP, we still let them paste a CA — switching to STARTTLS/LDAPS later
+        // shouldn't lose the work.
+        const showCertTab = ldapEnabled && verify;
+        if (showCertTab) {
+            moduleUsersUiIndexLdap.$certificateTab.show();
+        } else {
+            moduleUsersUiIndexLdap.$certificateTab.hide();
+            // Snap back to Connection if Certificate was the active tab.
+            if (moduleUsersUiIndexLdap.$certificateTab.hasClass('active')) {
+                moduleUsersUiIndexLdap.$subTabsMenu
+                    .find('.item[data-tab="ldap-connection"]')
+                    .tab('change tab', 'ldap-connection');
+            }
+        }
+
+        if (showCertTab && caEmpty) {
             moduleUsersUiIndexLdap.$caMissingWarning.show();
         } else {
             moduleUsersUiIndexLdap.$caMissingWarning.hide();
@@ -466,6 +505,12 @@ const moduleUsersUiIndexLdap = {
         } else {
             moduleUsersUiIndexLdap.$formFieldsForLdapSettings.addClass('disabled');
             moduleUsersUiIndexLdap.$formElementsAvailableIfLdapIsOn.hide();
+        }
+        // The Certificate sub-tab is gated on LDAP-on + verifyCert; recompute
+        // visibility every time the master toggle flips so it disappears when
+        // LDAP is turned off and reappears (with prior verify state) when on.
+        if (typeof moduleUsersUiIndexLdap.refreshTlsSectionVisibility === 'function') {
+            moduleUsersUiIndexLdap.refreshTlsSectionVisibility();
         }
     },
 

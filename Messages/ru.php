@@ -193,4 +193,6 @@ return [
     'module_usersui_TestBindButton' => 'Проверить подключение к LDAP',
     'module_usersui_TestBindSuccess' => 'Подключение к LDAP успешно.',
     'module_usersui_TestBindFailure' => 'Не удалось подключиться к LDAP',
+    'module_usersui_TabConnection' => 'Подключение',
+    'module_usersui_TabCertificate' => 'Сертификат',
 ];

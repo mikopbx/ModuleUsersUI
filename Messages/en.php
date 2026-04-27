@@ -192,4 +192,6 @@ return [
     'module_usersui_TestBindButton' => 'Test LDAP bind',
     'module_usersui_TestBindSuccess' => 'LDAP bind successful.',
     'module_usersui_TestBindFailure' => 'LDAP bind failed',
+    'module_usersui_TabConnection' => 'Connection',
+    'module_usersui_TabCertificate' => 'Certificate',
 ];
