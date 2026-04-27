@@ -316,19 +316,43 @@ class UsersUILdapAuth extends Injectable
             $res->success = true;
             $res->messages[] = $this->translation->_('module_usersui_TestBindSuccess');
         } catch (\LdapRecord\Auth\BindException $e) {
-            $detail = $e->getDetailedError();
-            $message = $e->getMessage();
-            if ($detail !== null) {
-                $message .= ' — ' . $detail->getDiagnosticMessage();
-            }
+            // Wrong admin credentials, account locked / disabled, etc.
             $res->success = false;
-            $res->messages[] = $message;
+            $res->messages[] = self::flattenLdapException($e);
+        } catch (\LdapRecord\LdapRecordException $e) {
+            // Expected user-config failures (StartTLS handshake, server
+            // unreachable, cert validation, port mismatch). Surface the
+            // diagnostic to the user but DO NOT escalate to syslog/Sentry —
+            // these are operator errors, not application crashes.
+            $res->success = false;
+            $res->messages[] = self::flattenLdapException($e);
         } catch (\Throwable $e) {
+            // Unexpected: log it for ops, return the message to the user.
             CriticalErrorsHandler::handleExceptionWithSyslog($e);
             $res->success = false;
             $res->messages[] = $e->getMessage();
         }
         return $res;
+    }
+
+    /**
+     * Concatenates the LdapRecord exception message with its detailed
+     * diagnostic (when present) so a single string carries everything the
+     * operator needs to fix their setup. `getDetailedError()` is defined on
+     * LdapRecordException but may return null when libldap didn't populate
+     * a structured diagnostic — guard against that.
+     */
+    private static function flattenLdapException(\LdapRecord\LdapRecordException $e): string
+    {
+        $message = $e->getMessage();
+        $detail = $e->getDetailedError();
+        if ($detail !== null) {
+            $diag = $detail->getDiagnosticMessage();
+            if ($diag !== null && $diag !== '') {
+                $message .= ' — ' . $diag;
+            }
+        }
+        return $message;
     }
 
     /**
