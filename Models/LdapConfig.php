@@ -54,11 +54,41 @@ class LdapConfig extends ModulesModelsBase
     public $serverPort;
 
     /**
-     * Ldap server use TLS
+     * Deprecated TLS flag. Superseded by $tlsMode; data migrated on upgrade
+     * by Setup/PbxExtensionSetup. Column kept for safe upgrade path — runtime
+     * code never reads it.
+     *
+     * @Column(type="string", length=1, nullable=false, default="0")
+     * @deprecated use $tlsMode instead.
+     */
+    public ?string $useTLS = '0';
+
+    /**
+     * TLS transport mode: 'none' | 'starttls' | 'ldaps'.
+     *  - none:     plain LDAP (port 389)
+     *  - starttls: plain LDAP (port 389) upgraded via STARTTLS
+     *  - ldaps:    implicit TLS from connect (port 636)
+     *
+     * @Column(type="string", length=16, nullable=false, default="none")
+     */
+    public ?string $tlsMode = 'none';
+
+    /**
+     * Whether to enforce server certificate validation.
+     * '0' = LDAP_OPT_X_TLS_ALLOW (accept any cert, warn-only)
+     * '1' = LDAP_OPT_X_TLS_HARD  (reject invalid/self-signed)
      *
      * @Column(type="string", length=1, nullable=false, default="0")
      */
-    public ?string $useTLS = '0';
+    public ?string $verifyCert = '0';
+
+    /**
+     * Custom CA certificate bundle in PEM format. Used when verifyCert='1'.
+     * Multiple concatenated PEM blocks are supported (intermediate + root).
+     *
+     * @Column(type="text", nullable=true)
+     */
+    public ?string $caCertificate = null;
 
     /**
      * Login of user with read rights on the domain

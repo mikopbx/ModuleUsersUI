@@ -45,13 +45,44 @@ class LdapConfigController extends ModuleUsersUIBaseController
 
         if (!$ldapConfig) {
             $ldapConfig = new LdapConfig();
-            $ldapConfig->useTLS = '0';
         }
+
+        $tlsMode = $data['tlsMode'] ?? 'none';
+        if (!in_array($tlsMode, ['none', 'starttls', 'ldaps'], true)) {
+            $tlsMode = 'none';
+        }
+        $data['tlsMode'] = $tlsMode;
+
+        // Normalise the verifyCert checkbox — Fomantic omits the key when unchecked.
+        $verifyRaw = strtolower((string)($data['verifyCert'] ?? ''));
+        $data['verifyCert'] = in_array($verifyRaw, ['1', 'on', 'true', 'yes'], true) ? '1' : '0';
+
+        // Reject malformed CA PEM before any DB writes so the user gets a clear
+        // validation error instead of a cryptic LDAP bind failure later.
+        // Only validate when TLS is actually going to be used — the CA textarea
+        // is only hidden via CSS, so its previous contents still round-trip on
+        // save even when the user flips back to plain LDAP. Blocking save on a
+        // CA blob the code is about to ignore would be a regression.
+        $caPem = trim((string)($data['caCertificate'] ?? ''));
+        $tlsEncrypted = $tlsMode === 'starttls' || $tlsMode === 'ldaps';
+        if ($tlsEncrypted && $caPem !== '' && !$this->isValidPem($caPem)) {
+            $this->view->success = false;
+            $this->view->message = $this->translation->_('module_usersui_InvalidPemCert');
+            return;
+        }
+        // When TLS is off we persist whatever the user had in the textarea as-is
+        // (including `''`) — it's unused, and clearing it automatically would
+        // lose their paste when they later re-enable encryption.
 
         // Update ldapConfig properties with the provided data
         foreach ($ldapConfig as $name => $value) {
             switch ($name) {
                 case 'id':
+                    break;
+                case 'useTLS':
+                    // Deprecated column kept for upgrade compatibility only.
+                    // Never overwrite — the form no longer posts this field and
+                    // we want to preserve whatever value the migration wrote.
                     break;
                 case 'administrativePassword':
                     if (
@@ -60,6 +91,9 @@ class LdapConfigController extends ModuleUsersUIBaseController
                     ) {
                         $ldapConfig->$name = $data['administrativePasswordHidden'];
                     }
+                    break;
+                case 'caCertificate':
+                    $ldapConfig->$name = $caPem !== '' ? $caPem : null;
                     break;
                 default:
                     if (isset($data[$name])) {
@@ -71,6 +105,49 @@ class LdapConfigController extends ModuleUsersUIBaseController
         }
 
         $this->saveEntity($ldapConfig);
+    }
+
+    /**
+     * Lightweight validation of a PEM-encoded certificate bundle. Accepts one
+     * or more concatenated CERTIFICATE blocks. openssl_x509_parse is used as
+     * the authoritative check so garbage (truncated Base64, wrong header, etc.)
+     * is rejected here rather than surfacing later as a vague LDAP error.
+     */
+    private function isValidPem(string $pem): bool
+    {
+        if (!preg_match_all(
+            '/-----BEGIN CERTIFICATE-----.+?-----END CERTIFICATE-----/s',
+            $pem,
+            $blocks
+        )) {
+            return false;
+        }
+        foreach ($blocks[0] as $block) {
+            if (openssl_x509_parse($block) === false) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Lightweight LDAP bind check using the current form values (or stored
+     * password fallback). Exposed so the "Test bind" button can confirm the
+     * configured administrative credentials without running a full user sync.
+     */
+    public function testBindAction(): void
+    {
+        if (!$this->request->isPost()) {
+            return;
+        }
+
+        $data = $this->request->getPost();
+        $ldapCredentials = $this->prepareLdapCredentialsArrayFromPost($data);
+        $ldapAuth = new UsersUILdapAuth($ldapCredentials);
+
+        $result = $ldapAuth->testBind();
+        $this->view->success = $result->success;
+        $this->view->message = $result->messages;
     }
 
     /**
@@ -188,17 +265,29 @@ class LdapConfigController extends ModuleUsersUIBaseController
             $postData['administrativePassword'] = $postData['administrativePasswordHidden'];
         }
 
+        // The CA certificate textarea is only sent when the Certificate tab has
+        // been rendered. For test-bind called from tabs that don't expose it,
+        // fall back to the stored value so strict-verify connections still work.
+        if (!array_key_exists('caCertificate', $postData)) {
+            if (!isset($ldapConfig)) {
+                $ldapConfig = LdapConfig::findFirst();
+            }
+            $postData['caCertificate'] = $ldapConfig->caCertificate ?? '';
+        }
+
         return [
-            'serverName' => $postData['serverName'],
-            'serverPort' => $postData['serverPort'],
-            'baseDN' => $postData['baseDN'],
-            'administrativeLogin' => $postData['administrativeLogin'],
+            'serverName' => $postData['serverName'] ?? '',
+            'serverPort' => $postData['serverPort'] ?? '389',
+            'baseDN' => $postData['baseDN'] ?? '',
+            'administrativeLogin' => $postData['administrativeLogin'] ?? '',
             'administrativePassword' => $postData['administrativePassword'],
-            'userIdAttribute' => $postData['userIdAttribute'],
-            'organizationalUnit' => $postData['organizationalUnit'],
-            'userFilter' => $postData['userFilter'],
-            'useTLS' => $postData['useTLS'],
-           'ldapType' => $postData['ldapType'],
+            'userIdAttribute' => $postData['userIdAttribute'] ?? '',
+            'organizationalUnit' => $postData['organizationalUnit'] ?? '',
+            'userFilter' => $postData['userFilter'] ?? '',
+            'tlsMode' => $postData['tlsMode'] ?? 'none',
+            'verifyCert' => $postData['verifyCert'] ?? '0',
+            'caCertificate' => $postData['caCertificate'] ?? '',
+            'ldapType' => $postData['ldapType'] ?? 'ActiveDirectory',
         ];
     }
 }

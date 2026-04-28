@@ -16,7 +16,7 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* global globalRootUrl, globalTranslate, Form, PbxApi*/
+/* global globalRootUrl, globalTranslate, Form, PbxApi, TooltipBuilder */
 
 
 const moduleUsersUiIndexLdap = {
@@ -74,7 +74,7 @@ const moduleUsersUiIndexLdap = {
     $ldapCheckGetUsersSegment: $('#ldap-check-get-users'),
 
     /**
-     * jQuery object for the use TLS selector
+     * jQuery object for the TLS transport-mode selector (ldap / starttls / ldaps).
      * @type {jQuery}
      */
     $useTlsDropdown: $('.use-tls-dropdown'),
@@ -84,6 +84,66 @@ const moduleUsersUiIndexLdap = {
      * @type {jQuery}
      */
     $ldapTypeDropdown: $('.select-ldap-field'),
+
+    /**
+     * jQuery object for the certificate-validation toggle.
+     * @type {jQuery}
+     */
+    $verifyCertCheckbox: $('input[name="verifyCert"]'),
+
+    /**
+     * jQuery object for the custom CA PEM textarea.
+     * @type {jQuery}
+     */
+    $caCertTextarea: $('textarea[name="caCertificate"]'),
+
+    /**
+     * jQuery object for the TLS-specific block (verify-cert toggle + insecure banner).
+     * @type {jQuery}
+     */
+    $tlsSettingsBlock: $('.tls-settings'),
+
+    /**
+     * jQuery object for the CA certificate segment shown when encryption is on.
+     * @type {jQuery}
+     */
+    $caCertificateField: $('.ca-certificate-field'),
+
+    /**
+     * jQuery object for the "insecure TLS" warning (ldaps without verification).
+     * @type {jQuery}
+     */
+    $insecureTlsWarning: $('.insecure-tls-warning'),
+
+    /**
+     * jQuery object for the "CA not provided" warning icon next to the CA header.
+     * @type {jQuery}
+     */
+    $caMissingWarning: $('.ca-missing-warning'),
+
+    /**
+     * jQuery object for the test-bind icon button.
+     * @type {jQuery}
+     */
+    $testBindButton: $('.test-ldap-bind'),
+
+    /**
+     * jQuery object for the inline test-bind result banner.
+     * @type {jQuery}
+     */
+    $testBindResult: $('.test-bind-result'),
+
+    /**
+     * jQuery object for the LDAP sub-tabs menu (Connection / Certificate).
+     * @type {jQuery}
+     */
+    $subTabsMenu: $('#module-users-ui-ldap-sub-tabs'),
+
+    /**
+     * jQuery object for the Certificate sub-tab item in the menu.
+     * @type {jQuery}
+     */
+    $certificateTab: $('.ldap-cert-tab'),
 
     /**
      * Validation rules for the form fields.
@@ -173,39 +233,335 @@ const moduleUsersUiIndexLdap = {
         moduleUsersUiIndexLdap.$ldapTypeDropdown.dropdown({
             onChange: moduleUsersUiIndexLdap.onChangeLdapType,
         });
-        // Handle change TLS protocol
+
+        // Handle change TLS protocol — three-way selector (none / starttls / ldaps).
+        const currentTlsMode = moduleUsersUiIndexLdap.$formObj.form('get value', 'tlsMode') || 'none';
         moduleUsersUiIndexLdap.$useTlsDropdown.dropdown({
             values: [
                 {
                     name: 'ldap://',
-                    value: '0',
-                    selected: moduleUsersUiIndexLdap.$formObj.form('get value', 'useTLS') === '0'
+                    value: 'none',
+                    selected: currentTlsMode === 'none'
+                },
+                {
+                    name: 'ldap:// + STARTTLS',
+                    value: 'starttls',
+                    selected: currentTlsMode === 'starttls'
                 },
                 {
                     name: 'ldaps://',
-                    value: '1',
-                    selected: moduleUsersUiIndexLdap.$formObj.form('get value', 'useTLS') === '1'
+                    value: 'ldaps',
+                    selected: currentTlsMode === 'ldaps'
                 }
             ],
+            onChange(value) {
+                moduleUsersUiIndexLdap.$formObj.form('set value', 'tlsMode', value);
+                moduleUsersUiIndexLdap.refreshTlsSectionVisibility();
+            },
+        });
+
+        // Certificate validation toggle — refresh UX state on flip.
+        moduleUsersUiIndexLdap.$verifyCertCheckbox.on('change', () => {
+            moduleUsersUiIndexLdap.refreshTlsSectionVisibility();
+        });
+        // Typing into the CA textarea clears the "missing CA" warning.
+        moduleUsersUiIndexLdap.$caCertTextarea.on('input', () => {
+            moduleUsersUiIndexLdap.refreshTlsSectionVisibility();
+        });
+        moduleUsersUiIndexLdap.refreshTlsSectionVisibility();
+
+        // Handle test-bind icon button click
+        moduleUsersUiIndexLdap.$testBindButton.on('click', (e) => {
+            e.preventDefault();
+            moduleUsersUiIndexLdap.apiCallTestBind();
+        });
+
+        // Initialize Fomantic sub-tabs (Connection / Certificate). Scoped to
+        // the LDAP form's menu so it doesn't collide with the page-level tabs.
+        moduleUsersUiIndexLdap.$subTabsMenu.find('.item').tab({
+            context: moduleUsersUiIndexLdap.$formObj,
+        });
+
+        // Field-level info tooltips (mirror of ModuleLdapSync UX).
+        moduleUsersUiIndexLdap.initializeTooltips();
+    },
+
+    /**
+     * Wires tooltips for every annotated field on the form. Uses the shared
+     * TooltipBuilder helper from the admin cabinet so the popup structure
+     * matches the rest of MikoPBX. Skips silently if TooltipBuilder hasn't
+     * been loaded — the page still works, just without the hover hints.
+     */
+    initializeTooltips() {
+        if (typeof TooltipBuilder === 'undefined') {
+            return;
+        }
+
+        const tooltipConfigs = {
+            serverName: TooltipBuilder.buildContent({
+                header: globalTranslate.module_usersui_tt_serverName_header,
+                list: [
+                    { term: 'ldap://', definition: globalTranslate.module_usersui_tt_serverName_plain },
+                    { term: 'ldap:// + STARTTLS', definition: globalTranslate.module_usersui_tt_serverName_starttls },
+                    { term: 'ldaps://', definition: globalTranslate.module_usersui_tt_serverName_ldaps },
+                ],
+            }),
+            baseDN: TooltipBuilder.buildContent({
+                header: globalTranslate.module_usersui_tt_baseDN_header,
+                description: globalTranslate.module_usersui_tt_baseDN_desc,
+                examples: ['dc=miko,dc=ru', 'dc=corp,dc=example,dc=com'],
+                examplesHeader: globalTranslate.module_usersui_tt_baseDN_examplesHeader,
+            }),
+            administrativeLogin: TooltipBuilder.buildContent({
+                header: globalTranslate.module_usersui_tt_adminLogin_header,
+                description: globalTranslate.module_usersui_tt_adminLogin_desc,
+                list: [
+                    'mikopbx',
+                    'mikopbx@miko.ru',
+                    'MIKO\\mikopbx',
+                    'CN=mikopbx,CN=Users,DC=miko,DC=ru',
+                ],
+                note: globalTranslate.module_usersui_tt_adminLogin_note,
+            }),
+            verifyCert: TooltipBuilder.buildContent({
+                header: globalTranslate.module_usersui_tt_verify_header,
+                description: globalTranslate.module_usersui_tt_verify_desc,
+                warning: {
+                    header: globalTranslate.module_usersui_tt_verify_warning_header,
+                    text: globalTranslate.module_usersui_tt_verify_warning,
+                },
+            }),
+            userIdAttribute: TooltipBuilder.buildContent({
+                header: globalTranslate.module_usersui_tt_userIdAttr_header,
+                description: globalTranslate.module_usersui_tt_userIdAttr_desc,
+                list: [
+                    { term: 'Active Directory', definition: 'samaccountname / userPrincipalName' },
+                    { term: 'OpenLDAP / FreeIPA', definition: 'uid' },
+                ],
+            }),
+            organizationalUnit: TooltipBuilder.buildContent({
+                header: globalTranslate.module_usersui_tt_orgUnit_header,
+                description: globalTranslate.module_usersui_tt_orgUnit_desc,
+                examples: ['OU=Sales,DC=miko,DC=ru', 'ou=people,dc=example,dc=com'],
+                examplesHeader: globalTranslate.module_usersui_tt_orgUnit_examplesHeader,
+                note: globalTranslate.module_usersui_tt_orgUnit_note,
+            }),
+            userFilter: TooltipBuilder.buildContent({
+                header: globalTranslate.module_usersui_tt_userFilter_header,
+                description: globalTranslate.module_usersui_tt_userFilter_desc,
+                examples: [
+                    '(&(objectClass=user)(objectCategory=PERSON))',
+                    '(&(objectClass=user)(memberOf=CN=PBX Users,OU=Groups,DC=miko,DC=ru))',
+                    '(objectClass=inetOrgPerson)',
+                ],
+                examplesHeader: globalTranslate.module_usersui_tt_userFilter_examplesHeader,
+                note: globalTranslate.module_usersui_tt_userFilter_note,
+            }),
+        };
+
+        $('.field-info-icon').each((i, el) => {
+            const $icon = $(el);
+            const content = tooltipConfigs[$icon.data('field')];
+            if (!content) {
+                return;
+            }
+            $icon.popup({
+                html: content,
+                position: 'top right',
+                hoverable: true,
+                delay: { show: 300, hide: 100 },
+                variation: 'flowing',
+            });
+        });
+    },
+
+    /**
+     * Recomputes visibility of TLS-related UI based on tlsMode / verifyCert / caCertificate.
+     *  - The TLS settings block (verify-cert toggle + insecure banner) lives
+     *    on the Connection sub-tab and shows only for encrypted modes.
+     *  - The Certificate sub-tab item is visible only when LDAP authorization
+     *    is enabled AND the verifyCert toggle is on. This is the gate the
+     *    operator asked for: the tab appears precisely when a CA actually
+     *    matters. If the user was on the Certificate tab and toggles either
+     *    off, snap back to the Connection tab so they aren't stranded on a
+     *    hidden segment.
+     *  - Warning triangle on the Certificate tab header lights up when
+     *    verification is on but the CA textarea is empty.
+     *  - Insecure-TLS banner lights up only for ldaps:// without verification:
+     *    traffic is encrypted but server identity is unverified.
+     */
+    refreshTlsSectionVisibility() {
+        const tlsMode = moduleUsersUiIndexLdap.$formObj.form('get value', 'tlsMode') || 'none';
+        const verify = moduleUsersUiIndexLdap.$verifyCertCheckbox.is(':checked');
+        const encrypted = tlsMode === 'starttls' || tlsMode === 'ldaps';
+        const caEmpty = (moduleUsersUiIndexLdap.$caCertTextarea.val() || '').trim() === '';
+        const ldapEnabled = moduleUsersUiIndexLdap.$useLdapCheckbox.checkbox('is checked');
+
+        if (encrypted) {
+            moduleUsersUiIndexLdap.$tlsSettingsBlock.show();
+        } else {
+            moduleUsersUiIndexLdap.$tlsSettingsBlock.hide();
+        }
+
+        // Certificate sub-tab: gate strictly on LDAP-on + verify-on, regardless
+        // of tlsMode. If the operator turned validation on but stayed on plain
+        // LDAP, we still let them paste a CA — switching to STARTTLS/LDAPS later
+        // shouldn't lose the work.
+        const showCertTab = ldapEnabled && verify;
+        if (showCertTab) {
+            moduleUsersUiIndexLdap.$certificateTab.show();
+        } else {
+            moduleUsersUiIndexLdap.$certificateTab.hide();
+            // Snap back to Connection if Certificate was the active tab.
+            if (moduleUsersUiIndexLdap.$certificateTab.hasClass('active')) {
+                moduleUsersUiIndexLdap.$subTabsMenu
+                    .find('.item[data-tab="ldap-connection"]')
+                    .tab('change tab', 'ldap-connection');
+            }
+        }
+
+        if (showCertTab && caEmpty) {
+            moduleUsersUiIndexLdap.$caMissingWarning.show();
+        } else {
+            moduleUsersUiIndexLdap.$caMissingWarning.hide();
+        }
+
+        if (tlsMode === 'ldaps' && !verify) {
+            moduleUsersUiIndexLdap.$insecureTlsWarning.show();
+        } else {
+            moduleUsersUiIndexLdap.$insecureTlsWarning.hide();
+        }
+    },
+
+    /**
+     * Fires a lightweight bind check against the current form values.
+     * Shows a green success message or a red error message inline under
+     * the admin-credentials row.
+     */
+    apiCallTestBind() {
+        $.api({
+            url: `${globalRootUrl}module-users-u-i/ldap-config/test-bind`,
+            on: 'now',
+            method: 'POST',
+            beforeSend(settings) {
+                moduleUsersUiIndexLdap.$testBindButton.addClass('loading disabled');
+                moduleUsersUiIndexLdap.$testBindResult
+                    .removeClass('positive negative')
+                    .hide();
+                settings.data = moduleUsersUiIndexLdap.$formObj.form('get values');
+                return settings;
+            },
+            successTest(response) {
+                return response.success;
+            },
+            onSuccess(response) {
+                moduleUsersUiIndexLdap.$testBindButton.removeClass('loading disabled');
+                let text = globalTranslate.module_usersui_TestBindSuccess;
+                if (response && response.message) {
+                    const detail = Array.isArray(response.message) ? response.message.join(' ') : response.message;
+                    if (detail) {
+                        text = detail;
+                    }
+                }
+                moduleUsersUiIndexLdap.$testBindResult
+                    .removeClass('negative')
+                    .addClass('positive')
+                    .text(text)
+                    .show();
+            },
+            onFailure(response) {
+                moduleUsersUiIndexLdap.$testBindButton.removeClass('loading disabled');
+                let text = globalTranslate.module_usersui_TestBindFailure;
+                if (response && response.message) {
+                    const detail = Array.isArray(response.message) ? response.message.join(' ') : response.message;
+                    if (detail) {
+                        text = `${text}: ${detail}`;
+                    }
+                }
+                moduleUsersUiIndexLdap.$testBindResult
+                    .removeClass('positive')
+                    .addClass('negative')
+                    .text(text)
+                    .show();
+            },
         });
     },
     /**
-     * Handles change LDAP dropdown.
+     * Per-server-type presets. Used to refresh placeholders on every type
+     * switch and to pre-fill empty / still-default fields. Hand-typed values
+     * are never overwritten.
      */
-    onChangeLdapType(value){
-        if(value==='OpenLDAP'){
-            moduleUsersUiIndexLdap.$formObj.form('set value','userIdAttribute','uid');
-            moduleUsersUiIndexLdap.$formObj.form('set value','administrativeLogin','cn=admin,dc=example,dc=com');
-            moduleUsersUiIndexLdap.$formObj.form('set value','userFilter','(objectClass=inetOrgPerson)');
-            moduleUsersUiIndexLdap.$formObj.form('set value','baseDN','dc=example,dc=com');
-            moduleUsersUiIndexLdap.$formObj.form('set value','organizationalUnit','ou=users, dc=domain, dc=com');
-        } else if(value==='ActiveDirectory'){
-            moduleUsersUiIndexLdap.$formObj.form('set value','administrativeLogin','admin');
-            moduleUsersUiIndexLdap.$formObj.form('set value','userIdAttribute','samaccountname')
-            moduleUsersUiIndexLdap.$formObj.form('set value','userFilter','(&(objectClass=user)(objectCategory=PERSON))');
-            moduleUsersUiIndexLdap.$formObj.form('set value','baseDN','dc=example,dc=com');
-            moduleUsersUiIndexLdap.$formObj.form('set value','organizationalUnit','ou=users, dc=domain, dc=com');
+    ldapTypePresets: {
+        ActiveDirectory: {
+            administrativeLogin: 'admin',
+            userIdAttribute: 'samaccountname',
+            userFilter: '(&(objectClass=user)(objectCategory=PERSON))',
+            baseDN: 'dc=example,dc=com',
+            organizationalUnit: 'ou=users, dc=domain, dc=com',
+        },
+        OpenLDAP: {
+            administrativeLogin: 'cn=admin,dc=example,dc=com',
+            userIdAttribute: 'uid',
+            userFilter: '(objectClass=inetOrgPerson)',
+            baseDN: 'dc=example,dc=com',
+            organizationalUnit: 'ou=users, dc=domain, dc=com',
+        },
+    },
+
+    /**
+     * Values we treat as "still the default" — i.e. anything ever shipped as
+     * a preset or as a placeholder/seed in LdapConfigForm.php. Switching the
+     * server type may swap these for the new type's preset; anything else is
+     * considered hand-typed and left alone. Keep historical seeds here so a
+     * user who saved a row before the form defaults changed still gets the
+     * convenient swap behaviour.
+     */
+    knownDefaults: {
+        administrativeLogin: ['admin', 'cn=admin,dc=example,dc=com'],
+        userIdAttribute: ['samaccountname', 'uid'],
+        userFilter: [
+            '(&(objectClass=user)(objectCategory=PERSON))',
+            '(objectClass=inetOrgPerson)',
+        ],
+        baseDN: ['dc=domain, dc=com', 'dc=example,dc=com'],
+        organizationalUnit: ['ou=users, dc=domain, dc=com'],
+    },
+
+    /**
+     * Handles the LDAP type dropdown change.
+     *
+     * Rules (mirrors ModuleLdapSync):
+     *  - Always refresh the placeholder so the operator sees the format hint
+     *    for the new type, even when the field already has data.
+     *  - Pre-fill empty fields from the preset.
+     *  - Overwrite non-empty fields only when the current value is one of the
+     *    known defaults — i.e. nothing the user actually typed in. Custom
+     *    values are preserved across type switches.
+     */
+    onChangeLdapType(value) {
+        const preset = moduleUsersUiIndexLdap.ldapTypePresets[value];
+        if (!preset) {
+            return;
         }
+
+        Object.keys(preset).forEach((field) => {
+            const $input = moduleUsersUiIndexLdap.$formObj.find(`[name="${field}"]`);
+            if (!$input.length) {
+                return;
+            }
+
+            // Placeholder is a hint, always refreshed.
+            $input.attr('placeholder', preset[field] || '');
+
+            const current = ($input.val() || '').trim();
+            const isEmpty = current === '';
+            const knownDefaults = moduleUsersUiIndexLdap.knownDefaults[field] || [];
+            const isStillDefault = knownDefaults.includes(current);
+
+            if (isEmpty || isStillDefault) {
+                moduleUsersUiIndexLdap.$formObj.form('set value', field, preset[field]);
+            }
+        });
     },
     /**
      * Handles get LDAP users list button click.
@@ -232,7 +588,7 @@ const moduleUsersUiIndexLdap = {
                 $('.ui.message.ajax').remove();
                 let html = '<ul class="ui list">';
                 if (response.data.length === 0) {
-                    html += `<li class="item">${globaltranslate.module_usersui_EmptyServerResponse}</li>`;
+                    html += `<li class="item">${globalTranslate.module_usersui_EmptyServerResponse}</li>`;
                 } else {
                     $.each(response.data, (index, user) => {
                         html += `<li class="item">${user.name} (${user.login})</li>`;
@@ -300,6 +656,12 @@ const moduleUsersUiIndexLdap = {
         } else {
             moduleUsersUiIndexLdap.$formFieldsForLdapSettings.addClass('disabled');
             moduleUsersUiIndexLdap.$formElementsAvailableIfLdapIsOn.hide();
+        }
+        // The Certificate sub-tab is gated on LDAP-on + verifyCert; recompute
+        // visibility every time the master toggle flips so it disappears when
+        // LDAP is turned off and reappears (with prior verify state) when on.
+        if (typeof moduleUsersUiIndexLdap.refreshTlsSectionVisibility === 'function') {
+            moduleUsersUiIndexLdap.refreshTlsSectionVisibility();
         }
     },
 

@@ -25,6 +25,7 @@ use Phalcon\Forms\Element\Hidden;
 use Phalcon\Forms\Element\Password;
 use Phalcon\Forms\Element\Select;
 use Phalcon\Forms\Element\Text;
+use Phalcon\Forms\Element\TextArea;
 
 class LdapConfigForm extends ModuleBaseForm
 {
@@ -43,8 +44,26 @@ class LdapConfigForm extends ModuleBaseForm
             'value' => $entity->serverPort ?? '389'
         ]));
 
-        // Use TLS dropdown
-        $this->add(new Hidden('useTLS', ['value' => $entity->useTLS ?? '0']));
+        // TLS transport mode: 'none' | 'starttls' | 'ldaps'.
+        // Rendered as a Fomantic dropdown label attached to the server name field.
+        $tlsModeValue = $entity->tlsMode ?? null;
+        if ($tlsModeValue === null || $tlsModeValue === '') {
+            $tlsModeValue = (($entity->useTLS ?? '0') === '1') ? 'starttls' : 'none';
+        }
+        $this->add(new Hidden('tlsMode', ['value' => $tlsModeValue]));
+
+        // Certificate validation toggle.
+        $this->addCheckBox('verifyCert', ($entity->verifyCert ?? '0') === '1');
+
+        // Custom CA bundle (PEM) — optional; only used when verifyCert is enabled.
+        $caCertificate = new TextArea('caCertificate', [
+            'placeholder'  => "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----",
+            'value'        => $entity->caCertificate ?? '',
+            'rows'         => 18,
+            'spellcheck'   => 'false',
+            'autocomplete' => 'off',
+        ]);
+        $this->add($caCertificate);
 
         // AdministrativeLogin
         $this->add(new Text('administrativeLogin', ['placeholder' => 'Domain admin login']));
