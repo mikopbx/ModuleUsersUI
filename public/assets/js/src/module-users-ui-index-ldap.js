@@ -529,7 +529,7 @@ const moduleUsersUiIndexLdap = {
                 $('.ui.message.ajax').remove();
                 let html = '<ul class="ui list">';
                 if (response.data.length === 0) {
-                    html += `<li class="item">${globaltranslate.module_usersui_EmptyServerResponse}</li>`;
+                    html += `<li class="item">${globalTranslate.module_usersui_EmptyServerResponse}</li>`;
                 } else {
                     $.each(response.data, (index, user) => {
                         html += `<li class="item">${user.name} (${user.login})</li>`;
