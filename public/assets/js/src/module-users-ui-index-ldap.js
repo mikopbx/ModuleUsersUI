@@ -16,7 +16,7 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* global globalRootUrl, globalTranslate, Form, PbxApi*/
+/* global globalRootUrl, globalTranslate, Form, PbxApi, TooltipBuilder */
 
 
 const moduleUsersUiIndexLdap = {
@@ -280,6 +280,98 @@ const moduleUsersUiIndexLdap = {
         // the LDAP form's menu so it doesn't collide with the page-level tabs.
         moduleUsersUiIndexLdap.$subTabsMenu.find('.item').tab({
             context: moduleUsersUiIndexLdap.$formObj,
+        });
+
+        // Field-level info tooltips (mirror of ModuleLdapSync UX).
+        moduleUsersUiIndexLdap.initializeTooltips();
+    },
+
+    /**
+     * Wires tooltips for every annotated field on the form. Uses the shared
+     * TooltipBuilder helper from the admin cabinet so the popup structure
+     * matches the rest of MikoPBX. Skips silently if TooltipBuilder hasn't
+     * been loaded — the page still works, just without the hover hints.
+     */
+    initializeTooltips() {
+        if (typeof TooltipBuilder === 'undefined') {
+            return;
+        }
+
+        const tooltipConfigs = {
+            serverName: TooltipBuilder.buildContent({
+                header: globalTranslate.module_usersui_tt_serverName_header,
+                list: [
+                    { term: 'ldap://', definition: globalTranslate.module_usersui_tt_serverName_plain },
+                    { term: 'ldap:// + STARTTLS', definition: globalTranslate.module_usersui_tt_serverName_starttls },
+                    { term: 'ldaps://', definition: globalTranslate.module_usersui_tt_serverName_ldaps },
+                ],
+            }),
+            baseDN: TooltipBuilder.buildContent({
+                header: globalTranslate.module_usersui_tt_baseDN_header,
+                description: globalTranslate.module_usersui_tt_baseDN_desc,
+                examples: ['dc=miko,dc=ru', 'dc=corp,dc=example,dc=com'],
+                examplesHeader: globalTranslate.module_usersui_tt_baseDN_examplesHeader,
+            }),
+            administrativeLogin: TooltipBuilder.buildContent({
+                header: globalTranslate.module_usersui_tt_adminLogin_header,
+                description: globalTranslate.module_usersui_tt_adminLogin_desc,
+                list: [
+                    'mikopbx',
+                    'mikopbx@miko.ru',
+                    'MIKO\\mikopbx',
+                    'CN=mikopbx,CN=Users,DC=miko,DC=ru',
+                ],
+                note: globalTranslate.module_usersui_tt_adminLogin_note,
+            }),
+            verifyCert: TooltipBuilder.buildContent({
+                header: globalTranslate.module_usersui_tt_verify_header,
+                description: globalTranslate.module_usersui_tt_verify_desc,
+                warning: {
+                    header: globalTranslate.module_usersui_tt_verify_warning_header,
+                    text: globalTranslate.module_usersui_tt_verify_warning,
+                },
+            }),
+            userIdAttribute: TooltipBuilder.buildContent({
+                header: globalTranslate.module_usersui_tt_userIdAttr_header,
+                description: globalTranslate.module_usersui_tt_userIdAttr_desc,
+                list: [
+                    { term: 'Active Directory', definition: 'samaccountname / userPrincipalName' },
+                    { term: 'OpenLDAP / FreeIPA', definition: 'uid' },
+                ],
+            }),
+            organizationalUnit: TooltipBuilder.buildContent({
+                header: globalTranslate.module_usersui_tt_orgUnit_header,
+                description: globalTranslate.module_usersui_tt_orgUnit_desc,
+                examples: ['OU=Sales,DC=miko,DC=ru', 'ou=people,dc=example,dc=com'],
+                examplesHeader: globalTranslate.module_usersui_tt_orgUnit_examplesHeader,
+                note: globalTranslate.module_usersui_tt_orgUnit_note,
+            }),
+            userFilter: TooltipBuilder.buildContent({
+                header: globalTranslate.module_usersui_tt_userFilter_header,
+                description: globalTranslate.module_usersui_tt_userFilter_desc,
+                examples: [
+                    '(&(objectClass=user)(objectCategory=PERSON))',
+                    '(&(objectClass=user)(memberOf=CN=PBX Users,OU=Groups,DC=miko,DC=ru))',
+                    '(objectClass=inetOrgPerson)',
+                ],
+                examplesHeader: globalTranslate.module_usersui_tt_userFilter_examplesHeader,
+                note: globalTranslate.module_usersui_tt_userFilter_note,
+            }),
+        };
+
+        $('.field-info-icon').each((i, el) => {
+            const $icon = $(el);
+            const content = tooltipConfigs[$icon.data('field')];
+            if (!content) {
+                return;
+            }
+            $icon.popup({
+                html: content,
+                position: 'top right',
+                hoverable: true,
+                delay: { show: 300, hide: 100 },
+                variation: 'flowing',
+            });
         });
     },
 

@@ -25,7 +25,9 @@
     <div class="fields">
         {{ ldapForm.render('tlsMode') }}
         <div class="six wide field">
-            <label for="serverName">{{ t._('module_usersui_LdapServerName') }}</label>
+            <label for="serverName">{{ t._('module_usersui_LdapServerName') }}
+                <i class="small info circle icon field-info-icon" data-field="serverName"></i>
+            </label>
             <div class="ui left labeled input">
                 <div class="ui dropdown label use-tls-dropdown">
                     <div class="text">ldap://</div>
@@ -41,7 +43,9 @@
             </div>
         </div>
         <div class="eight wide field">
-            <label for="baseDN">{{ t._('module_usersui_LdapBaseDN') }}</label>
+            <label for="baseDN">{{ t._('module_usersui_LdapBaseDN') }}
+                <i class="small info circle icon field-info-icon" data-field="baseDN"></i>
+            </label>
             {{ ldapForm.render('baseDN') }}
         </div>
     </div>
@@ -50,7 +54,9 @@
         <div class="ui segment">
             <div class="ui toggle checkbox">
                 {{ ldapForm.render('verifyCert') }}
-                <label for="verifyCert">{{ t._('module_usersui_VerifyCertificate') }}</label>
+                <label for="verifyCert">{{ t._('module_usersui_VerifyCertificate') }}
+                    <i class="small info circle icon field-info-icon" data-field="verifyCert"></i>
+                </label>
             </div>
             <div class="ui warning message insecure-tls-warning" style="display:none; margin-top:1em;">
                 <i class="exclamation triangle icon"></i>
@@ -60,7 +66,9 @@
     </div>
 
     <div class="field">
-        <label>{{ t._('module_usersui_LdapAdminLogin') }}</label>
+        <label>{{ t._('module_usersui_LdapAdminLogin') }}
+            <i class="small info circle icon field-info-icon" data-field="administrativeLogin"></i>
+        </label>
         <div class="fields">
             <div class="seven wide field">
                 {{ ldapForm.render('administrativeLogin') }}
@@ -80,17 +88,23 @@
         <div class="ui message test-bind-result" style="display:none;"></div>
     </div>
     <div class="field">
-        <label for="userIdAttribute">{{ t._('module_usersui_LdapUserIdAttribute') }}</label>
+        <label for="userIdAttribute">{{ t._('module_usersui_LdapUserIdAttribute') }}
+            <i class="small info circle icon field-info-icon" data-field="userIdAttribute"></i>
+        </label>
         <div class="field max-width-300">
             {{ ldapForm.render('userIdAttribute') }}
         </div>
     </div>
     <div class="field">
-        <label for="organizationalUnit">{{ t._('module_usersui_LdapOrganizationalUnit') }}</label>
+        <label for="organizationalUnit">{{ t._('module_usersui_LdapOrganizationalUnit') }}
+            <i class="small info circle icon field-info-icon" data-field="organizationalUnit"></i>
+        </label>
         {{ ldapForm.render('organizationalUnit') }}
     </div>
     <div class="field">
-        <label for="userFilter">{{ t._('module_usersui_LdapUserFilter') }}</label>
+        <label for="userFilter">{{ t._('module_usersui_LdapUserFilter') }}
+            <i class="small info circle icon field-info-icon" data-field="userFilter"></i>
+        </label>
         {{ ldapForm.render('userFilter') }}
     </div>
     <div class="field">
