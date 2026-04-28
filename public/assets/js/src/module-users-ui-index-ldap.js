@@ -487,22 +487,81 @@ const moduleUsersUiIndexLdap = {
         });
     },
     /**
-     * Handles change LDAP dropdown.
+     * Per-server-type presets. Used to refresh placeholders on every type
+     * switch and to pre-fill empty / still-default fields. Hand-typed values
+     * are never overwritten.
      */
-    onChangeLdapType(value){
-        if(value==='OpenLDAP'){
-            moduleUsersUiIndexLdap.$formObj.form('set value','userIdAttribute','uid');
-            moduleUsersUiIndexLdap.$formObj.form('set value','administrativeLogin','cn=admin,dc=example,dc=com');
-            moduleUsersUiIndexLdap.$formObj.form('set value','userFilter','(objectClass=inetOrgPerson)');
-            moduleUsersUiIndexLdap.$formObj.form('set value','baseDN','dc=example,dc=com');
-            moduleUsersUiIndexLdap.$formObj.form('set value','organizationalUnit','ou=users, dc=domain, dc=com');
-        } else if(value==='ActiveDirectory'){
-            moduleUsersUiIndexLdap.$formObj.form('set value','administrativeLogin','admin');
-            moduleUsersUiIndexLdap.$formObj.form('set value','userIdAttribute','samaccountname')
-            moduleUsersUiIndexLdap.$formObj.form('set value','userFilter','(&(objectClass=user)(objectCategory=PERSON))');
-            moduleUsersUiIndexLdap.$formObj.form('set value','baseDN','dc=example,dc=com');
-            moduleUsersUiIndexLdap.$formObj.form('set value','organizationalUnit','ou=users, dc=domain, dc=com');
+    ldapTypePresets: {
+        ActiveDirectory: {
+            administrativeLogin: 'admin',
+            userIdAttribute: 'samaccountname',
+            userFilter: '(&(objectClass=user)(objectCategory=PERSON))',
+            baseDN: 'dc=example,dc=com',
+            organizationalUnit: 'ou=users, dc=domain, dc=com',
+        },
+        OpenLDAP: {
+            administrativeLogin: 'cn=admin,dc=example,dc=com',
+            userIdAttribute: 'uid',
+            userFilter: '(objectClass=inetOrgPerson)',
+            baseDN: 'dc=example,dc=com',
+            organizationalUnit: 'ou=users, dc=domain, dc=com',
+        },
+    },
+
+    /**
+     * Values we treat as "still the default" — i.e. anything ever shipped as
+     * a preset or as a placeholder/seed in LdapConfigForm.php. Switching the
+     * server type may swap these for the new type's preset; anything else is
+     * considered hand-typed and left alone. Keep historical seeds here so a
+     * user who saved a row before the form defaults changed still gets the
+     * convenient swap behaviour.
+     */
+    knownDefaults: {
+        administrativeLogin: ['admin', 'cn=admin,dc=example,dc=com'],
+        userIdAttribute: ['samaccountname', 'uid'],
+        userFilter: [
+            '(&(objectClass=user)(objectCategory=PERSON))',
+            '(objectClass=inetOrgPerson)',
+        ],
+        baseDN: ['dc=domain, dc=com', 'dc=example,dc=com'],
+        organizationalUnit: ['ou=users, dc=domain, dc=com'],
+    },
+
+    /**
+     * Handles the LDAP type dropdown change.
+     *
+     * Rules (mirrors ModuleLdapSync):
+     *  - Always refresh the placeholder so the operator sees the format hint
+     *    for the new type, even when the field already has data.
+     *  - Pre-fill empty fields from the preset.
+     *  - Overwrite non-empty fields only when the current value is one of the
+     *    known defaults — i.e. nothing the user actually typed in. Custom
+     *    values are preserved across type switches.
+     */
+    onChangeLdapType(value) {
+        const preset = moduleUsersUiIndexLdap.ldapTypePresets[value];
+        if (!preset) {
+            return;
         }
+
+        Object.keys(preset).forEach((field) => {
+            const $input = moduleUsersUiIndexLdap.$formObj.find(`[name="${field}"]`);
+            if (!$input.length) {
+                return;
+            }
+
+            // Placeholder is a hint, always refreshed.
+            $input.attr('placeholder', preset[field] || '');
+
+            const current = ($input.val() || '').trim();
+            const isEmpty = current === '';
+            const knownDefaults = moduleUsersUiIndexLdap.knownDefaults[field] || [];
+            const isStillDefault = knownDefaults.includes(current);
+
+            if (isEmpty || isStillDefault) {
+                moduleUsersUiIndexLdap.$formObj.form('set value', field, preset[field]);
+            }
+        });
     },
     /**
      * Handles get LDAP users list button click.
