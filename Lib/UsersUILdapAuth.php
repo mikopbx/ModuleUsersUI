@@ -252,7 +252,7 @@ class UsersUILdapAuth extends Injectable
             $this->connection->connect();
             Container::addConnection($this->connection);
 
-            $dispatcher = Container::getEventDispatcher();
+            $dispatcher = Container::getDispatcher();
 
             // Listen for failed authentication event
             $dispatcher->listen(Failed::class, function (Failed $event) use (&$message) {
@@ -297,7 +297,12 @@ class UsersUILdapAuth extends Injectable
         }
 
         if (!$success) {
-            $this->di->get(LoggerAuthProvider::SERVICE_NAME)->warning("LDAP authentication {$username} failed: {$message}");
+            // WorkerApiCommands DI doesn't register loggerAuth; fall back to syslog there.
+            if ($this->di->has(LoggerAuthProvider::SERVICE_NAME)) {
+                $this->di->get(LoggerAuthProvider::SERVICE_NAME)->warning("LDAP authentication {$username} failed: {$message}");
+            } else {
+                \MikoPBX\Core\System\SystemMessages::sysLogMsg('web_auth', "LDAP authentication {$username} failed: {$message}", LOG_WARNING);
+            }
         }
 
         return $success;
@@ -390,7 +395,7 @@ class UsersUILdapAuth extends Injectable
             $this->connection->connect();
             Container::addConnection($this->connection);
 
-            $dispatcher = Container::getEventDispatcher();
+            $dispatcher = Container::getDispatcher();
             $dispatcher->listen(Failed::class, function (Failed $event) use (&$message) {
                 $ldap = $event->getConnection();
                 $message = $ldap->getDiagnosticMessage();

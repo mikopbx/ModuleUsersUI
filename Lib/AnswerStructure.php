@@ -56,7 +56,7 @@ class AnswerStructure
      *
      * @param PBXApiResult|null $res The PBXApiResult object to initialize from (optional).
      */
-    public function __construct(PBXApiResult $res = null)
+    public function __construct(?PBXApiResult $res = null)
     {
         // Initialize default values
         $this->success = false;

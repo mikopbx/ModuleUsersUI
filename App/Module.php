@@ -34,7 +34,7 @@ class Module implements ModuleDefinitionInterface
      *
      * @param \Phalcon\Di\DiInterface $container
      */
-    public function registerAutoloaders(DiInterface $container = null){
+    public function registerAutoloaders(?DiInterface $container = null){
 
     }
 
