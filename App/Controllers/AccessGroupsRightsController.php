@@ -29,6 +29,16 @@ use Modules\ModuleUsersUI\Models\AccessGroupsRights;
 class AccessGroupsRightsController extends ModuleUsersUIBaseController
 {
     /**
+     * Labels returned by Core together with the permissions tree.
+     *
+     * Older Core versions do not provide this metadata, so the form must
+     * always treat it as optional.
+     *
+     * @var array<string, array<string, array{label: string, actions: array<string, string>}>>
+     */
+    private array $permissionLabels = [];
+
+    /**
      * Retrieves the group rights based on the provided access group ID.
      * Uses Core API to get available controllers and actions.
      *
@@ -51,6 +61,16 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
         $combined = $this->getAvailableControllersFromApi();
 
         return $this->fillAllowed($combined, $allowedRights);
+    }
+
+    /**
+     * Returns optional localized labels supplied by Core.
+     *
+     * @return array<string, array<string, array{label: string, actions: array<string, string>}>>
+     */
+    public function getPermissionLabels(): array
+    {
+        return $this->permissionLabels;
     }
 
     /**
@@ -86,9 +106,16 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
         $categories = $result->data['categories'] ?? [];
 
         foreach ($categories as $categoryId => $categoryData) {
-            $type = $categoryData['type'] ?? 'APP';
+            $defaultType = $categoryData['type'] ?? 'APP';
 
             foreach ($categoryData['controllers'] ?? [] as $controllerClass => $controllerInfo) {
+                // A category may contain both MVC and REST controllers. This happens
+                // when a module exposes an AdminCabinet page and REST endpoints.
+                // Detect REST controllers by their stable public path so this also
+                // works with Core versions that only return one type per category.
+                $isRestController = str_starts_with($controllerClass, '/pbxcore/');
+                $type = $isRestController ? 'REST' : $defaultType;
+
                 // Skip controllers that are completely excluded
                 if (in_array($controllerClass, $excludedControllers)) {
                     continue;
@@ -123,12 +150,22 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
 
                 if (!empty($actions)) {
                     $controllers[$categoryId][$type][$controllerClass] = $actions;
+
+                    $this->permissionLabels[$categoryId][$controllerClass] = [
+                        // The legacy "label" field contains a technical tag or
+                        // controller name. Only the optional localized description
+                        // is suitable for presentation.
+                        'label' => (string)($controllerInfo['description'] ?? ''),
+                        'actions' => is_array($controllerInfo['actionLabels'] ?? null)
+                            ? $controllerInfo['actionLabels']
+                            : [],
+                    ];
                 }
             }
 
             // Sort AdminCabinet controllers by translated name
-            if ($categoryId === Constants::ADMIN_CABINET && isset($controllers[$categoryId][$type])) {
-                uksort($controllers[$categoryId][$type], function ($a, $b) {
+            if ($categoryId === Constants::ADMIN_CABINET && isset($controllers[$categoryId]['APP'])) {
+                uksort($controllers[$categoryId]['APP'], function ($a, $b) {
                     $controllerAParts = explode('\\', $a);
                     $controllerAName = end($controllerAParts);
                     $controllerAName = str_replace("Controller", "", $controllerAName);

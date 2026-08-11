@@ -433,9 +433,12 @@ const moduleUsersUIModifyAG = {
             const controllerName = $(obj).attr('data-controller-name');
             const action = $(obj).attr('data-action');
             if (controllerName.indexOf('pbxcore') === -1 && action.indexOf('index') > -1) {
-                let url = moduleUsersUIModifyAG.convertCamelToDash(`/${module}/${controllerName}/${action}`);
+                const modulePath = module === 'AdminCabinet' ? '' : `${module}/`;
+                const url = moduleUsersUIModifyAG.convertCamelToDash(
+                    `${globalRootUrl}${modulePath}${controllerName}/${action}`
+                );
 
-                let nameTemplates = [
+                const nameTemplates = [
                     `mo_${module}`,
                     `mm_${controllerName}`,
                     `Breadcrumb${module}`,

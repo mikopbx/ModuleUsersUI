@@ -7,7 +7,13 @@
                 {% else %}
                     <a class="item"
                 {% endif %}
-                                    data-tab="{{ module }}Tab"><i class="icon"></i> {{ t._('Breadcrumb'~module) }}</a>
+                                    data-tab="{{ module }}Tab"><i class="icon"></i>
+                        {% if module === 'PBX_CORE_REST' %}
+                            {{ t._('rest_MikoPBXRestAPIHeader') }}
+                        {% else %}
+                            {{ t._('Breadcrumb'~module) }}
+                        {% endif %}
+                    </a>
             {% endfor %}
         </div>
     </div>

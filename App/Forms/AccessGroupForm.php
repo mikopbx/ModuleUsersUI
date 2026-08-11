@@ -34,6 +34,33 @@ use Phalcon\Forms\Element\Select;
 class AccessGroupForm extends ModuleBaseForm
 {
     /**
+     * Generic action labels used when a controller does not publish a more
+     * specific ModuleUsersUI translation.
+     */
+    private const GENERIC_ACTION_TRANSLATION_KEYS = [
+        '*' => 'module_usersui_GenericActionAll',
+        'index' => 'module_usersui_GenericActionIndex',
+        'save' => 'module_usersui_GenericActionSave',
+        'saveModel' => 'module_usersui_GenericActionSaveModel',
+        'addCustomModel' => 'module_usersui_GenericActionAddCustomModel',
+        'deleteCustomModel' => 'module_usersui_GenericActionDeleteCustomModel',
+        'retryErrors' => 'module_usersui_GenericActionRetryErrors',
+        'generateWorkerApiKey' => 'module_usersui_GenericActionGenerateWorkerApiKey',
+        'deleteWorkerApiKey' => 'module_usersui_GenericActionDeleteWorkerApiKey',
+        'transcripts' => 'module_usersui_GenericActionTranscripts',
+        'transcript' => 'module_usersui_GenericActionTranscript',
+        'recording' => 'module_usersui_GenericActionRecording',
+        'logs' => 'module_usersui_GenericActionLogs',
+    ];
+
+    /**
+     * Optional labels returned by the detailed permissions API.
+     *
+     * @var array<string, array<string, array{label: string, actions: array<string, string>}>>
+     */
+    private array $permissionLabels = [];
+
+    /**
      * Initializes the form.
      *
      * @param mixed|null $entity   The entity object.
@@ -43,6 +70,10 @@ class AccessGroupForm extends ModuleBaseForm
      */
     public function initialize($entity = null, $options = null): void
     {
+        $this->permissionLabels = is_array($options['permissionLabels'] ?? null)
+            ? $options['permissionLabels']
+            : [];
+
         $disabledClass = '';
         if ($entity->id === null) {
             $disabledClass = "disabled";
@@ -89,7 +120,7 @@ class AccessGroupForm extends ModuleBaseForm
 
                     // Main CheckBox
                     $checkBox = new Check("{$controllerClass}_main");
-                    $checkBox->setLabel($this->getControllerTranslation($controllerName));
+                    $checkBox->setLabel($this->getControllerTranslation($module, $controllerName));
                     $this->add($checkBox);
 
                     foreach ($actions as $action => $allowed) {
@@ -160,24 +191,39 @@ class AccessGroupForm extends ModuleBaseForm
     /**
      * Retrieves the translated controller name.
      *
-     * @param string $controllerName The controller class name.
+     * @param string $module         The module name.
+     * @param string $controllerName The controller class name or REST path.
      *
      * @return string The translated controller name.
      */
-    private function getControllerTranslation(string $controllerName): string
+    private function getControllerTranslation(string $module, string $controllerName): string
     {
+        $apiLabel = $this->permissionLabels[$module][$controllerName]['label'] ?? '';
+        if ($this->isUsableApiLabel($apiLabel)) {
+            return $apiLabel;
+        }
+
         // Create the translation template
         $translationTemplate = "mm_{$controllerName}";
 
         // Retrieve the translated controller name
         $controllerTranslation = $this->translation->_($translationTemplate);
 
-        // If the translation is not found, return the original controller name
-        if ($controllerTranslation === $translationTemplate) {
-            return $controllerName;
+        if ($controllerTranslation !== $translationTemplate) {
+            return $controllerTranslation;
         }
 
-        return $controllerTranslation;
+        // Modules usually publish the controller title as a breadcrumb key.
+        // Looking up a string key creates no dependency on the module: when it
+        // is absent, the translation provider simply returns the key unchanged.
+        foreach (["Breadcrumb{$controllerName}", "Breadcrumb{$module}"] as $breadcrumbKey) {
+            $breadcrumbTranslation = $this->translation->_($breadcrumbKey);
+            if ($breadcrumbTranslation !== $breadcrumbKey) {
+                return $breadcrumbTranslation;
+            }
+        }
+
+        return $controllerName;
     }
 
     /**
@@ -191,6 +237,11 @@ class AccessGroupForm extends ModuleBaseForm
      */
     private function getActionTranslation(string $module, string $controllerName, string $actionName): string
     {
+        $apiLabel = $this->permissionLabels[$module][$controllerName]['actions'][$actionName] ?? '';
+        if ($this->isUsableApiLabel($apiLabel)) {
+            return $apiLabel;
+        }
+
         // Remove "Module" from the module name
         $module = str_replace("Module", "", $module);
 
@@ -206,11 +257,32 @@ class AccessGroupForm extends ModuleBaseForm
         // Retrieve the translated action name
         $actionTranslation = $this->translation->_($translationTemplate);
 
-        // If the translation is not found, return the action name with a comment indicating the missing translation
+        // Fall back to a generic action label that is independent of a
+        // particular extension module.
         if ($actionTranslation === $translationTemplate) {
+            $genericKey = self::GENERIC_ACTION_TRANSLATION_KEYS[$actionName] ?? '';
+            if ($genericKey !== '') {
+                $genericTranslation = $this->translation->_($genericKey);
+                if ($genericTranslation !== $genericKey) {
+                    return $genericTranslation;
+                }
+            }
+
             return $actionName . "<!--{$translationTemplate}-->";
         }
 
         return $actionTranslation;
+    }
+
+    /**
+     * Checks that Core returned translated text rather than an unresolved key.
+     */
+    private function isUsableApiLabel(mixed $label): bool
+    {
+        if (!is_string($label) || $label === '') {
+            return false;
+        }
+
+        return preg_match('/^(?:module_|rest_)[A-Za-z0-9_]+$/', $label) !== 1;
     }
 }
