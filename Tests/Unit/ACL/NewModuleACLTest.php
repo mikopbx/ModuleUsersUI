@@ -48,6 +48,10 @@ class NewModuleACLTest extends TestCase
             ],
             ModuleRoutingMapACL::getLinkedControllerActions()
         );
+        self::assertSame(
+            ['/pbxcore/api/modules/module-routing-map' => '*'],
+            ModuleRoutingMapACL::getAlwaysDenied()
+        );
     }
 
     public function testPhraseStudioSeparatesCatalogueReadsFromInstallationAndGeneration(): void
@@ -63,14 +67,29 @@ class NewModuleACLTest extends TestCase
                         '/pbxcore/api/v3/module-phrase-studio/voices' => ['getList'],
                         '/pbxcore/api/v3/module-phrase-studio/phrases' => ['getList', 'download'],
                     ],
-                    'save' => [
+                    'generate' => [
+                        '/pbxcore/api/v3/module-phrase-studio/phrases' => [
+                            'create',
+                            'generate',
+                            'promoteToTmp',
+                            'delete',
+                        ],
+                    ],
+                    'manageEngineAndVoices' => [
                         '/pbxcore/api/v3/module-phrase-studio/engine' => ['install', 'delete'],
                         '/pbxcore/api/v3/module-phrase-studio/voices' => ['install', 'delete'],
-                        '/pbxcore/api/v3/module-phrase-studio/phrases' => ['generate', 'promoteToTmp', 'delete'],
                     ],
                 ],
             ],
             ModulePhraseStudioACL::getLinkedControllerActions()
+        );
+        self::assertArrayNotHasKey(
+            'save',
+            ModulePhraseStudioACL::getLinkedControllerActions()[$controller]
+        );
+        self::assertSame(
+            ['/pbxcore/api/modules/module-phrase-studio' => '*'],
+            ModulePhraseStudioACL::getAlwaysDenied()
         );
     }
 

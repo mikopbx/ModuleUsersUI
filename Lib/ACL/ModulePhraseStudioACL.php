@@ -18,6 +18,7 @@ use Modules\ModuleUsersUI\Lib\EndpointConstants as E;
 
 class ModulePhraseStudioACL implements ACLInterface
 {
+    public const API_MODULE_PHRASE_STUDIO = '/pbxcore/api/modules/module-phrase-studio';
     public const API_V3_ENGINE = '/pbxcore/api/v3/module-phrase-studio/engine';
     public const API_V3_VOICES = '/pbxcore/api/v3/module-phrase-studio/voices';
     public const API_V3_PHRASES = '/pbxcore/api/v3/module-phrase-studio/phrases';
@@ -32,10 +33,12 @@ class ModulePhraseStudioACL implements ACLInterface
                     self::API_V3_VOICES => [E::ACTION_GET_LIST],
                     self::API_V3_PHRASES => [E::ACTION_GET_LIST, 'download'],
                 ],
-                E::ACTION_SAVE => [
+                'generate' => [
+                    self::API_V3_PHRASES => ['create', 'generate', 'promoteToTmp', E::ACTION_DELETE],
+                ],
+                'manageEngineAndVoices' => [
                     self::API_V3_ENGINE => ['install', E::ACTION_DELETE],
                     self::API_V3_VOICES => ['install', E::ACTION_DELETE],
-                    self::API_V3_PHRASES => ['generate', 'promoteToTmp', E::ACTION_DELETE],
                 ],
             ],
         ];
@@ -48,6 +51,8 @@ class ModulePhraseStudioACL implements ACLInterface
 
     public static function getAlwaysDenied(): array
     {
-        return [];
+        return [
+            self::API_MODULE_PHRASE_STUDIO => '*',
+        ];
     }
 }

@@ -18,10 +18,13 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
+declare(strict_types=1);
+
 namespace Modules\ModuleUsersUI\App\Controllers;
 
 use MikoPBX\Common\Providers\PBXCoreRESTClientProvider;
 use Modules\ModuleUsersUI\Lib\ACL\AutoLinkedActionsResolver;
+use Modules\ModuleUsersUI\Lib\ACL\LinkedActionOwnerResolver;
 use Modules\ModuleUsersUI\Lib\Constants;
 use Modules\ModuleUsersUI\Lib\UsersUIACL;
 use Modules\ModuleUsersUI\Models\AccessGroupsRights;
@@ -77,8 +80,8 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
      * Retrieves available controllers and actions from Core API.
      * Transforms API response to UI-expected format and applies exclusion rules.
      *
-     * Also adds virtual actions (save, delete) for AdminCabinet controllers
-     * that have corresponding REST API endpoints.
+     * Also derives virtual owner actions from the linked-action snapshot for
+     * any published owner controller.
      *
      * @return array Controllers organized by module/category with actions as keys.
      */
@@ -96,11 +99,10 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
             return [];
         }
 
-        // Get exclusion rules (alwaysAllowed, alwaysDenied, linkedActions)
-        [$excludedControllers, $excludedActions] = $this->getExclusionsActionsControllers();
-
-        // Get virtual actions that should be added to AdminCabinet controllers
-        $virtualActions = AutoLinkedActionsResolver::getVirtualActions();
+        // Get linked action ownership and the corresponding exclusion rules.
+        $linkedControllerActions = UsersUIACL::getLinkedControllerActions();
+        [$excludedControllers, $excludedActions] =
+            $this->getExclusionsActionsControllers($linkedControllerActions);
 
         $controllers = [];
         $categories = $result->data['categories'] ?? [];
@@ -133,20 +135,12 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
                     $actions[$actionName] = false;
                 }
 
-                // Add virtual actions (save, delete) for AdminCabinet controllers
-                // that have corresponding REST API endpoints
-                if ($categoryId === Constants::ADMIN_CABINET) {
-                    $endpoint = AutoLinkedActionsResolver::controllerToEndpoint($controllerClass);
-                    if ($endpoint !== null && AutoLinkedActionsResolver::endpointExists($endpoint)) {
-                        foreach ($virtualActions as $virtualAction) {
-                            // Only add if not already present and not excluded
-                            if (!isset($actions[$virtualAction])
-                                && !in_array($virtualAction, $controllerExcludedActions)) {
-                                $actions[$virtualAction] = false;
-                            }
-                        }
-                    }
-                }
+                $actions = LinkedActionOwnerResolver::merge(
+                    $actions,
+                    $controllerClass,
+                    $linkedControllerActions,
+                    $controllerExcludedActions
+                );
 
                 if (!empty($actions)) {
                     $controllers[$categoryId][$type][$controllerClass] = $actions;
@@ -229,14 +223,14 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
      *         [0] - Controllers to exclude completely (all actions hidden)
      *         [1] - Specific actions to exclude per controller
      */
-    private function getExclusionsActionsControllers(): array
+    private function getExclusionsActionsControllers(array $linkedControllerActions): array
     {
         $excludedControllers = [];
         $excludedActions = [];
         $arrayOfExclusions = [];
 
         // Get the list of linked controllers and actions which we hide from settings
-        foreach (UsersUIACL::getLinkedControllerActions() as $controllerClass => $actions) {
+        foreach ($linkedControllerActions as $controllerClass => $actions) {
             // Iterate through the main controllers actions
             foreach ($actions as $action => $linkedControllers) {
                 // Iterate through the linked controllers actions

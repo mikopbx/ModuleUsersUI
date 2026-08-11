@@ -67,6 +67,8 @@ return [
     'module_usersui_GenericActionRetryErrors' => 'retry failed processing',
     'module_usersui_GenericActionGenerateWorkerApiKey' => 'generate worker API key',
     'module_usersui_GenericActionDeleteWorkerApiKey' => 'delete worker API key',
+    'module_usersui_CheckBox_PhraseStudio_ModulePhraseStudio_generate' => 'phrase generation',
+    'module_usersui_CheckBox_PhraseStudio_ModulePhraseStudio_manageEngineAndVoices' => 'engine and voice management',
     'module_usersui_GenericActionTranscripts' => 'view transcripts',
     'module_usersui_GenericActionTranscript' => 'view transcript',
     'module_usersui_GenericActionRecording' => 'play recording',

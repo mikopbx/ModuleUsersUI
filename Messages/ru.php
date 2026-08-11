@@ -69,6 +69,8 @@ return [
     'module_usersui_CheckBox_AdminCabinet_AsteriskRestUsers_index' => 'доступ к разделу',
     'module_usersui_CheckBox_AdminCabinet_AsteriskRestUsers_modify' => 'просмотр деталей учетной записи',
     'module_usersui_CheckBox_AdminCabinet_AsteriskRestUsers_save' => 'редактирование и удаление',
+    'module_usersui_CheckBox_PhraseStudio_ModulePhraseStudio_generate' => 'генерация фраз',
+    'module_usersui_CheckBox_PhraseStudio_ModulePhraseStudio_manageEngineAndVoices' => 'управление движком и голосами',
     'module_usersui_CheckBox_AdminCabinet_CallDetailRecords_index' => 'доступ к разделу',
     'module_usersui_CheckBox_AdminCabinet_CallDetailRecords_getNewRecords' => 'получение истории звонков',
     'module_usersui_CheckBox_AdminCabinet_CallDetailRecords_save' => 'удаление записей',

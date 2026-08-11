@@ -18,6 +18,7 @@ use Modules\ModuleUsersUI\Lib\EndpointConstants as E;
 
 class ModuleRoutingMapACL implements ACLInterface
 {
+    public const API_MODULE_ROUTING_MAP = '/pbxcore/api/modules/module-routing-map';
     public const API_V3_MODULE_ROUTING_MAP_GRAPH = '/pbxcore/api/v3/module-routing-map/graph';
     private const CONTROLLER = 'Modules\ModuleRoutingMap\App\Controllers\ModuleRoutingMapController';
 
@@ -42,6 +43,8 @@ class ModuleRoutingMapACL implements ACLInterface
 
     public static function getAlwaysDenied(): array
     {
-        return [];
+        return [
+            self::API_MODULE_ROUTING_MAP => '*',
+        ];
     }
 }
