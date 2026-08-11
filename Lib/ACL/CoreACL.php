@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2025 Alexey Portnov and Nikolay Beketov
@@ -105,6 +106,7 @@ class CoreACL implements ACLInterface
                         E::ACTION_CDR_PLAYBACK,
                         E::ACTION_CDR_DOWNLOAD,
                         E::ACTION_CDR_GET_METADATA,
+                        E::ACTION_CDR_GET_STATS_BY_PROVIDER,
                     ],
                 ],
                 E::ACTION_SAVE => [
@@ -299,6 +301,9 @@ class CoreACL implements ACLInterface
                 E::ACTION_MODIFY => [
                     E::API_V3_PROVIDERS => [
                         E::ACTION_EXT_GET_FOR_SELECT,
+                    ],
+                    E::API_V3_INCOMING_ROUTES => [
+                        E::ACTION_INCOMING_ROUTES_GET_UNIQUE_DIDS,
                     ],
                 ],
                 E::ACTION_SAVE => [
@@ -495,6 +500,7 @@ class CoreACL implements ACLInterface
                 E::ACTION_FILES_DOWNLOAD_FIRMWARE,
             ],
             E::API_V3_FIREWALL => '*',
+            E::API_V3_FIREWALL_BOUNCER => '*',
             E::API_V3_LICENSE => '*',
             E::API_V3_MODULES => '*',
             E::API_V3_NETWORK_FILTERS => [
@@ -512,6 +518,7 @@ class CoreACL implements ACLInterface
                 E::ACTION_SYS_CHECK_IF_NEW_RELEASE_AVAILABLE,
                 E::ACTION_SYS_EXECUTE_BASH_COMMAND,
                 E::ACTION_SYS_EXECUTE_SQL_REQUEST,
+                E::ACTION_SYS_CHECK_CLIENT_IP_VISIBILITY,
             ],
             E::API_V3_SYSLOG => '*',
             E::API_V3_SYSINFO => '*',

@@ -22,6 +22,7 @@ namespace Modules\ModuleUsersUI\App\Forms;
 
 use Modules\ModuleUsersUI\Lib\Constants;
 use Modules\ModuleUsersUI\Lib\MikoPBXVersion;
+use Modules\ModuleUsersUI\Lib\PermissionLabelResolver;
 use Phalcon\Forms\Element\Check;
 use Phalcon\Forms\Element\Radio;
 use Phalcon\Forms\Element\Text;
@@ -174,11 +175,11 @@ class AccessGroupForm extends ModuleBaseForm
                 ],
         ];
 
-        if(!MikoPBXVersion::isPhalcon5Version()){
+        if (!MikoPBXVersion::isPhalcon5Version()) {
             foreach ($parameters as $index => $parameter) {
-                if($index == $entity->cdrFilterMode) {
+                if ($index == $entity->cdrFilterMode) {
                     $parameters[$index]['checked'] = '1';
-                }else{
+                } else {
                     unset($parameters[$index]['checked']);
                 }
             }
@@ -198,32 +199,12 @@ class AccessGroupForm extends ModuleBaseForm
      */
     private function getControllerTranslation(string $module, string $controllerName): string
     {
-        $apiLabel = $this->permissionLabels[$module][$controllerName]['label'] ?? '';
-        if ($this->isUsableApiLabel($apiLabel)) {
-            return $apiLabel;
-        }
-
-        // Create the translation template
-        $translationTemplate = "mm_{$controllerName}";
-
-        // Retrieve the translated controller name
-        $controllerTranslation = $this->translation->_($translationTemplate);
-
-        if ($controllerTranslation !== $translationTemplate) {
-            return $controllerTranslation;
-        }
-
-        // Modules usually publish the controller title as a breadcrumb key.
-        // Looking up a string key creates no dependency on the module: when it
-        // is absent, the translation provider simply returns the key unchanged.
-        foreach (["Breadcrumb{$controllerName}", "Breadcrumb{$module}"] as $breadcrumbKey) {
-            $breadcrumbTranslation = $this->translation->_($breadcrumbKey);
-            if ($breadcrumbTranslation !== $breadcrumbKey) {
-                return $breadcrumbTranslation;
-            }
-        }
-
-        return $controllerName;
+        return PermissionLabelResolver::controller(
+            $module,
+            $controllerName,
+            $this->permissionLabels[$module][$controllerName]['label'] ?? '',
+            fn(string $key): string => $this->translation->_($key)
+        );
     }
 
     /**
@@ -238,7 +219,7 @@ class AccessGroupForm extends ModuleBaseForm
     private function getActionTranslation(string $module, string $controllerName, string $actionName): string
     {
         $apiLabel = $this->permissionLabels[$module][$controllerName]['actions'][$actionName] ?? '';
-        if ($this->isUsableApiLabel($apiLabel)) {
+        if (PermissionLabelResolver::isUsableApiLabel($apiLabel)) {
             return $apiLabel;
         }
 
@@ -272,17 +253,5 @@ class AccessGroupForm extends ModuleBaseForm
         }
 
         return $actionTranslation;
-    }
-
-    /**
-     * Checks that Core returned translated text rather than an unresolved key.
-     */
-    private function isUsableApiLabel(mixed $label): bool
-    {
-        if (!is_string($label) || $label === '') {
-            return false;
-        }
-
-        return preg_match('/^(?:module_|rest_)[A-Za-z0-9_]+$/', $label) !== 1;
     }
 }

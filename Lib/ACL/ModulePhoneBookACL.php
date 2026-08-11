@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2024 Alexey Portnov and Nikolay Beketov
@@ -19,12 +20,12 @@
 
 namespace Modules\ModuleUsersUI\Lib\ACL;
 
-use Modules\ModulePhoneBook\App\Controllers\ModulePhoneBookController;
 use Modules\ModuleUsersUI\Lib\EndpointConstants as RestEndpoints;
 
 class ModulePhoneBookACL implements ACLInterface
 {
-    const API_MODULE_PHONE_BOOK = '/pbxcore/api/modules/module-phone-book';
+    public const API_MODULE_PHONE_BOOK = '/pbxcore/api/modules/module-phone-book';
+    private const CONTROLLER = 'Modules\ModulePhoneBook\App\Controllers\ModulePhoneBookController';
     /**
      * Prepares list of linked controllers to other controllers to hide it from UI
      * and allow or disallow with the main one.
@@ -34,14 +35,24 @@ class ModulePhoneBookACL implements ACLInterface
     public static function getLinkedControllerActions(): array
     {
         return [
-            ModulePhoneBookController::class => [
+            self::CONTROLLER => [
                 RestEndpoints::ACTION_INDEX => [
-                    ModulePhoneBookController::class => [
+                    self::CONTROLLER => [
                         RestEndpoints::ACTION_GET_NEW_RECORDS,
                     ],
-                    self::API_MODULE_PHONE_BOOK=>'*'
-                ]
-            ]
+                    self::API_MODULE_PHONE_BOOK => '*',
+                ],
+                RestEndpoints::ACTION_SAVE => [
+                    self::CONTROLLER => [
+                        'saveSettings',
+                    ],
+                ],
+                RestEndpoints::ACTION_DELETE => [
+                    self::CONTROLLER => [
+                        'deleteAllRecords',
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -49,7 +60,8 @@ class ModulePhoneBookACL implements ACLInterface
      * Returns list of controllers that are always allowed
      * @return array
      */
-    public static function getAlwaysAllowed(): array{
+    public static function getAlwaysAllowed(): array
+    {
         return [];
     }
 
