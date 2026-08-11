@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2023 Alexey Portnov and Nikolay Beketov
@@ -18,11 +19,14 @@
  */
 
 namespace Modules\ModuleUsersUI\Lib\ACL;
+
 use Modules\ModuleUsersUI\Lib\EndpointConstants as RestEndpoints;
-use Modules\ModuleZabbixAgent5\App\Controllers\ModuleZabbixAgent5Controller;
+
 class ModuleZabbixAgent5ACL implements ACLInterface
 {
-    const API_MODULE_ZABBIX_AGENT5 = '/pbxcore/api/modules/module-zabbix-agent5';
+    public const API_MODULE_ZABBIX_AGENT5 = '/pbxcore/api/modules/module-zabbix-agent5';
+    public const API_V3_MODULE_ZABBIX_AGENT5_STATUS = '/pbxcore/api/v3/module-zabbix-agent5/status';
+    private const CONTROLLER = 'Modules\ModuleZabbixAgent5\App\Controllers\ModuleZabbixAgent5Controller';
     /**
      * Prepares list of linked controllers to other controllers to hide it from UI
      * and allow or disallow with the main one.
@@ -32,12 +36,16 @@ class ModuleZabbixAgent5ACL implements ACLInterface
     public static function getLinkedControllerActions(): array
     {
         return [
-            ModuleZabbixAgent5Controller::class=>[
+            self::CONTROLLER => [
                 RestEndpoints::ACTION_INDEX => [
-                    self::API_MODULE_ZABBIX_AGENT5=>'*',
-                    ModuleZabbixAgent5Controller::class=>[
-                        RestEndpoints::ACTION_SAVE
-                    ]
+                    self::CONTROLLER => [
+                        RestEndpoints::ACTION_SAVE,
+                    ],
+                    self::API_MODULE_ZABBIX_AGENT5 => '*',
+                    self::API_V3_MODULE_ZABBIX_AGENT5_STATUS => [
+                        'getStatus',
+                        'downloadTemplate',
+                    ],
                 ],
             ]
         ];
@@ -47,7 +55,8 @@ class ModuleZabbixAgent5ACL implements ACLInterface
      * Returns list of controllers that are always allowed
      * @return array
      */
-    public static function getAlwaysAllowed(): array{
+    public static function getAlwaysAllowed(): array
+    {
         return [];
     }
 

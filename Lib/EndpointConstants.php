@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2025 Alexey Portnov and Nikolay Beketov
@@ -50,6 +51,7 @@ class EndpointConstants
     public const API_V3_FAIL2BAN = '/pbxcore/api/v3/fail2ban';
     public const API_V3_FILES = '/pbxcore/api/v3/files';
     public const API_V3_FIREWALL = '/pbxcore/api/v3/firewall';
+    public const API_V3_FIREWALL_BOUNCER = '/pbxcore/api/v3/firewall-bouncer';
     public const API_V3_GENERAL_SETTINGS = '/pbxcore/api/v3/general-settings';
     public const API_V3_IAX = '/pbxcore/api/v3/iax';
     public const API_V3_IAX_PROVIDERS = '/pbxcore/api/v3/iax-providers';
@@ -116,6 +118,7 @@ class EndpointConstants
     public const ACTION_CDR_GET_METADATA = 'getMetadata';
     public const ACTION_CDR_PLAYBACK = 'playback';
     public const ACTION_CDR_DOWNLOAD = 'download';
+    public const ACTION_CDR_GET_STATS_BY_PROVIDER = 'getStatsByProvider';
 
     // =========================================================================
     // PBX Status Actions
@@ -199,6 +202,7 @@ class EndpointConstants
     public const ACTION_SYS_CHECK_IF_NEW_RELEASE_AVAILABLE = 'checkIfNewReleaseAvailable';
     public const ACTION_SYS_EXECUTE_BASH_COMMAND = 'executeBashCommand';
     public const ACTION_SYS_EXECUTE_SQL_REQUEST = 'executeSqlRequest';
+    public const ACTION_SYS_CHECK_CLIENT_IP_VISIBILITY = 'checkClientIpVisibility';
 
     // =========================================================================
     // License Actions
@@ -312,6 +316,7 @@ class EndpointConstants
     public const ACTION_MODIFY = 'modify';
     public const ACTION_SAVE = 'save';
     public const ACTION_GET_NEW_RECORDS = 'getNewRecords';
+    public const ACTION_INCOMING_ROUTES_GET_UNIQUE_DIDS = 'getUniqueDIDs';
     public const ACTION_BULK_UPLOAD = 'bulkupload';
     public const ACTION_MANAGE = 'manage';
     public const ACTION_MODIFY_SIP = 'modifysip';

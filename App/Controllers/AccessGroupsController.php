@@ -60,7 +60,13 @@ class AccessGroupsController extends ModuleUsersUIBaseController
         }
         $groupRightsController = new AccessGroupsRightsController();
         $groupRights = $groupRightsController->getGroupRights($record->id ?? '');
-        $this->view->form = new AccessGroupForm($record, ['groupRights' => $groupRights]);
+        $this->view->form = new AccessGroupForm(
+            $record,
+            [
+                'groupRights' => $groupRights,
+                'permissionLabels' => $groupRightsController->getPermissionLabels(),
+            ]
+        );
         $this->view->represent = $record->getRepresent();
         $this->view->id = $id;
         $this->view->groupRights = $groupRights;

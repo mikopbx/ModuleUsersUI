@@ -1,97 +1,75 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file records repository-specific contracts and traps that are easy to miss while changing ModuleUsersUI. Do not duplicate information that is obvious from the source tree, `composer.json`, or standard MikoPBX conventions.
 
-## Project Overview
+## Change discipline
 
-This is ModuleUsersUI, a MikoPBX module that provides user rights management and access control functionality. It allows multi-user access to MikoPBX with role-based permissions and includes LDAP/AD authentication support.
+- Do not run `git add`, commit, or push unless the user explicitly requests it.
+- Run PHPStan after creating or modifying PHP. Phalcon-dependent analysis may require the MikoPBX runtime/container or appropriate stubs; a local PHP CLI without Phalcon is not sufficient evidence.
+- JavaScript under `public/assets/js/src/` is the source of truth. After changing it, regenerate the corresponding file under `public/assets/js/`; do not maintain the generated file independently.
+- Use the project Babel installation exactly as follows:
 
-## Development Commands
+  ```bash
+  /Users/nb/PhpstormProjects/mikopbx/MikoPBXUtils/node_modules/.bin/babel "$INPUT_FILE" --out-dir "$OUTPUT_DIR" --source-maps inline --presets airbnb
+  ```
 
-### Code Quality
-- Use `phpstan` to check code quality after creating or modifying PHP files
-- PHP version requirement: ^7.4 (platform version: 7.4.0)
+## ACL aggregation contract
 
-### JavaScript Build Process
-- Source JS files are in `public/assets/js/src/`
-- Compiled JS files are in `public/assets/js/`
-- Use Babel for JS compilation: `/Users/nb/PhpstormProjects/mikopbx/MikoPBXUtils/node_modules/.bin/babel "$INPUT_FILE" --out-dir "$OUTPUT_DIR" --source-maps inline --presets airbnb`
+`Lib/UsersUIACL.php` builds linked permissions from three sources:
 
-### Dependencies
-- Run `composer install` to install PHP dependencies
-- Main dependency: `directorytree/ldaprecord` for LDAP functionality
+1. convention-based CRUD links from `AutoLinkedActionsResolver`;
+2. explicit Core rules from `CoreACL`, which replace automatic rules for the same AdminCabinet owner action;
+3. enabled-module rules, loaded last.
 
-## Architecture Overview
+The standard automatic CRUD ownership is intentionally coarse:
 
-### Core Components
-1. **Module Structure** - Standard MikoPBX module following Phalcon framework patterns
-2. **Access Control System** - Multi-layered ACL implementation with role-based permissions
-3. **Authentication** - Dual authentication: local credentials and LDAP/AD integration
-4. **User Interface** - Tabbed interface using Semantic UI with Volt templating
+- `index` owns REST `getList`;
+- `modify` owns `getRecord` and `getDefault`;
+- virtual `save` owns `saveRecord`, `delete`, `create`, `update`, `patch`, and `copy`.
 
-### Key Directories
-- `App/` - Main application logic (Controllers, Forms, Views, Providers)
-- `Lib/` - Core libraries and ACL system
-- `Models/` - Phalcon ORM models for database entities
-- `Setup/` - Module installation and configuration
-- `Messages/` - Internationalization files
-- `public/assets/` - Frontend assets (CSS, JS, images)
+A linked REST operation is hidden from the rights form and granted at runtime together with its owner UI action. Therefore:
 
-### Database Models
-- `AccessGroups` - User access groups with permissions
-- `AccessGroupsRights` - Granular rights assignment to groups
-- `AccessGroupCDRFilter` - CDR filtering rules per group
-- `UsersCredentials` - User authentication credentials
-- `LdapConfig` - LDAP/AD server configuration
+- add explicit rules for non-standard semantics instead of broadening the generic mapping;
+- never attach bulk exports, destructive operations, service commands, or other writes to a read-only owner merely because they share an endpoint;
+- keep an unknown REST operation visible until it is deliberately linked or classified as always denied;
+- use `getAlwaysDenied()` for service-only or superuser-only operations that limited roles must neither see nor receive.
 
-### Controllers Architecture
-- `ModuleUsersUIBaseController` - Base controller with common functionality
-- `ModuleUsersUIController` - Main module interface (groups, users, LDAP tabs)
-- `AccessGroupsController` - Access group management
-- `AccessGroupsRightsController` - Rights assignment
-- `AccessGroupCDRFilterController` - CDR filtering configuration
-- `UsersCredentialsController` - User credential management
-- `LdapConfigController` - LDAP configuration
+The rights form is built from Core's `/pbxcore/api/v3/openapi:getDetailedPermissions` response. When changing discovery or grouping, verify both sides of the contract: what the form hides and what `UsersUIACL::modify()` grants.
 
-### ACL System
-The module implements a sophisticated ACL system:
-- `UsersUIACL` - Main ACL modifier that integrates with MikoPBX core ACL
-- `CoreACL` and various `Module*ACL` classes - Define permissions for different MikoPBX modules
-- Role-based access with prefix: `Constants::MODULE_ROLE_PREFIX`
-- Dynamic permission assignment based on access group configuration
+## Extension-module ACL loading
 
-### Authentication Flow
-1. `UsersUIAuthenticator` - Handles login authentication
-2. Supports both local password and LDAP authentication
-3. `UsersUILdapAuth` - LDAP authentication implementation
-4. Session management integrated with MikoPBX core
+For every enabled module with uniqid `<ModuleUniqid>`, `UsersUIACL` tries these classes in order:
 
-### Frontend Architecture
-- Uses Semantic UI framework for styling
-- JavaScript modules for each tab functionality:
-  - `module-users-ui-index.js` - Main module initialization
-  - `module-users-ui-index-users.js` - Users tab functionality
-  - `module-users-ui-index-ldap.js` - LDAP configuration tab
-  - `module-users-ui-modify-ag.js` - Access group modification
-  - `module-users-ui-extensions-modify.js` - Extension modifications
-- Volt templating engine for server-side rendering
+1. `Modules\<ModuleUniqid>\Lib\<ModuleUniqid>ACL` from the extension itself;
+2. `Modules\ModuleUsersUI\Lib\ACL\<ModuleUniqid>ACL` as the local fallback.
 
-### Configuration
-- `module.json` - Module metadata and release settings
-- `composer.json` - PHP dependencies and autoloading (PSR-4)
-- License: GPL-3.0-or-later
+The filename and class name must therefore be exactly `<ModuleUniqid>ACL.php` and `<ModuleUniqid>ACL`. A differently named fallback is silently undiscoverable.
 
-## Development Patterns
-- Follow MikoPBX module development standards
-- Use Phalcon ORM for database operations
-- Implement proper ACL checks in all controllers
-- Maintain separation between frontend source and compiled assets
-- Use dependency injection container for service registration
-- Follow PSR-4 autoloading standards with namespace `Modules\ModuleUsersUI\`
+Fallback ACL files must remain loadable when the target extension is absent. Refer to optional module controllers by stable FQCN strings, normally through a private `CONTROLLER` constant; importing or resolving the external class can break autoloading and static analysis.
 
-## Key Files to Understand
-- `App/Module.php` - Main module definition and service registration
-- `Setup/PbxExtensionSetup.php` - Module installation and sidebar integration
-- `Lib/UsersUIACL.php` - Core ACL modification logic
-- `Lib/UsersUIAuthenticator.php` - Authentication handler
-- `App/Controllers/ModuleUsersUIController.php` - Main controller
+Legacy module REST discovery has two unusual shapes that mappings must preserve:
+
+- `moduleRestAPICallback` may expose `/pbxcore/api/modules/<kebab-module-id>` with action `*`;
+- routes returned by `getPBXCoreRESTAdditionalRoutes()` may be grouped under controller key `/` rather than their public path.
+
+Do not normalize `/` away: any controller identifier beginning with `/` is treated as a REST controller by the permission-label resolver.
+
+## Permission labels
+
+REST and MVC labels intentionally have different fallback behavior in `PermissionLabelResolver`:
+
+- a usable, specific API description wins;
+- an empty/untranslated API key, or a REST description equal to the module breadcrumb, falls back to the full REST controller path;
+- a REST path must never fall through to an MVC `mm_*` translation or generic module title;
+- MVC controllers retain the chain `API description -> mm_* -> controller breadcrumb -> module breadcrumb -> raw controller name`.
+
+This prevents a technical endpoint from being displayed only as a module name and losing the meaning of the permission being configured.
+
+## LDAP contracts
+
+- Keep PHP at `^8.1` or newer and LdapRecord at v3. LdapRecord v2 pulled dependencies whose PHP 8.4 deprecations are converted by the Core error handler into authentication failures before an LDAP request is attempted.
+- `WorkerApiCommands` does not register `LoggerAuthProvider`. LDAP failure logging must retain the syslog fallback for worker execution.
+- libldap TLS defaults changed with `ldap_set_option(null, ...)` are process-wide. They must be applied before creating an LDAPS connection and reset after use so a reused PHP-FPM/worker process cannot inherit verification policy or a deleted temporary CA path.
+- `useTLS` is a legacy persisted field. When `tlsMode` is absent, `useTLS=1` means `starttls`; do not reinterpret it as implicit LDAPS.
+- Switching the LDAP server type may replace only empty values or known shipped defaults. Operator-entered DN, filter, login, and attribute values must survive the switch; placeholders may always change.
+- Preserve the CA certificate value while TLS is disabled. An operator can configure it before enabling STARTTLS/LDAPS later.

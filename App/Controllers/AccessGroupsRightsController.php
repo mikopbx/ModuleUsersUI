@@ -18,16 +18,29 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 
+declare(strict_types=1);
+
 namespace Modules\ModuleUsersUI\App\Controllers;
 
 use MikoPBX\Common\Providers\PBXCoreRESTClientProvider;
 use Modules\ModuleUsersUI\Lib\ACL\AutoLinkedActionsResolver;
+use Modules\ModuleUsersUI\Lib\ACL\LinkedActionOwnerResolver;
 use Modules\ModuleUsersUI\Lib\Constants;
 use Modules\ModuleUsersUI\Lib\UsersUIACL;
 use Modules\ModuleUsersUI\Models\AccessGroupsRights;
 
 class AccessGroupsRightsController extends ModuleUsersUIBaseController
 {
+    /**
+     * Labels returned by Core together with the permissions tree.
+     *
+     * Older Core versions do not provide this metadata, so the form must
+     * always treat it as optional.
+     *
+     * @var array<string, array<string, array{label: string, actions: array<string, string>}>>
+     */
+    private array $permissionLabels = [];
+
     /**
      * Retrieves the group rights based on the provided access group ID.
      * Uses Core API to get available controllers and actions.
@@ -54,11 +67,21 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
     }
 
     /**
+     * Returns optional localized labels supplied by Core.
+     *
+     * @return array<string, array<string, array{label: string, actions: array<string, string>}>>
+     */
+    public function getPermissionLabels(): array
+    {
+        return $this->permissionLabels;
+    }
+
+    /**
      * Retrieves available controllers and actions from Core API.
      * Transforms API response to UI-expected format and applies exclusion rules.
      *
-     * Also adds virtual actions (save, delete) for AdminCabinet controllers
-     * that have corresponding REST API endpoints.
+     * Also derives virtual owner actions from the linked-action snapshot for
+     * any published owner controller.
      *
      * @return array Controllers organized by module/category with actions as keys.
      */
@@ -76,19 +99,25 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
             return [];
         }
 
-        // Get exclusion rules (alwaysAllowed, alwaysDenied, linkedActions)
-        [$excludedControllers, $excludedActions] = $this->getExclusionsActionsControllers();
-
-        // Get virtual actions that should be added to AdminCabinet controllers
-        $virtualActions = AutoLinkedActionsResolver::getVirtualActions();
+        // Get linked action ownership and the corresponding exclusion rules.
+        $linkedControllerActions = UsersUIACL::getLinkedControllerActions();
+        [$excludedControllers, $excludedActions] =
+            $this->getExclusionsActionsControllers($linkedControllerActions);
 
         $controllers = [];
         $categories = $result->data['categories'] ?? [];
 
         foreach ($categories as $categoryId => $categoryData) {
-            $type = $categoryData['type'] ?? 'APP';
+            $defaultType = $categoryData['type'] ?? 'APP';
 
             foreach ($categoryData['controllers'] ?? [] as $controllerClass => $controllerInfo) {
+                // A category may contain both MVC and REST controllers. This happens
+                // when a module exposes an AdminCabinet page and REST endpoints.
+                // Detect REST controllers by their stable public path so this also
+                // works with Core versions that only return one type per category.
+                $isRestController = str_starts_with($controllerClass, '/pbxcore/');
+                $type = $isRestController ? 'REST' : $defaultType;
+
                 // Skip controllers that are completely excluded
                 if (in_array($controllerClass, $excludedControllers)) {
                     continue;
@@ -106,29 +135,31 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
                     $actions[$actionName] = false;
                 }
 
-                // Add virtual actions (save, delete) for AdminCabinet controllers
-                // that have corresponding REST API endpoints
-                if ($categoryId === Constants::ADMIN_CABINET) {
-                    $endpoint = AutoLinkedActionsResolver::controllerToEndpoint($controllerClass);
-                    if ($endpoint !== null && AutoLinkedActionsResolver::endpointExists($endpoint)) {
-                        foreach ($virtualActions as $virtualAction) {
-                            // Only add if not already present and not excluded
-                            if (!isset($actions[$virtualAction])
-                                && !in_array($virtualAction, $controllerExcludedActions)) {
-                                $actions[$virtualAction] = false;
-                            }
-                        }
-                    }
-                }
+                $actions = LinkedActionOwnerResolver::merge(
+                    $actions,
+                    $controllerClass,
+                    $linkedControllerActions,
+                    $controllerExcludedActions
+                );
 
                 if (!empty($actions)) {
                     $controllers[$categoryId][$type][$controllerClass] = $actions;
+
+                    $this->permissionLabels[$categoryId][$controllerClass] = [
+                        // The legacy "label" field contains a technical tag or
+                        // controller name. Only the optional localized description
+                        // is suitable for presentation.
+                        'label' => (string)($controllerInfo['description'] ?? ''),
+                        'actions' => is_array($controllerInfo['actionLabels'] ?? null)
+                            ? $controllerInfo['actionLabels']
+                            : [],
+                    ];
                 }
             }
 
             // Sort AdminCabinet controllers by translated name
-            if ($categoryId === Constants::ADMIN_CABINET && isset($controllers[$categoryId][$type])) {
-                uksort($controllers[$categoryId][$type], function ($a, $b) {
+            if ($categoryId === Constants::ADMIN_CABINET && isset($controllers[$categoryId]['APP'])) {
+                uksort($controllers[$categoryId]['APP'], function ($a, $b) {
                     $controllerAParts = explode('\\', $a);
                     $controllerAName = end($controllerAParts);
                     $controllerAName = str_replace("Controller", "", $controllerAName);
@@ -192,14 +223,14 @@ class AccessGroupsRightsController extends ModuleUsersUIBaseController
      *         [0] - Controllers to exclude completely (all actions hidden)
      *         [1] - Specific actions to exclude per controller
      */
-    private function getExclusionsActionsControllers(): array
+    private function getExclusionsActionsControllers(array $linkedControllerActions): array
     {
         $excludedControllers = [];
         $excludedActions = [];
         $arrayOfExclusions = [];
 
         // Get the list of linked controllers and actions which we hide from settings
-        foreach (UsersUIACL::getLinkedControllerActions() as $controllerClass => $actions) {
+        foreach ($linkedControllerActions as $controllerClass => $actions) {
             // Iterate through the main controllers actions
             foreach ($actions as $action => $linkedControllers) {
                 // Iterate through the linked controllers actions

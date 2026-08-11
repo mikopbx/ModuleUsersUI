@@ -20,6 +20,7 @@ namespace Modules\ModuleUsersUI\Setup;
 
 use MikoPBX\Common\Models\PbxSettings;
 use MikoPBX\Modules\Setup\PbxExtensionSetupBase;
+use Modules\ModuleUsersUI\Models\AccessGroups;
 use Modules\ModuleUsersUI\Models\LdapConfig;
 use Throwable;
 
@@ -43,6 +44,7 @@ class PbxExtensionSetup extends PbxExtensionSetupBase
 
         if ($result) {
             $this->migrateLegacyTlsFlag();
+            $this->migrateLegacyModuleHomePages();
         }
 
         return $result;
@@ -74,6 +76,30 @@ class PbxExtensionSetup extends PbxExtensionSetupBase
         } catch (Throwable $e) {
             // Do not block install on migration failure — schema is already in place.
             $this->messages[] = 'ModuleUsersUI TLS migration skipped: ' . $e->getMessage();
+        }
+    }
+
+    /**
+     * Adds the AdminCabinet prefix omitted by earlier module versions when
+     * they generated home-page URLs for extension module controllers.
+     */
+    private function migrateLegacyModuleHomePages(): void
+    {
+        try {
+            $accessGroups = AccessGroups::find([
+                'conditions' => 'homePage LIKE :legacyPrefix:',
+                'bind' => [
+                    'legacyPrefix' => '/module-%',
+                ],
+            ]);
+
+            foreach ($accessGroups as $accessGroup) {
+                $accessGroup->homePage = '/admin-cabinet' . $accessGroup->homePage;
+                $accessGroup->save();
+            }
+        } catch (Throwable $e) {
+            // Do not block install on migration failure — existing groups can be saved again manually.
+            $this->messages[] = 'ModuleUsersUI home-page migration skipped: ' . $e->getMessage();
         }
     }
 

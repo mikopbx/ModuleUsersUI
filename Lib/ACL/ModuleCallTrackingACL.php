@@ -1,4 +1,5 @@
 <?php
+
 /*
  * MikoPBX - free phone system for small business
  * Copyright © 2017-2024 Alexey Portnov and Nikolay Beketov
@@ -19,9 +20,12 @@
 
 namespace Modules\ModuleUsersUI\Lib\ACL;
 
+use Modules\ModuleUsersUI\Lib\EndpointConstants as E;
+
 class ModuleCallTrackingACL implements ACLInterface
 {
-    const API_MODULE_CALL_TRACKING = '/pbxcore/api/modules/module-call-tracking';
+    public const API_MODULE_CALL_TRACKING = '/pbxcore/api/modules/module-call-tracking';
+    private const CONTROLLER = 'Modules\ModuleCallTracking\App\Controllers\ModuleCallTrackingController';
     /**
      * Prepares list of linked controllers to other controllers to hide it from UI
      * and allow or disallow with the main one.
@@ -31,6 +35,14 @@ class ModuleCallTrackingACL implements ACLInterface
     public static function getLinkedControllerActions(): array
     {
         return [
+            self::CONTROLLER => [
+                E::ACTION_INDEX => [
+                    self::CONTROLLER => [
+                        E::ACTION_SAVE,
+                    ],
+                    self::API_MODULE_CALL_TRACKING => '*',
+                ],
+            ],
         ];
     }
 
@@ -38,7 +50,8 @@ class ModuleCallTrackingACL implements ACLInterface
      * Returns list of controllers that are always allowed
      * @return array
      */
-    public static function getAlwaysAllowed(): array{
+    public static function getAlwaysAllowed(): array
+    {
         return [];
     }
 
