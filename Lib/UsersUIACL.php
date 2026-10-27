@@ -36,6 +36,15 @@ use function MikoPBX\Common\Config\appPath;
 class UsersUIACL extends Injectable
 {
     /**
+     * Automatic links that survive an explicit rule for the same owner action.
+     */
+    private const AUTO_READ_ONLY_ACTIONS = [
+        EndpointConstants::ACTION_GET_LIST,
+        EndpointConstants::ACTION_GET_RECORD,
+        EndpointConstants::ACTION_GET_DEFAULT,
+    ];
+
+    /**
      * Modifies the ACL list based on the database query result.
      *
      * @param AclList $aclList The ACL list to modify.
@@ -156,11 +165,12 @@ class UsersUIACL extends Injectable
      * and allow or disallow with the main one.
      *
      * This method combines:
-     * 1. Explicit rules from CoreACL (highest priority)
+     * 1. Explicit rules from CoreACL
      * 2. Automatic rules from AutoLinkedActionsResolver (for standard CRUD)
      * 3. Module-specific rules
      *
-     * Explicit rules take precedence over automatic ones.
+     * Explicit rules replace automatic ones per owner action, except that
+     * automatic read-only links (getList/getRecord/getDefault) are kept.
      *
      * @return array[]
      */
@@ -173,7 +183,7 @@ class UsersUIACL extends Injectable
         $adminCabinetControllers = self::getAdminCabinetControllers();
         $autoRules = AutoLinkedActionsResolver::getAutoLinkedActions($adminCabinetControllers);
 
-        // 3. Merge: explicit rules override automatic rules
+        // 3. Merge: explicit rules replace automatic ones, read-only links are kept
         $linkedActions = self::mergeLinkedActions($autoRules, $explicitRules);
 
         // 4. Add module-specific rules
@@ -209,10 +219,15 @@ class UsersUIACL extends Injectable
     }
 
     /**
-     * Merge two linked actions arrays with priority to explicit rules.
+     * Merge two linked actions arrays.
      *
-     * @param array $autoRules Automatic rules (lower priority)
-     * @param array $explicitRules Explicit rules (higher priority)
+     * An explicit rule replaces the automatic rule of the same owner action, so
+     * it can narrow coarse CRUD links (e.g. keep delete out of save). Automatic
+     * read-only links are kept anyway: the rights form hides them, so dropping
+     * them would leave no way to grant e.g. getDefault.
+     *
+     * @param array $autoRules Automatic rules
+     * @param array $explicitRules Explicit rules
      * @return array Merged array
      */
     private static function mergeLinkedActions(array $autoRules, array $explicitRules): array
@@ -220,12 +235,18 @@ class UsersUIACL extends Injectable
         $result = $autoRules;
 
         foreach ($explicitRules as $controller => $actions) {
-            if (!isset($result[$controller])) {
-                $result[$controller] = $actions;
-            } else {
-                // Merge actions, explicit takes priority
-                foreach ($actions as $action => $linkedEndpoints) {
-                    $result[$controller][$action] = $linkedEndpoints;
+            foreach ($actions as $action => $linkedEndpoints) {
+                $autoLinks = $autoRules[$controller][$action] ?? [];
+                $result[$controller][$action] = $linkedEndpoints;
+                foreach ($autoLinks as $endpoint => $autoActions) {
+                    $readOnlyActions = array_intersect((array)$autoActions, self::AUTO_READ_ONLY_ACTIONS);
+                    if (empty($readOnlyActions) || ($linkedEndpoints[$endpoint] ?? null) === '*') {
+                        continue;
+                    }
+                    $result[$controller][$action][$endpoint] = array_values(array_unique(array_merge(
+                        $readOnlyActions,
+                        (array)($linkedEndpoints[$endpoint] ?? [])
+                    )));
                 }
             }
         }

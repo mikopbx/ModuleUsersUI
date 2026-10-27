@@ -40,8 +40,8 @@ use Modules\ModuleUsersUI\Lib\MikoPBXVersion;
  * - save → saveRecord + delete (edit and remove combined)
  *
  * Usage:
- * Explicit rules in CoreACL::getLinkedControllerActions() take priority.
- * Auto-linking is applied only when no explicit rule exists.
+ * Explicit rules in CoreACL::getLinkedControllerActions() replace the automatic
+ * links of the same owner action, except read-only getList/getRecord/getDefault.
  */
 class AutoLinkedActionsResolver
 {

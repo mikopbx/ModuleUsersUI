@@ -26,7 +26,6 @@ use Modules\ModuleUsersUI\App\Controllers\UserProfileController;
 use MikoPBX\AdminCabinet\Controllers\AsteriskManagersController;
 use MikoPBX\AdminCabinet\Controllers\CallDetailRecordsController;
 use MikoPBX\AdminCabinet\Controllers\CallQueuesController;
-use MikoPBX\AdminCabinet\Controllers\ConferenceRoomsController;
 use MikoPBX\AdminCabinet\Controllers\ConsoleController;
 use MikoPBX\AdminCabinet\Controllers\CustomFilesController;
 use MikoPBX\AdminCabinet\Controllers\DialplanApplicationsController;
@@ -152,9 +151,6 @@ class CoreACL implements ACLInterface
                     E::API_V3_SOUND_FILES => [
                         E::ACTION_SOUND_PLAYBACK,
                     ],
-                    E::API_V3_IVR_MENU => [
-                        E::ACTION_DELETE,
-                    ],
                 ],
             ],
 
@@ -163,9 +159,6 @@ class CoreACL implements ACLInterface
                 E::ACTION_MODIFY => [
                     E::API_V3_SOUND_FILES => [
                         E::ACTION_SOUND_PLAYBACK,
-                    ],
-                    E::API_V3_CALL_QUEUES => [
-                        E::ACTION_DELETE,
                     ],
                 ],
             ],
@@ -328,20 +321,10 @@ class CoreACL implements ACLInterface
                 ],
             ],
 
-            // Conference rooms modification
-            ConferenceRoomsController::class => [
-                E::ACTION_MODIFY => [
-                    E::API_V3_CONFERENCE_ROOMS => [
-                        E::ACTION_DELETE,
-                    ],
-                ],
-            ],
-
-            // Dialplan applications modification
+            // Dialplan applications editor opens copy mode via read-only :copy
             DialplanApplicationsController::class => [
                 E::ACTION_MODIFY => [
                     E::API_V3_DIALPLAN_APPLICATIONS => [
-                        E::ACTION_DELETE,
                         E::ACTION_COPY,
                     ],
                 ],

@@ -18,7 +18,7 @@ This file records repository-specific contracts and traps that are easy to miss 
 `Lib/UsersUIACL.php` builds linked permissions from three sources:
 
 1. convention-based CRUD links from `AutoLinkedActionsResolver`;
-2. explicit Core rules from `CoreACL`, which replace automatic rules for the same AdminCabinet owner action;
+2. explicit Core rules from `CoreACL`, which replace automatic rules for the same AdminCabinet owner action (so they can narrow coarse writes, e.g. keep `delete` out of `save` for sound files and CDR); automatic read-only links (`getList`, `getRecord`, `getDefault`) always survive, because the rights form hides them and dropping them makes record creation impossible to grant;
 3. enabled-module rules, loaded last.
 
 The standard automatic CRUD ownership is intentionally coarse:
